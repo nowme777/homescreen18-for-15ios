@@ -566,69 +566,164 @@
  
 --- a/26HomePrefs/Home26PrefsRootListController.m
 +++ b/26HomePrefs/Home26PrefsRootListController.m
-@@ -18,7 +18,7 @@
-         hasSnowBoard = YES;
-     }
+@@ -8,84 +8,19 @@
  
+ @implementation Home26PrefsRootListController
+ 
+-- (void)viewDidAppear:(BOOL)animated {
+-    [super viewDidAppear:animated];
+-
+-    BOOL hasSnowBoard = NO;
+-    if (([[NSFileManager defaultManager] fileExistsAtPath:@"/var/jb/Library/MobileSubstrate/DynamicLibraries/SnowBoard.dylib"] || [[NSFileManager defaultManager] fileExistsAtPath:@"/var/jb/Library/MobileSubstrate/DynamicLibraries/Snowboard.dylib"] || [[NSFileManager defaultManager] fileExistsAtPath:@"/var/jb/Library/MobileSubstrate/DynamicLibraries/AAASnowBoardStub.dylib"])) {
+-        hasSnowBoard = YES;
+-    } else if (([[NSFileManager defaultManager] fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/SnowBoard.dylib"] || [[NSFileManager defaultManager] fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/Snowboard.dylib"] || [[NSFileManager defaultManager] fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/AAASnowBoardStub.dylib"])) {
+-        hasSnowBoard = YES;
+-    }
+-
 -    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"com.ngkhoi.26home"];
-+    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"local.icontint15.26base"];
-     BOOL hasWarned = [defaults boolForKey:@"HasWarnedAboutSnowBoard"];
- 
-     if (hasSnowBoard && !hasWarned) {
-@@ -37,7 +37,7 @@
- 
+-    BOOL hasWarned = [defaults boolForKey:@"HasWarnedAboutSnowBoard"];
+-
+-    if (hasSnowBoard && !hasWarned) {
+-        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"⚠️ SnowBoard Detected"
+-                                                                       message:@"Using SnowBoard (even with themes disabled) can harm performance, drain battery, and cause unexpected visual bugs with 26Home.\n\nFor the absolute best, lag-free experience, it is highly recommended to completely UNINSTALL SnowBoard."
+-                                                                preferredStyle:UIAlertControllerStyleAlert];
+-
+-        [alert addAction:[UIAlertAction actionWithTitle:@"I Understand" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+-            [defaults setBool:YES forKey:@"HasWarnedAboutSnowBoard"];
+-            [defaults synchronize];
+-        }]];
+-
+-        [self presentViewController:alert animated:YES completion:nil];
+-    }
+-}
+-
  - (void)viewDidLoad {
      [super viewDidLoad];
 -    notify_post("ngkhoi.26home.ExportWallpaper");
-+    notify_post("icontint15.26base.ExportWallpaper");
- 
-     UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 220)];
-     headerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-@@ -65,14 +65,14 @@
-     [shadowContainer addSubview:iconView];
- 
-     UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 150, headerView.frame.size.width, 36)];
+-
+-    UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 220)];
+-    headerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+-
+-    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+-    NSString *iconPath = [bundle pathForResource:@"header_icon@3x" ofType:@"png"];
+-    UIImage *icon = [UIImage imageWithContentsOfFile:iconPath];
+-
+-    UIView *shadowContainer = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 86, 86)];
+-    shadowContainer.center = CGPointMake(headerView.frame.size.width / 2.0, 90);
+-    shadowContainer.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+-    shadowContainer.layer.shadowColor = [UIColor blackColor].CGColor;
+-    shadowContainer.layer.shadowOpacity = 0.25;
+-    shadowContainer.layer.shadowOffset = CGSizeMake(0, 8);
+-    shadowContainer.layer.shadowRadius = 14;
+-    [headerView addSubview:shadowContainer];
+-
+-    UIImageView *iconView = [[UIImageView alloc] initWithImage:icon];
+-    iconView.frame = shadowContainer.bounds;
+-    iconView.layer.cornerRadius = 19;
+-    if (@available(iOS 13.0, *)) {
+-        iconView.layer.cornerCurve = kCACornerCurveContinuous;
+-    }
+-    iconView.clipsToBounds = YES;
+-    [shadowContainer addSubview:iconView];
+-
+-    UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 150, headerView.frame.size.width, 36)];
 -    titleLabel.text = @"26Home";
-+    titleLabel.text = @"IconTint15";
-     titleLabel.font = [UIFont systemFontOfSize:34 weight:UIFontWeightHeavy];
-     titleLabel.textAlignment = NSTextAlignmentCenter;
-     titleLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-     [headerView addSubview:titleLabel];
- 
-     UILabel *subtitleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 186, headerView.frame.size.width, 20)];
+-    titleLabel.font = [UIFont systemFontOfSize:34 weight:UIFontWeightHeavy];
+-    titleLabel.textAlignment = NSTextAlignmentCenter;
+-    titleLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+-    [headerView addSubview:titleLabel];
+-
+-    UILabel *subtitleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 186, headerView.frame.size.width, 20)];
 -    subtitleLabel.text = @"iOS 26 Home screen customization tweak";
-+    subtitleLabel.text = @"Оформление iOS 18 • на основе 26Home";
-     subtitleLabel.font = [UIFont systemFontOfSize:15 weight:UIFontWeightMedium];
-     subtitleLabel.textColor = [UIColor systemGrayColor];
-     subtitleLabel.textAlignment = NSTextAlignmentCenter;
-@@ -110,8 +110,8 @@
+-    subtitleLabel.font = [UIFont systemFontOfSize:15 weight:UIFontWeightMedium];
+-    subtitleLabel.textColor = [UIColor systemGrayColor];
+-    subtitleLabel.textAlignment = NSTextAlignmentCenter;
+-    subtitleLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+-    [headerView addSubview:subtitleLabel];
+-
+-    UITableView *tableView = [self valueForKey:@"_table"];
+-    if (!tableView && [self respondsToSelector:@selector(table)]) {
+-        tableView = [self performSelector:@selector(table)];
+-    }
+-    if (tableView) {
+-        tableView.tableHeaderView = headerView;
+-    }
++    self.title=@"IconTint15";
++    UIView *header=[[UIView alloc] initWithFrame:CGRectMake(0,0,self.view.bounds.size.width,142)];
++    header.autoresizingMask=UIViewAutoresizingFlexibleWidth;
++    UILabel *title=[[UILabel alloc] initWithFrame:CGRectMake(24,24,header.bounds.size.width-48,42)];
++    title.text=@"IconTint15"; title.font=[UIFont systemFontOfSize:32 weight:UIFontWeightBold];
++    title.autoresizingMask=UIViewAutoresizingFlexibleWidth;[header addSubview:title];
++    UILabel *subtitle=[[UILabel alloc] initWithFrame:CGRectMake(24,72,header.bounds.size.width-48,48)];
++    subtitle.text=@"Иконки в стиле iOS 18\n@nowme77";subtitle.numberOfLines=2;
++    subtitle.font=[UIFont systemFontOfSize:15];subtitle.textColor=UIColor.secondaryLabelColor;
++    subtitle.autoresizingMask=UIViewAutoresizingFlexibleWidth;[header addSubview:subtitle];
++    UITableView *table=[self valueForKey:@"_table"];if(table)table.tableHeaderView=header;
+ }
+ 
+ - (NSArray *)specifiers {
+@@ -106,39 +41,24 @@
+ 
+ - (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
+     [super setPreferenceValue:value specifier:specifier];
++    if([[specifier propertyForKey:@"key"] isEqualToString:@"icontint15.26base.iconScope"]) notify_post("icontint15.26base.clearCache");
+ }
  
  - (void)clearCache:(PSSpecifier *)specifier {
-     NSArray *caches = @[
+-    NSArray *caches = @[
 -        @"/var/mobile/Library/Caches/ngkhoi.26home.icons",
 -        @"/var/mobile/Library/Caches/ngkhoi.26home.icons3",
-+        @"/var/mobile/Library/Caches/icontint15.26base.icons",
-+        @"/var/mobile/Library/Caches/icontint15.26base.icons3",
-         @"/var/mobile/Library/Caches/com.apple.IconsCache",
-         @"/var/mobile/Library/Caches/com.apple.springboard",
-         @"/var/mobile/Library/Caches/26Home_IconCache"
-@@ -124,13 +124,13 @@
- 
-     NSArray *userCaches = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-     if (userCaches.count > 0) {
--        NSString *userIconCache = [userCaches.firstObject stringByAppendingPathComponent:@"ngkhoi.26home.icons"];
-+        NSString *userIconCache = [userCaches.firstObject stringByAppendingPathComponent:@"icontint15.26base.icons"];
-         [fm removeItemAtPath:userIconCache error:nil];
--        NSString *userIconCache3 = [userCaches.firstObject stringByAppendingPathComponent:@"ngkhoi.26home.icons3"];
-+        NSString *userIconCache3 = [userCaches.firstObject stringByAppendingPathComponent:@"icontint15.26base.icons3"];
-         [fm removeItemAtPath:userIconCache3 error:nil];
-     }
- 
--    notify_post("ngkhoi.26home.clearCache");
+-        @"/var/mobile/Library/Caches/com.apple.IconsCache",
+-        @"/var/mobile/Library/Caches/com.apple.springboard",
+-        @"/var/mobile/Library/Caches/26Home_IconCache"
+-    ];
++    NSFileManager *fm=NSFileManager.defaultManager;
++    NSString *root=@"/var/mobile/Library/Caches";
++    for(NSString *name in [fm contentsOfDirectoryAtPath:root error:nil]) {
++        if([name hasPrefix:@"icontint15.26base.icons"]) [fm removeItemAtPath:[root stringByAppendingPathComponent:name] error:nil];
++    }
 +    notify_post("icontint15.26base.clearCache");
  
-     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Cache Cleared"
-                                                                    message:@"The icon cache has been completely cleared. You can respring now to apply."
+-    NSFileManager *fm = [NSFileManager defaultManager];
+-    for (NSString *path in caches) {
+-        [fm removeItemAtPath:path error:nil];
+-    }
+-
+-    NSArray *userCaches = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+-    if (userCaches.count > 0) {
+-        NSString *userIconCache = [userCaches.firstObject stringByAppendingPathComponent:@"ngkhoi.26home.icons"];
+-        [fm removeItemAtPath:userIconCache error:nil];
+-        NSString *userIconCache3 = [userCaches.firstObject stringByAppendingPathComponent:@"ngkhoi.26home.icons3"];
+-        [fm removeItemAtPath:userIconCache3 error:nil];
+-    }
+-
+-    notify_post("ngkhoi.26home.clearCache");
+-
+-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Cache Cleared"
+-                                                                   message:@"The icon cache has been completely cleared. You can respring now to apply."
++    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Кэш очищен"
++                                                                   message:@"Иконки будут созданы заново. При необходимости сделайте респринг."
+                                                             preferredStyle:UIAlertControllerStyleAlert];
+-    [alert addAction:[UIAlertAction actionWithTitle:@"Respring Now" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
++    [alert addAction:[UIAlertAction actionWithTitle:@"Респринг" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+         [self respring:nil];
+     }]];
+-    [alert addAction:[UIAlertAction actionWithTitle:@"Later" style:UIAlertActionStyleCancel handler:nil]];
++    [alert addAction:[UIAlertAction actionWithTitle:@"Позже" style:UIAlertActionStyleCancel handler:nil]];
+     [self presentViewController:alert animated:YES completion:nil];
+ }
+ 
+@@ -155,3 +75,10 @@
+ }
+ 
+ @end
++
++@interface Home18CreditsController : PSListController
++@end
++@implementation Home18CreditsController
++- (NSArray *)specifiers {if(!_specifiers)_specifiers=[self loadSpecifiersFromPlistName:@"Credits" target:self];return _specifiers;}
++- (id)readSpecifierValue:(PSSpecifier *)specifier {return [specifier propertyForKey:@"sublabel"] ?: @"";}
++@end
 --- a/26HomePrefs/Home26WallpaperHelper.m
 +++ b/26HomePrefs/Home26WallpaperHelper.m
 @@ -38,7 +38,7 @@
@@ -661,19 +756,41 @@
  	<key>CFBundlePackageType</key>
 --- a/26HomePrefs/Resources/Root.plist
 +++ b/26HomePrefs/Resources/Root.plist
-@@ -18,53 +18,14 @@
+@@ -2,226 +2,77 @@
+ <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+ <plist version="1.0">
+ <dict>
++	<key>title</key>
++	<string>IconTint15</string>
+ 	<key>items</key>
+ 	<array>
+ 		<dict>
+ 			<key>cell</key>
+ 			<string>PSGroupCell</string>
+ 			<key>label</key>
+-			<string>Main Toggle</string>
++			<string>Оформление</string>
+ 			<key>footerText</key>
+-			<string>Requires a respring to apply</string>
++			<string>Цвет и размер иконок настраиваются через «Настроить» в меню рабочего стола. Включение и выключение применяется после респринга.</string>
+ 		</dict>
+ 		<dict>
+ 			<key>cell</key>
+ 			<string>PSSwitchCell</string>
++			<key>label</key>
++			<string>Включить IconTint15</string>
++			<key>key</key>
++			<string>icontint15.26base.enabled</string>
++			<key>defaults</key>
++			<string>local.icontint15.26base</string>
  			<key>default</key>
  			<true/>
- 			<key>defaults</key>
+-			<key>defaults</key>
 -			<string>com.ngkhoi.26home</string>
-+			<string>local.icontint15.26base</string>
- 			<key>key</key>
+-			<key>key</key>
 -			<string>ngkhoi.26home.enabled</string>
 -			<key>label</key>
 -			<string>Enable 26Home</string>
-+			<string>icontint15.26base.enabled</string>
-+			<key>label</key>
-+			<string>Включить IconTint15</string>
  			<key>PostNotification</key>
 -			<string>ngkhoi.26home.UpdateIconStyle</string>
 -		</dict>
@@ -716,52 +833,75 @@
 -			<string>IconGen Config</string>
 -		</dict>
 -
-+			<string>icontint15.26base.UpdateIconStyle</string>
-+		</dict>
- 		<dict>
- 			<key>cell</key>
- 			<string>PSGroupCell</string>
-@@ -89,13 +50,13 @@
- 			<key>default</key>
- 			<true/>
- 			<key>defaults</key>
--			<string>com.ngkhoi.26home</string>
-+			<string>local.icontint15.26base</string>
- 			<key>key</key>
--			<string>ngkhoi.26home.exceptionsApplyOnlyToSolid</string>
-+			<string>icontint15.26base.exceptionsApplyOnlyToSolid</string>
- 			<key>label</key>
- 			<string>Keep Clear &amp; Tinted icons</string>
- 			<key>PostNotification</key>
--			<string>ngkhoi.26home.clearCache</string>
-+			<string>icontint15.26base.clearCache</string>
- 		</dict>
- 		<dict>
- 			<key>cell</key>
-@@ -103,113 +64,13 @@
- 			<key>default</key>
- 			<true/>
- 			<key>defaults</key>
--			<string>com.ngkhoi.26home</string>
-+			<string>local.icontint15.26base</string>
- 			<key>key</key>
--			<string>ngkhoi.26home.exceptionsNoIconProcessing</string>
-+			<string>icontint15.26base.exceptionsNoIconProcessing</string>
- 			<key>label</key>
- 			<string>No icons processing</string>
- 			<key>PostNotification</key>
--			<string>ngkhoi.26home.clearCache</string>
--		</dict>
 -		<dict>
 -			<key>cell</key>
 -			<string>PSGroupCell</string>
 -			<key>label</key>
--			<string>App Icon Blur Radius</string>
+-			<string>Exceptions</string>
+-			<key>footerText</key>
+-			<string>When "Keep Clear &amp; Tinted icons" is enabled, exception apps still receive live effects in Clear and Tinted themes. "No icons processing" retains stock icon artwork without running through IconGen.</string>
 -		</dict>
 -		<dict>
 -			<key>cell</key>
--			<string>PSSliderCell</string>
+-			<string>PSLinkCell</string>
+-			<key>detail</key>
+-			<string>Home26ExceptionListController</string>
+-			<key>isController</key>
+-			<true/>
+-			<key>label</key>
+-			<string>Exception List</string>
+-		</dict>
+-		<dict>
+-			<key>cell</key>
+-			<string>PSSwitchCell</string>
 -			<key>default</key>
+-			<true/>
+-			<key>defaults</key>
+-			<string>com.ngkhoi.26home</string>
+-			<key>key</key>
+-			<string>ngkhoi.26home.exceptionsApplyOnlyToSolid</string>
+-			<key>label</key>
+-			<string>Keep Clear &amp; Tinted icons</string>
+-			<key>PostNotification</key>
+-			<string>ngkhoi.26home.clearCache</string>
+-		</dict>
+-		<dict>
+-			<key>cell</key>
+-			<string>PSSwitchCell</string>
+-			<key>default</key>
+-			<true/>
+-			<key>defaults</key>
+-			<string>com.ngkhoi.26home</string>
+-			<key>key</key>
+-			<string>ngkhoi.26home.exceptionsNoIconProcessing</string>
+-			<key>label</key>
+-			<string>No icons processing</string>
+-			<key>PostNotification</key>
+-			<string>ngkhoi.26home.clearCache</string>
++			<string>icontint15.26base.UpdateIconStyle</string>
+ 		</dict>
+ 		<dict>
+ 			<key>cell</key>
+ 			<string>PSGroupCell</string>
+ 			<key>label</key>
+-			<string>App Icon Blur Radius</string>
++			<string>Область применения</string>
++			<key>footerText</key>
++			<string>После изменения области нажмите «Применить и сделать респринг». Вариант «Везде» включает поиск, переключатель приложений, уведомления и Настройки.</string>
+ 		</dict>
+ 		<dict>
+ 			<key>cell</key>
+-			<string>PSSliderCell</string>
++			<string>PSLinkListCell</string>
++			<key>label</key>
++			<string>Перекраска иконок</string>
++			<key>detail</key>
++			<string>PSListItemsController</string>
++			<key>key</key>
++			<string>icontint15.26base.iconScope</string>
++			<key>defaults</key>
++			<string>local.icontint15.26base</string>
+ 			<key>default</key>
 -			<real>1.0</real>
 -			<key>min</key>
 -			<real>0.0</real>
@@ -773,13 +913,25 @@
 -			<string>ngkhoi.26home.appIconBlurRadius</string>
 -			<key>defaults</key>
 -			<string>com.ngkhoi.26home</string>
--			<key>PostNotification</key>
++			<string>Everywhere</string>
++			<key>validValues</key>
++			<array>
++				<string>HomeOnly</string>
++				<string>Everywhere</string>
++			</array>
++			<key>validTitles</key>
++			<array>
++				<string>Только экран Домой</string>
++				<string>Везде</string>
++			</array>
+ 			<key>PostNotification</key>
 -			<string>ngkhoi.26home.UpdateBlurRadius</string>
--		</dict>
--		<dict>
--			<key>cell</key>
--			<string>PSGroupCell</string>
--			<key>label</key>
++			<string>icontint15.26base.reloadPrefs</string>
+ 		</dict>
+ 		<dict>
+ 			<key>cell</key>
+ 			<string>PSGroupCell</string>
+ 			<key>label</key>
 -			<string>App Icon Glass Quality</string>
 -			<key>footerText</key>
 -			<string>Adjusts rendering resolution scale for live glass layers (Default: 0.35). Higher values increase sharpness at the cost of GPU performance.</string>
@@ -851,11 +1003,29 @@
 -			<string>Hide glass layer when unfocused</string>
 -			<key>PostNotification</key>
 -			<string>ngkhoi.26home.UpdateIconStyle</string>
-+			<string>icontint15.26base.clearCache</string>
+-		</dict>
+-		<dict>
+-			<key>cell</key>
+-			<string>PSGroupCell</string>
+-			<key>label</key>
+-			<string>Actions</string>
++			<string>Обслуживание</string>
  		</dict>
  		<dict>
  			<key>cell</key>
-@@ -233,7 +94,6 @@
+ 			<string>PSButtonCell</string>
+ 			<key>label</key>
+-			<string>Clear Icon Cache</string>
++			<string>Очистить кэш иконок</string>
+ 			<key>action</key>
+ 			<string>clearCache:</string>
+ 		</dict>
+@@ -229,133 +80,42 @@
+ 			<key>cell</key>
+ 			<string>PSButtonCell</string>
+ 			<key>label</key>
+-			<string>Respring</string>
++			<string>Применить и сделать респринг</string>
  			<key>action</key>
  			<string>respring:</string>
  		</dict>
@@ -863,12 +1033,136 @@
  		<dict>
  			<key>cell</key>
  			<string>PSGroupCell</string>
-@@ -356,6 +216,6 @@
+ 			<key>label</key>
+-			<string>Developer</string>
++			<string>О твике</string>
+ 		</dict>
+ 		<dict>
+ 			<key>cell</key>
+ 			<string>PSTitleValueCell</string>
+ 			<key>label</key>
+-			<string>ngkhoi</string>
++			<string>Автор</string>
++			<key>sublabel</key>
++			<string>@nowme77</string>
+ 			<key>get</key>
+ 			<string>readSpecifierValue:</string>
+-			<key>sublabel</key>
+-			<string>@cakoi_.</string>
+ 		</dict>
+ 		<dict>
+ 			<key>cell</key>
+ 			<string>PSGroupCell</string>
+ 			<key>label</key>
+-			<string>Liquid (Gl)ass</string>
+-		</dict>
+-		<dict>
+-			<key>cell</key>
+-			<string>PSTitleValueCell</string>
+-			<key>label</key>
+-			<string>dylv</string>
+-			<key>get</key>
+-			<string>readSpecifierValue:</string>
+-			<key>sublabel</key>
+-			<string>@winaviation</string>
+-		</dict>
+-		<dict>
+-			<key>cell</key>
+-			<string>PSGroupCell</string>
+-			<key>label</key>
+-			<string>App Icons (SolidGlass)</string>
+-		</dict>
+-		<dict>
+-			<key>cell</key>
+-			<string>PSTitleValueCell</string>
+-			<key>label</key>
+-			<string>MacVerse</string>
+-			<key>get</key>
+-			<string>readSpecifierValue:</string>
+-			<key>sublabel</key>
+ 			<string></string>
+ 		</dict>
+ 		<dict>
+ 			<key>cell</key>
+-			<string>PSGroupCell</string>
++			<string>PSLinkCell</string>
+ 			<key>label</key>
+-			<string>HUGE THANKS TO</string>
+-			<key>footerText</key>
+-			<string>For making this tweak possible</string>
+-		</dict>
+-		<dict>
+-			<key>cell</key>
+-			<string>PSTitleValueCell</string>
+-			<key>label</key>
+-			<string>Abraham</string>
+-			<key>get</key>
+-			<string>readSpecifierValue:</string>
+-			<key>sublabel</key>
+-			<string>@abraham_licnoln</string>
+-		</dict>
+-		<dict>
+-			<key>cell</key>
+-			<string>PSTitleValueCell</string>
+-			<key>label</key>
+-			<string>Meka</string>
+-			<key>get</key>
+-			<string>readSpecifierValue:</string>
+-			<key>sublabel</key>
+-			<string>@mekabrine</string>
+-		</dict>
+-		<dict>
+-			<key>cell</key>
+-			<string>PSTitleValueCell</string>
+-			<key>label</key>
+-			<string>Minh</string>
+-			<key>get</key>
+-			<string>readSpecifierValue:</string>
+-			<key>sublabel</key>
+-			<string>@zaminhh</string>
+-		</dict>
+-		<dict>
+-			<key>cell</key>
+-			<string>PSTitleValueCell</string>
+-			<key>label</key>
+-			<string>notsoseagatey</string>
+-			<key>get</key>
+-			<string>readSpecifierValue:</string>
+-			<key>sublabel</key>
+-			<string>@notsoseagatey</string>
+-		</dict>
+-		<dict>
+-			<key>cell</key>
+-			<string>PSTitleValueCell</string>
+-			<key>label</key>
+-			<string>galaxy note 7</string>
+-			<key>get</key>
+-			<string>readSpecifierValue:</string>
+-			<key>sublabel</key>
+-			<string>@unknownuser_47</string>
+-		</dict>
+-		<dict>
+-			<key>cell</key>
+-			<string>PSGroupCell</string>
+-			<key>label</key>
+-			<string>Community</string>
+-		</dict>
+-		<dict>
+-			<key>cell</key>
+-			<string>PSButtonCell</string>
+-			<key>label</key>
+-			<string>Discord Server</string>
+-			<key>action</key>
+-			<string>openDiscord:</string>
++			<string>Благодарности</string>
++			<key>detail</key>
++			<string>Home18CreditsController</string>
++			<key>isController</key>
++			<true/>
  		</dict>
  	</array>
- 	<key>title</key>
+-	<key>title</key>
 -	<string>26Home</string>
-+	<string>IconTint15</string>
  </dict>
  </plist>
 --- a/Headers.h
@@ -2588,16 +2882,24 @@
 +void Home26InitEditingButtonsHooks(void) { %init(); }
 --- a/Hooks/HooksCommon.h
 +++ b/Hooks/HooksCommon.h
-@@ -94,3 +94,5 @@
+@@ -94,3 +94,9 @@
  #ifdef __cplusplus
  }
  #endif
 +
 +void Home26InitUIKitIconHooks(void);
++
++extern BOOL g_home18Everywhere;
++extern __thread unsigned g_home18RenderDepth;
++BOOL Home18CanStyleView(UIView *view);
 --- a/Hooks/HooksCommon.m
 +++ b/Hooks/HooksCommon.m
-@@ -3,21 +3,21 @@
+@@ -1,23 +1,25 @@
+ #import "HooksCommon.h"
+ 
  BOOL g_tweakEnabled = YES;
++BOOL g_home18Everywhere = YES;
++__thread unsigned g_home18RenderDepth = 0;
  BOOL g_bypassingIconHook = NO;
  NSString *g_engineVersion = @"IconGen2";
 -NSString *g_selectedIconPack = @"SolidGlass";
@@ -2623,7 +2925,7 @@
  
  BOOL g_isAppOpening = NO;
  BOOL g_isFolderOpen = NO;
-@@ -206,76 +206,69 @@
+@@ -206,76 +208,70 @@
  }
  
  void reload26HomePrefs(void) {
@@ -2667,6 +2969,7 @@
 +
 +    g_selectedIconPack = @"Home18";
 +
++    g_home18Everywhere = ![[prefs stringForKey:@"icontint15.26base.iconScope"] isEqualToString:@"HomeOnly"];
 +    g_iconStyle = [prefs stringForKey:@"icontint15.26base.iconStyle"] ?: @"Default";
 +    if ([g_iconStyle isEqualToString:@"Clear"]) g_iconStyle = @"Default";
 +    g_themeMode = [prefs stringForKey:@"icontint15.26base.themeMode"] ?: @"Auto";
@@ -2736,6 +3039,28 @@
      if (qualityVal && [(__bridge id)qualityVal isKindOfClass:[NSNumber class]]) {
          g_appIconGlassQuality = [(__bridge NSNumber *)qualityVal floatValue];
          CFRelease(qualityVal);
+@@ -574,3 +570,21 @@
+     }
+     return nil;
+ }
++
++BOOL Home18CanStyleView(UIView *view) {
++    if(g_home18Everywhere)return YES;
++    if(![[NSBundle.mainBundle bundleIdentifier] isEqualToString:@"com.apple.springboard"])return NO;
++    for(UIView *v=view;v;v=v.superview) {
++        if([v respondsToSelector:@selector(location)]) {
++            id location=[v performSelector:@selector(location)];
++            if([location isKindOfClass:NSString.class]) {
++                NSString *s=[location lowercaseString];
++                for(NSString *excluded in @[@"library",@"search",@"spotlight",@"switcher",@"notification"])if([s containsString:excluded])return NO;
++                for(NSString *included in @[@"root",@"dock",@"folder",@"home"])if([s containsString:included])return YES;
++            }
++        }
++        NSString *cls=NSStringFromClass(v.class);
++        if([cls containsString:@"RootFolder"]||[cls containsString:@"DockView"]||[cls containsString:@"FolderView"])return YES;
++    }
++    return NO;
++}
 --- a/Hooks/IconView.x
 +++ b/Hooks/IconView.x
 @@ -1,4 +1,6 @@
@@ -2745,6 +3070,15 @@
  
  static void applyClockHandsInversion(CALayer *layer, BOOL apply, CGSize parentBoundsSize, CALayer *secondsLayer) {
      if (!layer) return;
+@@ -41,7 +43,7 @@
+ }
+ 
+ static void updateClockHandsInversionForView(UIView *view) {
+-    if (!view) return;
++    if (!view || !Home18CanStyleView(view)) return;
+     id icon = nil;
+     if ([view respondsToSelector:@selector(icon)]) {
+         icon = [view performSelector:@selector(icon)];
 @@ -78,6 +80,29 @@
  
          CALayer *secondsLayer = secondsView ? secondsView.layer : nil;
@@ -2824,7 +3158,38 @@
      %orig;
  }
  
-@@ -1087,8 +1114,8 @@
+@@ -850,7 +877,7 @@
+ - (void)_home26_handleIconDidGenerateNotification:(NSNotification *)note {
+     NSString *readyBundleID = note.userInfo[@"bundleID"];
+     if (!readyBundleID) return;
+-    if (Home26IsCoverSheetActive()) return;
++    if (Home26IsCoverSheetActive() || !Home18CanStyleView((UIView *)self)) return;
+     if ([self isKindOfClass:%c(SBFolderIconImageView)] || [self isKindOfClass:NSClassFromString(@"SBHLibraryAdditionalItemsIndicatorIconImageView")]) {
+         return;
+     }
+@@ -877,8 +904,10 @@
+ }
+ 
+ - (void)updateImageAnimated:(BOOL)animated {
+-    %orig;
+-    if (Home26IsCoverSheetActive()) return;
++    BOOL local=Home18CanStyleView((UIView *)self);
++    if(local)g_home18RenderDepth++;
++    @try {%orig;} @finally {if(local)g_home18RenderDepth--;}
++    if (Home26IsCoverSheetActive() || !Home18CanStyleView((UIView *)self)) return;
+     if ([self isKindOfClass:%c(SBFolderIconImageView)] || [self isKindOfClass:NSClassFromString(@"SBHLibraryAdditionalItemsIndicatorIconImageView")]) {
+         return;
+     }
+@@ -963,7 +992,7 @@
+                 Home26RequestIconAsync(orig, capturedBundleID, ^(UIImage *styled) {
+                     __strong typeof(weakSelf) strongSelf = weakSelf;
+                     if (!strongSelf || !styled) return;
+-                    if (Home26IsCoverSheetActive()) return;
++                    if (Home26IsCoverSheetActive() || !Home18CanStyleView((UIView *)self)) return;
+ 
+                     id currentIcon = nil;
+                     if ([strongSelf respondsToSelector:@selector(icon)]) {
+@@ -1087,8 +1116,8 @@
  - (instancetype)initWithFrame:(CGRect)frame {
      id orig = %orig;
      if (orig) {
@@ -2835,7 +3200,25 @@
      }
      return orig;
  }
-@@ -1164,13 +1191,13 @@
+@@ -1149,11 +1178,15 @@
+                           duration:0.3
+                            options:UIViewAnimationOptionTransitionCrossDissolve | UIViewAnimationOptionAllowUserInteraction
+                         animations:^{
+-                            %orig(NO);
++                            BOOL local=Home18CanStyleView((UIView *)self);
++                            if(local)g_home18RenderDepth++;
++                            @try {%orig(NO);} @finally {if(local)g_home18RenderDepth--;}
+                         }
+                         completion:nil];
+     } else {
+-        %orig;
++        BOOL local=Home18CanStyleView((UIView *)self);
++        if(local)g_home18RenderDepth++;
++        @try {%orig;} @finally {if(local)g_home18RenderDepth--;}
+     }
+ }
+ 
+@@ -1164,13 +1197,13 @@
  - (instancetype)initWithFolder:(id)folder {
      id orig = %orig;
      if (orig) {
@@ -2851,17 +3234,64 @@
      %orig;
  }
  
+@@ -1186,7 +1219,7 @@
+ %hook SBIcon
+ 
+ - (UIImage *)iconImageWithInfo:(struct SBIconImageInfo)info {
+-    if (g_bypassingIconHook) return %orig;
++    if (g_bypassingIconHook || (!g_home18Everywhere && !g_home18RenderDepth)) return %orig;
+     UIImage *orig = %orig;
+     if (Home26IsCoverSheetActive()) return orig;
+     if ([(id)self respondsToSelector:@selector(applicationBundleID)]) {
+@@ -1224,7 +1257,7 @@
+ }
+ 
+ - (UIImage *)unmaskedIconImageWithInfo:(struct SBIconImageInfo)info {
+-    if (g_bypassingIconHook) return %orig;
++    if (g_bypassingIconHook || (!g_home18Everywhere && !g_home18RenderDepth)) return %orig;
+     UIImage *orig = %orig;
+     if (Home26IsCoverSheetActive()) return orig;
+     if ([(id)self respondsToSelector:@selector(applicationBundleID)]) {
+@@ -1262,7 +1295,7 @@
+ }
+ 
+ - (UIImage *)generateIconImageWithInfo:(struct SBIconImageInfo)info {
+-    if (g_bypassingIconHook) return %orig;
++    if (g_bypassingIconHook || (!g_home18Everywhere && !g_home18RenderDepth)) return %orig;
+     UIImage *orig = %orig;
+     if (Home26IsCoverSheetActive()) return orig;
+     if ([(id)self respondsToSelector:@selector(applicationBundleID)]) {
 --- a/Hooks/Main.x
 +++ b/Hooks/Main.x
-@@ -8,6 +8,7 @@
+@@ -8,15 +8,15 @@
          return;
      }
  
-+    Home26InitUIKitIconHooks();
++    if(g_home18Everywhere)Home26InitUIKitIconHooks();
      NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
      if ([bundleId isEqualToString:@"com.apple.Preferences"]) {
-         Home26InitPreferencesHooks();
-@@ -263,21 +264,21 @@
+-        Home26InitPreferencesHooks();
++        if(g_home18Everywhere)Home26InitPreferencesHooks();
+         return;
+     }
+ 
+     if ([bundleId isEqualToString:@"com.apple.Spotlight"]) {
+-        Home26InitSpotlightHooks();
+-        Home26InitIconImageViewHooks();
++        if(g_home18Everywhere) {Home26InitSpotlightHooks();Home26InitIconImageViewHooks();}
+         return;
+     }
+ 
+@@ -24,7 +24,7 @@
+         return;
+     }
+ 
+-    Home26InitSpotlightHooks();
++    if(g_home18Everywhere)Home26InitSpotlightHooks();
+     Home26InitIconViewHooks();
+     Home26InitEditingButtonsHooks();
+     Home26InitBadgesAndWidgetsHooks();
+@@ -263,21 +263,21 @@
          }
      };
  
@@ -2886,7 +3316,7 @@
          Home26Log(@"=== UpdateIconStyle Notification Received ===");
          reload26HomePrefs();
          [[LGCustomIconGenerator2 sharedGenerator] clearCache];
-@@ -326,21 +327,21 @@
+@@ -326,21 +326,21 @@
          }
      };
  
@@ -2912,7 +3342,7 @@
          Home26Log(@"=== Darwin clearCache Notification Received ===");
          reload26HomePrefs();
          [[LGCustomIconGenerator2 sharedGenerator] clearDiskCache];
-@@ -367,11 +368,11 @@
+@@ -367,11 +367,11 @@
          }
  
          refreshKnownIcons();
@@ -2926,7 +3356,7 @@
          Home26Log(@"=== Darwin UpdateIconStyle Notification Received ===");
          reload26HomePrefs();
          [[LGCustomIconGenerator2 sharedGenerator] clearCache];
-@@ -381,19 +382,19 @@
+@@ -381,19 +381,19 @@
      });
  
      int largeToken;
@@ -2949,7 +3379,7 @@
          updateLiveGlassAndBlur();
      });
  
-@@ -443,7 +444,7 @@
+@@ -443,7 +443,7 @@
                          [[NSFileManager defaultManager] createDirectoryAtPath:dir withIntermediateDirectories:YES attributes:nil error:nil];
                          NSString *wpPath = [dir stringByAppendingPathComponent:@"26HomeCurrentWallpaper.jpg"];
                          [data writeToFile:wpPath atomically:YES];
@@ -2958,7 +3388,7 @@
                      });
                  }
              } @catch (NSException *e) {
-@@ -459,7 +460,7 @@
+@@ -459,7 +459,7 @@
      };
  
      int wpToken;
@@ -3202,13 +3632,22 @@
          notifyAllIconsVisibilityChanged();
      });
  }
-@@ -329,6 +329,46 @@
+@@ -234,6 +234,7 @@
+ 
+ - (NSArray *)icons {
+     NSArray *orig = %orig;
++    if(!g_home18Everywhere)return orig;
+     NSString *style = g_iconStyle ?: @"Default";
+     if ([style isEqualToString:@"Default"]) {
+         return orig;
+@@ -329,6 +330,47 @@
  
  %end
  
 +// The switcher header uses image containers instead of SBIconImageView.
 +static char H18HeaderOriginalKey, H18HeaderRenderedKey, H18HeaderStyleKey;
 +static void H18RefreshSwitcherHeader(UIView *header) {
++    if(!g_home18Everywhere)return;
 +    Ivar ivar=class_getInstanceVariable([header class], "_itemsToIconImageViews");
 +    if (!ivar) return;
 +    id mapping=object_getIvar(header,ivar);
@@ -3274,7 +3713,7 @@
          NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
          NSString *basePath = paths.firstObject;
 -        self.cacheDirectory = [basePath stringByAppendingPathComponent:@"ngkhoi.26home.icons"];
-+        self.cacheDirectory = [basePath stringByAppendingPathComponent:@"icontint15.26base.icons.18r4"];
++        self.cacheDirectory = [basePath stringByAppendingPathComponent:@"icontint15.26base.icons.18r5"];
  
          if (![[NSFileManager defaultManager] fileExistsAtPath:self.cacheDirectory]) {
              [[NSFileManager defaultManager] createDirectoryAtPath:self.cacheDirectory
@@ -3867,7 +4306,7 @@
 -    return [NSString stringWithFormat:@"%@_%@_%@_v54_bg_%@_%@_%@_%d%@%@_spec_%@", bundleID, packId, effectiveStyle, isDarkTheme ? @"dark" : @"light", tintHex, g_menuAppearance, disableGrad, nsPremade ? @"_ns4" : @"", skipIconGen ? @"_noGen2" : @"", [self specularStyle]];
 +- (NSString *)_cacheKeyForBundleID:(NSString *)bundleID effectiveStyle:(NSString *)style isDarkTheme:(BOOL)isDarkTheme nsPremade:(UIImage *)nsPremade {
 +    NSString *color=[style isEqualToString:@"Tinted"] ? (g_tintColor ?: @"#9999FF") : @"none";
-+    return [NSString stringWithFormat:@"18r4_%@_%@_%@",bundleID,style,color];
++    return [NSString stringWithFormat:@"18r5_%@_%@_%@",bundleID,style,color];
  }
  
  - (UIImage *)fastCachedIconForBundleID:(NSString *)bundleID {
@@ -4046,7 +4485,7 @@
 +    BOOL tinted=[style isEqualToString:@"Tinted"];
 +    BOOL dynamic=[bundleID isEqualToString:@"com.apple.mobiletimer"] || [bundleID isEqualToString:@"com.apple.mobilecal"];
 +    NSString *tintHex=[g_tintColor copy] ?: @"#9999FF";
-+    NSString *key=[NSString stringWithFormat:@"18r4_%@_%@_%@",bundleID,style,tinted ? tintHex : @"none"];
++    NSString *key=[NSString stringWithFormat:@"18r5_%@_%@_%@",bundleID,style,tinted ? tintHex : @"none"];
 +    if (!dynamic) {
 +        UIImage *cached=[self.memoryCache objectForKey:key];
 +        if (cached) return cached;
@@ -4079,6 +4518,84 @@
  }
  
  typedef struct {
+@@ -1863,10 +1393,32 @@
+ 
+     LGBGInfo bg = [self sampleBackgroundFromRawData:rawData width:width height:height bytesPerRow:bytesPerRow];
+ 
+-    if (bg.isDark) {
+-        free(rawData);
+-        return [self applySquircleMaskToImage:image];
+-    }
++    BOOL fgIsColorful = NO;
++    CGImageRef mask = [self createMaskFromRawData:rawData width:width height:height
++                                     bytesPerRow:bytesPerRow bgInfo:bg outFgIsColorful:&fgIsColorful];
++    free(rawData);
++
++    // Retain the complete source artwork, including gradients, shading and
++    // multicolor details. Do not replace low-saturation artwork with a flat fill.
++    UIImage *glyphImage=(bg.isWhite || bg.saturation<0.1) ? [self invertDarkGrayscaleInImage:image] : image;
++    if(!mask)return [self applySquircleMaskToImage:image];
++    UIImage *result = [self compositeWithMask:mask glyphImage:glyphImage darkBg:YES size:targetSize scale:1.0];
++    CGImageRelease(mask);
++    return [self applySquircleMaskToImage:result];
++}
++
++- (UIImage *)generateClearIconForImage:(UIImage *)image bundleID:(NSString *)bundleID {
++    if (!image) return nil;
++
++    CGSize targetSize = CGSizeMake(256, 256);
++    image = [self _upscaleImageIfNeeded:image toSize:targetSize];
++
++    size_t width, height;
++    NSUInteger bytesPerRow;
++    unsigned char *rawData = [self loadRawData:image width:&width height:&height bytesPerRow:&bytesPerRow];
++    if (!rawData) return image;
++
++    LGBGInfo bg = [self sampleBackgroundFromRawData:rawData width:width height:height bytesPerRow:bytesPerRow];
+ 
+     BOOL fgIsColorful = NO;
+     CGImageRef mask = [self createMaskFromRawData:rawData width:width height:height
+@@ -1884,40 +1436,6 @@
+         glyphImage = [self synthesizeGradientImageWithSize:targetSize topColor:topC bottomColor:botC];
+     }
+ 
+-    UIImage *result = [self compositeWithMask:mask glyphImage:glyphImage darkBg:YES size:targetSize scale:1.0];
+-    CGImageRelease(mask);
+-    return [self applySquircleMaskToImage:result];
+-}
+-
+-- (UIImage *)generateClearIconForImage:(UIImage *)image bundleID:(NSString *)bundleID {
+-    if (!image) return nil;
+-
+-    CGSize targetSize = CGSizeMake(256, 256);
+-    image = [self _upscaleImageIfNeeded:image toSize:targetSize];
+-
+-    size_t width, height;
+-    NSUInteger bytesPerRow;
+-    unsigned char *rawData = [self loadRawData:image width:&width height:&height bytesPerRow:&bytesPerRow];
+-    if (!rawData) return image;
+-
+-    LGBGInfo bg = [self sampleBackgroundFromRawData:rawData width:width height:height bytesPerRow:bytesPerRow];
+-
+-    BOOL fgIsColorful = NO;
+-    CGImageRef mask = [self createMaskFromRawData:rawData width:width height:height
+-                                     bytesPerRow:bytesPerRow bgInfo:bg outFgIsColorful:&fgIsColorful];
+-    free(rawData);
+-
+-    UIImage *glyphImage;
+-    if (bg.isWhite || bg.saturation < 0.1) {
+-        glyphImage = [self invertDarkGrayscaleInImage:image];
+-    } else if (fgIsColorful) {
+-        glyphImage = image;
+-    } else {
+-        UIColor *topC = [UIColor colorWithRed:bg.tR green:bg.tG blue:bg.tB alpha:1.0];
+-        UIColor *botC = [UIColor colorWithRed:bg.bR green:bg.bG blue:bg.bB alpha:1.0];
+-        glyphImage = [self synthesizeGradientImageWithSize:targetSize topColor:topC bottomColor:botC];
+-    }
+-
+     UIGraphicsBeginImageContextWithOptions(targetSize, NO, 1.0);
+     CGContextRef ctx = UIGraphicsGetCurrentContext();
+     CGContextSetAllowsAntialiasing(ctx, YES);
 --- a/LGDebugger.h
 +++ b/LGDebugger.h
 @@ -97,7 +97,7 @@
@@ -4107,7 +4624,7 @@
 +Name: IconTint15 (26Home base)
  Depends: mobilesubstrate
 -Version: 1.2.0-test
-+Version: 0.3.0~source1
++Version: 0.3.1~source1
  Architecture: iphoneos-arm64
 -Description: iOS 26 Homescreen customization.
 -Maintainer: ngkhoi
@@ -4596,3 +5113,75 @@
 +{unsigned char p[4]={52,104,110,126};unsigned char expected[4]={58,58,58,126};H18TintRGBAMode(p,1,1,4,0.579935005f,0.568992204f,0.561219878f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
 +{unsigned char p[4]={52,104,110,126};unsigned char expected[4]={58,58,58,126};H18TintRGBAMode(p,1,1,4,0.579935005f,0.568992204f,0.561219878f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
 +puts("PASS: 400 pixel fixtures from reference ARM64 execution (both prepared and generic paths)");}
+--- /dev/null
++++ b/26HomePrefs/Resources/Credits.plist
+@@ -0,0 +1,69 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0">
++<dict>
++	<key>title</key>
++	<string>Благодарности</string>
++	<key>items</key>
++	<array>
++		<dict>
++			<key>cell</key>
++			<string>PSGroupCell</string>
++			<key>label</key>
++			<string>Автор адаптации</string>
++		</dict>
++		<dict>
++			<key>cell</key>
++			<string>PSTitleValueCell</string>
++			<key>label</key>
++			<string>@nowme77</string>
++		</dict>
++		<dict>
++			<key>cell</key>
++			<string>PSGroupCell</string>
++			<key>label</key>
++			<string>Благодарности</string>
++			<key>footerText</key>
++			<string>Код основы 26Home используется по лицензии CC BY-NC-SA 4.0. Авторство исходной основы сохраняется.</string>
++		</dict>
++		<dict>
++			<key>cell</key>
++			<string>PSTitleValueCell</string>
++			<key>label</key>
++			<string>ngkhoi / ngkoi</string>
++			<key>sublabel</key>
++			<string>Основа 26Home</string>
++			<key>get</key>
++			<string>readSpecifierValue:</string>
++		</dict>
++		<dict>
++			<key>cell</key>
++			<string>PSTitleValueCell</string>
++			<key>label</key>
++			<string>Evgeniy, kirby_swift, lumid_off</string>
++			<key>sublabel</key>
++			<string>Homescreen18 и графические ресурсы</string>
++			<key>get</key>
++			<string>readSpecifierValue:</string>
++		</dict>
++		<dict>
++			<key>cell</key>
++			<string>PSTitleValueCell</string>
++			<key>label</key>
++			<string>MacVerse</string>
++			<key>sublabel</key>
++			<string>Исходные графические шаблоны 26Home</string>
++			<key>get</key>
++			<string>readSpecifierValue:</string>
++		</dict>
++		<dict>
++			<key>cell</key>
++			<string>PSGroupCell</string>
++			<key>label</key>
++			<string>Тестирование</string>
++			<key>footerText</key>
++			<string>Спасибо за проверку на iPhone XS с iOS 15.2.1 и помощь в развитии версии.</string>
++		</dict>
++	</array>
++</dict>
++</plist>

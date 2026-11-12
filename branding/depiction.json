@@ -1,0 +1,28 @@
+{
+  "minVersion": "0.4",
+  "class": "DepictionTabView",
+  "headerImage": "https://raw.githubusercontent.com/nowme777/homescreen18-for-15ios/codex/ios18-for-ios15/branding/banner.jpg",
+  "tintColor": "#777DE7",
+  "tabs": [
+    {
+      "class": "DepictionStackView",
+      "tabname": "Обзор",
+      "views": [
+        {
+          "class": "DepictionHeaderView",
+          "title": "IconTint15"
+        },
+        {
+          "class": "DepictionMarkdownView",
+          "markdown": "Оформление иконок в стиле iOS 18 для iOS 15. Настройка светлых, тёмных и цветных иконок доступна на экране Домой.",
+          "useRawFormat": false
+        },
+        {
+          "class": "DepictionTableTextView",
+          "title": "Автор адаптации",
+          "text": "@nowme77"
+        }
+      ]
+    }
+  ]
+}

@@ -18,7 +18,7 @@ import tarfile
 import tempfile
 import zipfile
 
-VERSION = "0.2.1~test1"
+VERSION = "0.2.2~test1"
 
 POSTINST = r'''#!/bin/sh
 set -eu

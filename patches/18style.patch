@@ -4117,7 +4117,7 @@
 +            // Preserve neutral dark artwork as the backdrop; color the bright
 +            // or chromatic foreground directly, without cutting out the glyph.
 +            float foreground=fmaxf(H18Smooth(.03f,.15f,maximum-minimum),
-+                                    H18Smooth(.24f,.48f,maximum));
++                                    H18Smooth(.36f,.62f,maximum));
 +            float detail=.22f+.78f*powf(luminance,.65f);
 +            float neutral=luminance*(1.f-foreground);
 +            float amount=detail*foreground;
@@ -4136,7 +4136,7 @@
 +#include <stdint.h>
 +
 +int main(void) {
-+    for (int c=0;c<=60;c++) {
++    for (int c=0;c<=90;c++) {
 +        unsigned char p[4]={(unsigned char)c,(unsigned char)c,(unsigned char)c,255};
 +        H18TintRGBA(p,1,1,4,.6f,.4f,.9f);
 +        assert(p[0]==c && p[1]==c && p[2]==c && p[3]==255);

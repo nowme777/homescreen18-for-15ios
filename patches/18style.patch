@@ -566,7 +566,7 @@
  
 --- a/26HomePrefs/Home26PrefsRootListController.m
 +++ b/26HomePrefs/Home26PrefsRootListController.m
-@@ -1,90 +1,58 @@
+@@ -1,90 +1,74 @@
  #import <Foundation/Foundation.h>
  #import "Home26PrefsRootListController.h"
  #import <Preferences/PSSpecifier.h>
@@ -589,7 +589,23 @@
 +        subtitle.font=[UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
 +        subtitle.textColor=UIColor.secondaryLabelColor;subtitle.numberOfLines=0;
 +        subtitle.adjustsFontForContentSizeCategory=YES;
-+        UIStackView *stack=[[UIStackView alloc] initWithArrangedSubviews:@[title,subtitle]];
++        NSBundle *bundle=[NSBundle bundleForClass:self.class];
++        NSString *bannerPath=[bundle pathForResource:@"Banner" ofType:@"jpg"];
++        UIImage *banner=bannerPath ? [UIImage imageWithContentsOfFile:bannerPath] : nil;
++        UIStackView *stack;
++        if(banner && banner.size.width>0) {
++            UIImageView *art=[[UIImageView alloc] initWithImage:banner];
++            art.contentMode=UIViewContentModeScaleAspectFit;
++            art.translatesAutoresizingMaskIntoConstraints=NO;
++            [art.heightAnchor constraintEqualToAnchor:art.widthAnchor multiplier:banner.size.height/banner.size.width].active=YES;
++            UILabel *author=[UILabel new];author.text=@"@nowme77";
++            author.font=[UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
++            author.textColor=UIColor.secondaryLabelColor;
++            author.adjustsFontForContentSizeCategory=YES;author.numberOfLines=0;
++            stack=[[UIStackView alloc] initWithArrangedSubviews:@[art,author]];
++        } else {
++            stack=[[UIStackView alloc] initWithArrangedSubviews:@[title,subtitle]];
++        }
 +        stack.axis=UILayoutConstraintAxisVertical;stack.spacing=8;stack.translatesAutoresizingMaskIntoConstraints=NO;
 +        [self addSubview:stack];
 +        [NSLayoutConstraint activateConstraints:@[
@@ -701,7 +717,7 @@
      }
  }
  
-@@ -106,39 +74,24 @@
+@@ -106,39 +90,24 @@
  
  - (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
      [super setPreferenceValue:value specifier:specifier];
@@ -752,7 +768,7 @@
      [self presentViewController:alert animated:YES completion:nil];
  }
  
-@@ -155,3 +108,53 @@
+@@ -155,3 +124,53 @@
  }
  
  @end
@@ -827,7 +843,7 @@
  include $(THEOS)/makefiles/common.mk
 --- a/26HomePrefs/Resources/Info.plist
 +++ b/26HomePrefs/Resources/Info.plist
-@@ -7,7 +7,7 @@
+@@ -7,18 +7,22 @@
  	<key>CFBundleExecutable</key>
  	<string>26HomePrefs</string>
  	<key>CFBundleIdentifier</key>
@@ -836,6 +852,23 @@
  	<key>CFBundleInfoDictionaryVersion</key>
  	<string>6.0</string>
  	<key>CFBundlePackageType</key>
+ 	<string>BNDL</string>
+ 	<key>CFBundleShortVersionString</key>
+-	<string>1.0.0</string>
++	<string>0.3.3</string>
+ 	<key>CFBundleSignature</key>
+ 	<string>????</string>
+ 	<key>CFBundleVersion</key>
+-	<string>1.0</string>
++	<string>0.3.3</string>
+ 	<key>NSPrincipalClass</key>
+ 	<string>Home26PrefsRootListController</string>
++	<key>CFBundleName</key>
++	<string>IconTint15</string>
++	<key>CFBundleDisplayName</key>
++	<string>IconTint15</string>
+ </dict>
+ </plist>
 --- a/26HomePrefs/Resources/Root.plist
 +++ b/26HomePrefs/Resources/Root.plist
 @@ -2,226 +2,82 @@
@@ -4793,21 +4826,23 @@
  THEOS_PACKAGE_SCHEME = rootless
 --- a/control
 +++ b/control
-@@ -1,9 +1,11 @@
+@@ -1,9 +1,13 @@
 -Package: com.ngkhoi.26home
 -Name: 26Home
 +Package: local.icontint15.26base
-+Name: IconTint15 (26Home base)
++Name: IconTint15
++Icon: https://raw.githubusercontent.com/nowme777/homescreen18-for-15ios/codex/ios18-for-ios15/branding/icon.png
++SileoDepiction: https://raw.githubusercontent.com/nowme777/homescreen18-for-15ios/codex/ios18-for-ios15/branding/depiction.json
  Depends: mobilesubstrate
 -Version: 1.2.0-test
-+Version: 0.3.2~source1
++Version: 0.3.3~source1
  Architecture: iphoneos-arm64
 -Description: iOS 26 Homescreen customization.
 -Maintainer: ngkhoi
 -Author: ngkhoi
-+Description: iOS 18-style customization based on 26Home. Source preparation.
-+Maintainer: IconTint15 adaptation
-+Author: ngkhoi (26Home); IconTint15 adaptation
++Description: iOS 18-style icon customization for iOS 15.
++Maintainer: @nowme77
++Author: @nowme77
  Section: Tweaks
 +Conflicts: com.ngkhoi.26home, local.icontint15
 +Replaces: com.ngkhoi.26home

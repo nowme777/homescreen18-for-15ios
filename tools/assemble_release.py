@@ -18,7 +18,27 @@ import tarfile
 import tempfile
 import zipfile
 
-VERSION = "0.2.0~test1"
+VERSION = "0.2.0~test2"
+
+POSTINST = r'''#!/bin/sh
+set -eu
+case "${1:-configure}" in
+    configure)
+        pack_root="/var/jb/Library/Application Support/26Home/IconPacks"
+        printf '%s\n' 'IconTint15: configuring icon-pack directory...'
+        if [ ! -d "$pack_root" ]; then
+            printf '%s\n' 'IconTint15: icon-pack directory is missing.' >&2
+            exit 1
+        fi
+        # Packaged files already have readable 0644/0755 modes. Only this
+        # directory needs mobile ownership so that the manager can add packs.
+        chown mobile:mobile "$pack_root"
+        chmod 755 "$pack_root"
+        printf '%s\n' 'IconTint15: setup complete.'
+        ;;
+esac
+exit 0
+'''
 
 
 def check_macho(data):
@@ -150,6 +170,9 @@ def assemble(artifact, artwork, destination, license_path):
             "The original Homescreen18 executable and its installation scripts are not used.\n"
             "Third-party artwork supplied by the user is not relicensed by the code license.\n")
         control_path = stage / "DEBIAN/control"
+        # Avoid spawning a chmod process for each of thousands of images and
+        # avoid traversing unrelated user-created packs left by upstream.
+        (stage / "DEBIAN/postinst").write_text(POSTINST)
         fields = control_path.read_text().splitlines()
         fields = [line for line in fields if not line.startswith(("Version:", "Installed-Size:", "Depends:", "Description:"))]
         fields += [f"Version: {VERSION}",

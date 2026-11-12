@@ -661,7 +661,7 @@
  	<key>CFBundlePackageType</key>
 --- a/26HomePrefs/Resources/Root.plist
 +++ b/26HomePrefs/Resources/Root.plist
-@@ -18,15 +18,14 @@
+@@ -18,53 +18,14 @@
  			<key>default</key>
  			<true/>
  			<key>defaults</key>
@@ -678,15 +678,24 @@
 -			<string>ngkhoi.26home.UpdateIconStyle</string>
 -		</dict>
 -
-+			<string>icontint15.26base.UpdateIconStyle</string>
-+		</dict>
- 		<dict>
- 			<key>cell</key>
- 			<string>PSGroupCell</string>
-@@ -45,26 +44,6 @@
- 			<key>label</key>
- 			<string>Icons Pack Manager</string>
- 		</dict>
+-		<dict>
+-			<key>cell</key>
+-			<string>PSGroupCell</string>
+-			<key>label</key>
+-			<string>Icons Pack Manager</string>
+-			<key>footerText</key>
+-			<string>Manage or download icon packs</string>
+-		</dict>
+-		<dict>
+-			<key>cell</key>
+-			<string>PSLinkCell</string>
+-			<key>detail</key>
+-			<string>Home26IconPacksListController</string>
+-			<key>isController</key>
+-			<true/>
+-			<key>label</key>
+-			<string>Icons Pack Manager</string>
+-		</dict>
 -
 -		<dict>
 -			<key>cell</key>
@@ -707,10 +716,12 @@
 -			<string>IconGen Config</string>
 -		</dict>
 -
++			<string>icontint15.26base.UpdateIconStyle</string>
++		</dict>
  		<dict>
  			<key>cell</key>
  			<string>PSGroupCell</string>
-@@ -89,13 +68,13 @@
+@@ -89,13 +50,13 @@
  			<key>default</key>
  			<true/>
  			<key>defaults</key>
@@ -727,7 +738,7 @@
  		</dict>
  		<dict>
  			<key>cell</key>
-@@ -103,113 +82,13 @@
+@@ -103,113 +64,13 @@
  			<key>default</key>
  			<true/>
  			<key>defaults</key>
@@ -844,7 +855,7 @@
  		</dict>
  		<dict>
  			<key>cell</key>
-@@ -233,7 +112,6 @@
+@@ -233,7 +94,6 @@
  			<key>action</key>
  			<string>respring:</string>
  		</dict>
@@ -852,17 +863,48 @@
  		<dict>
  			<key>cell</key>
  			<string>PSGroupCell</string>
+@@ -356,6 +216,6 @@
+ 		</dict>
+ 	</array>
+ 	<key>title</key>
+-	<string>26Home</string>
++	<string>IconTint15</string>
+ </dict>
+ </plist>
 --- a/Headers.h
 +++ b/Headers.h
-@@ -47,7 +47,7 @@
+@@ -47,8 +47,23 @@
      }
      return path;
  }
 -#define jbroot(path) Home26JbRoot(path)
 +#define jbroot(...) Home26JbRoot((__VA_ARGS__))
  #endif
++
++// One resolver for both the renderer and the menu previews. In this rootless
++// build the payload is installed under /var/jb, regardless of helper-library defaults.
++static inline NSString *Home18PackDirectory(void) {
++    NSString *relative = @"/Library/Application Support/26Home/IconPacks/Home18";
++    NSMutableArray<NSString *> *candidates = [NSMutableArray arrayWithObject:@"/var/jb/Library/Application Support/26Home/IconPacks/Home18"];
++    NSString *mapped=jbroot(relative);
++    if (mapped.length) [candidates addObject:mapped];
++    [candidates addObject:relative];
++    NSFileManager *files = NSFileManager.defaultManager;
++    for (NSString *candidate in candidates) {
++        if ([files isReadableFileAtPath:[candidate stringByAppendingPathComponent:@"Dark/com.apple.mobilephone.png"]]) return candidate;
++    }
++    return candidates.firstObject;
++}
  
  #import "LGDebugger.h"
+ 
+@@ -347,3 +362,6 @@
+ extern BOOL g_exceptionsNoIconProcessing;
+ extern BOOL g_exceptionsApplyOnlyToSolid;
+ 
++
++@interface SBFluidSwitcherItemContainerHeaderView : UIView
++@end
 --- a/HomeCustomizationMenu.m
 +++ b/HomeCustomizationMenu.m
 @@ -2,26 +2,26 @@
@@ -1222,8 +1264,16 @@
      });
 --- a/HomeCustomizationMenu18.m
 +++ b/HomeCustomizationMenu18.m
-@@ -2,16 +2,16 @@
+@@ -1,27 +1,23 @@
+ #import "Headers.h"
  #import <notify.h>
++#import "LGCustomIconGenerator2.h"
++#import "Home18Pixels.h"
++static UIColor *H18PanelColor(UIColor *color) {
++ CGFloat r=1,g=1,b=1,a=1;[color getRed:&r green:&g blue:&b alpha:&a];
++ float rr=r,gg=g,bb=b;H18Color(&rr,&gg,&bb);
++ return [UIColor colorWithRed:rr green:gg blue:bb alpha:1];
++}
  
  static inline void Home26PostStyleUpdate18(void) {
 -    [[NSNotificationCenter defaultCenter] postNotificationName:@"ngkhoi.26home.PurgeCaches" object:nil];
@@ -1239,12 +1289,71 @@
  static UIImage *LGCreateAutomaticWeatherImage(void) {
 -    NSUserDefaults *prefs = [[NSUserDefaults alloc] initWithSuiteName:@"com.ngkhoi.26home"];
 -    NSString *selectedPack = [prefs stringForKey:@"ngkhoi.26home.selectedIconPack"] ?: [prefs stringForKey:@"ngkhoi.26home.activePackId"] ?: @"SolidGlass";
-+    NSUserDefaults *prefs = [[NSUserDefaults alloc] initWithSuiteName:@"local.icontint15.26base"];
-+    NSString *selectedPack = [prefs stringForKey:@"icontint15.26base.selectedIconPack"] ?: [prefs stringForKey:@"icontint15.26base.activePackId"] ?: @"Home18";
-     NSString *basePath = jbroot([NSString stringWithFormat:@"/Library/Application Support/26Home/IconPacks/%@", selectedPack]);
-     if (![[NSFileManager defaultManager] fileExistsAtPath:basePath]) {
-         basePath = [NSString stringWithFormat:@"/Library/Application Support/26Home/IconPacks/%@", selectedPack];
-@@ -163,9 +163,9 @@
+-    NSString *basePath = jbroot([NSString stringWithFormat:@"/Library/Application Support/26Home/IconPacks/%@", selectedPack]);
+-    if (![[NSFileManager defaultManager] fileExistsAtPath:basePath]) {
+-        basePath = [NSString stringWithFormat:@"/Library/Application Support/26Home/IconPacks/%@", selectedPack];
+-    }
+-    if (![[NSFileManager defaultManager] fileExistsAtPath:basePath]) {
+-        basePath = jbroot(@"/Library/Application Support/26Home/SolidGlass");
+-    }
+-    if (![[NSFileManager defaultManager] fileExistsAtPath:basePath]) {
+-        basePath = @"/Library/Application Support/26Home/SolidGlass";
+-    }
++    NSString *basePath=Home18PackDirectory();
+     UIImage *lightImg = [UIImage imageWithContentsOfFile:[basePath stringByAppendingPathComponent:@"Light/com.apple.weather-large.png"]];
+     UIImage *darkImg = [UIImage imageWithContentsOfFile:[basePath stringByAppendingPathComponent:@"Dark/com.apple.weather-large.png"]];
+ 
+@@ -59,7 +55,8 @@
+ 
+ @property (nonatomic, strong) NSMutableArray<UIButton *> *styleButtons;
+ @property (nonatomic, strong) NSMutableArray<UILabel *> *styleLabels;
+-@property (nonatomic, strong) UIView *tintWeatherOverlay;
++@property (nonatomic, strong) UIImageView *tintWeatherImageView;
++@property (nonatomic, strong) UIImage *tintWeatherArtwork;
+ 
+ @property (nonatomic, strong) UIView *slidersContainer;
+ @property (nonatomic, strong) UIView *hueSlider;
+@@ -120,7 +117,7 @@
+         return 96.0 + 14.0;
+     }
+ 
+-    return 8.0;
++    return 0.0;
+ }
+ 
+ - (CGFloat)_restingYForMenuHeight:(CGFloat)menuHeight {
+@@ -140,32 +137,34 @@
+         [bgButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
+         [self addSubview:bgButton];
+ 
+-        CGFloat menuWidth = frame.size.width - 20;
++        CGFloat menuWidth = frame.size.width;
+         CGFloat initialHeight = 175;
+-        self.menuView = [[UIView alloc] initWithFrame:CGRectMake(10, frame.size.height, menuWidth, initialHeight)];
+-        self.menuView.layer.cornerRadius = 40;
++        self.menuView = [[UIView alloc] initWithFrame:CGRectMake(0, frame.size.height, menuWidth, initialHeight)];
++        self.menuView.layer.cornerRadius = 32;
+         self.menuView.layer.masksToBounds = YES;
+-        self.menuView.layer.borderWidth = 0.5;
++        self.menuView.layer.borderWidth = 0;
++        self.menuView.backgroundColor = [UIColor colorWithWhite:0.16 alpha:1];
+         self.menuView.layer.borderColor = [[UIColor whiteColor] colorWithAlphaComponent:0.15].CGColor;
+ 
+-        UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemChromeMaterialDark];
++        UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
+         if (!blurEffect) {
+             blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
+         }
+         UIVisualEffectView *blurView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+         blurView.frame = self.menuView.bounds;
+         blurView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+-        blurView.layer.cornerRadius = 40;
++        blurView.layer.cornerRadius = 32;
+         blurView.clipsToBounds = YES;
++        blurView.alpha = 0.18;
+         [self.menuView addSubview:blurView];
+ 
+         UIPanGestureRecognizer *menuPan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleMenuPull:)];
          menuPan.delegate = self;
          [self.menuView addGestureRecognizer:menuPan];
  
@@ -1257,42 +1366,140 @@
  
          UIImageSymbolConfiguration *sunConfig = [UIImageSymbolConfiguration configurationWithPointSize:20 weight:UIFontWeightMedium];
          self.sunBtn = [UIButton buttonWithType:UIButtonTypeSystem];
-@@ -193,7 +193,7 @@
+@@ -175,8 +174,8 @@
+         [self.sunBtn addTarget:self action:@selector(toggleWallpaperDimming:) forControlEvents:UIControlEventTouchUpInside];
+         [self.menuView addSubview:self.sunBtn];
+ 
+-        CGFloat segWidth = 140;
+-        CGFloat segHeight = 36;
++        CGFloat segWidth = menuWidth * 0.48;
++        CGFloat segHeight = 32;
+         self.scaleSegment = [[UIView alloc] initWithFrame:CGRectMake((menuWidth - segWidth) / 2.0, 17, segWidth, segHeight)];
+         self.scaleSegment.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.14];
+         self.scaleSegment.layer.cornerRadius = segHeight / 2.0;
+@@ -186,23 +185,23 @@
+ 
+         CGFloat itemWidth = segWidth / 2.0;
+         self.scalePill = [[UIView alloc] initWithFrame:CGRectMake(isLarge ? itemWidth : 0, 0, itemWidth, segHeight)];
+-        self.scalePill.backgroundColor = [UIColor whiteColor];
++        self.scalePill.backgroundColor = [UIColor colorWithWhite:0.65 alpha:1];
+         self.scalePill.layer.cornerRadius = segHeight / 2.0;
+         self.scalePill.layer.cornerCurve = kCACornerCurveContinuous;
+         [self.scaleSegment addSubview:self.scalePill];
  
          self.smallBtn = [UIButton buttonWithType:UIButtonTypeCustom];
          self.smallBtn.frame = CGRectMake(0, 0, itemWidth, segHeight);
 -        [self.smallBtn setTitle:@"Small" forState:UIControlStateNormal];
+-        [self.smallBtn setTitleColor:(isLarge ? [UIColor whiteColor] : [UIColor blackColor]) forState:UIControlStateNormal];
 +        [self.smallBtn setTitle:@"Малые" forState:UIControlStateNormal];
-         [self.smallBtn setTitleColor:(isLarge ? [UIColor whiteColor] : [UIColor blackColor]) forState:UIControlStateNormal];
++        [self.smallBtn setTitleColor:(isLarge ? [UIColor whiteColor] : [UIColor whiteColor]) forState:UIControlStateNormal];
          self.smallBtn.titleLabel.font = isLarge ? [UIFont systemFontOfSize:14 weight:UIFontWeightMedium] : [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];
          [self.smallBtn addTarget:self action:@selector(selectScaleSmall:) forControlEvents:UIControlEventTouchUpInside];
-@@ -201,7 +201,7 @@
+         [self.scaleSegment addSubview:self.smallBtn];
  
          self.largeBtn = [UIButton buttonWithType:UIButtonTypeCustom];
          self.largeBtn.frame = CGRectMake(itemWidth, 0, itemWidth, segHeight);
 -        [self.largeBtn setTitle:@"Large" forState:UIControlStateNormal];
+-        [self.largeBtn setTitleColor:(isLarge ? [UIColor blackColor] : [UIColor whiteColor]) forState:UIControlStateNormal];
 +        [self.largeBtn setTitle:@"Крупные" forState:UIControlStateNormal];
-         [self.largeBtn setTitleColor:(isLarge ? [UIColor blackColor] : [UIColor whiteColor]) forState:UIControlStateNormal];
++        [self.largeBtn setTitleColor:(isLarge ? [UIColor whiteColor] : [UIColor whiteColor]) forState:UIControlStateNormal];
          self.largeBtn.titleLabel.font = isLarge ? [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold] : [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
          [self.largeBtn addTarget:self action:@selector(selectScaleLarge:) forControlEvents:UIControlEventTouchUpInside];
-@@ -217,13 +217,13 @@
+         [self.scaleSegment addSubview:self.largeBtn];
+@@ -217,24 +216,12 @@
          self.eyedropperBtn.userInteractionEnabled = NO;
          [self.menuView addSubview:self.eyedropperBtn];
  
 -        NSArray *styleTitles = @[@"Light", @"Dark", @"Automatic", @"Tinted"];
+-        CGFloat buttonSize = 60.0;
 +        NSArray *styleTitles = @[@"Светлые", @"Тёмные", @"Авто", @"Цвет"];
-         CGFloat buttonSize = 60.0;
++        CGFloat buttonSize = menuWidth * 0.16;
          CGFloat spacing = (menuWidth - (buttonSize * 4)) / 5.0;
-         CGFloat startY = 70.0;
- 
+-        CGFloat startY = 70.0;
+-
 -        NSUserDefaults *prefs = [[NSUserDefaults alloc] initWithSuiteName:@"com.ngkhoi.26home"];
 -        NSString *selectedPack = [prefs stringForKey:@"ngkhoi.26home.selectedIconPack"] ?: [prefs stringForKey:@"ngkhoi.26home.activePackId"] ?: @"SolidGlass";
-+        NSUserDefaults *prefs = [[NSUserDefaults alloc] initWithSuiteName:@"local.icontint15.26base"];
-+        NSString *selectedPack = [prefs stringForKey:@"icontint15.26base.selectedIconPack"] ?: [prefs stringForKey:@"icontint15.26base.activePackId"] ?: @"Home18";
-         NSString *basePath = jbroot([NSString stringWithFormat:@"/Library/Application Support/26Home/IconPacks/%@", selectedPack]);
-         if (![[NSFileManager defaultManager] fileExistsAtPath:basePath]) {
-             basePath = [NSString stringWithFormat:@"/Library/Application Support/26Home/IconPacks/%@", selectedPack];
-@@ -371,13 +371,13 @@
+-        NSString *basePath = jbroot([NSString stringWithFormat:@"/Library/Application Support/26Home/IconPacks/%@", selectedPack]);
+-        if (![[NSFileManager defaultManager] fileExistsAtPath:basePath]) {
+-            basePath = [NSString stringWithFormat:@"/Library/Application Support/26Home/IconPacks/%@", selectedPack];
+-        }
+-        if (![[NSFileManager defaultManager] fileExistsAtPath:basePath]) {
+-            basePath = jbroot(@"/Library/Application Support/26Home/SolidGlass");
+-        }
+-        if (![[NSFileManager defaultManager] fileExistsAtPath:basePath]) {
+-            basePath = @"/Library/Application Support/26Home/SolidGlass";
+-        }
+-
++        CGFloat startY = 72.0;
++
++        NSString *basePath=Home18PackDirectory();
+         for (int i = 0; i < 4; i++) {
+             CGFloat x = spacing + i * (buttonSize + spacing);
+             UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(x, startY, buttonSize, buttonSize)];
+@@ -261,11 +248,13 @@
+             iv.userInteractionEnabled = NO;
+             [btn addSubview:iv];
+ 
++            if (!iconImg) {
++                iv.contentMode=UIViewContentModeScaleAspectFit;
++                iv.image=[[UIImage systemImageNamed:@"cloud.sun.fill"] imageWithTintColor:UIColor.whiteColor renderingMode:UIImageRenderingModeAlwaysOriginal];
++            }
+             if (i == 3) {
+-                self.tintWeatherOverlay = [[UIView alloc] initWithFrame:btn.bounds];
+-                self.tintWeatherOverlay.backgroundColor = [UIColor colorWithRed:0.0 green:0.8 blue:1.0 alpha:0.45];
+-                self.tintWeatherOverlay.userInteractionEnabled = NO;
+-                [btn addSubview:self.tintWeatherOverlay];
++                self.tintWeatherImageView=iv;
++                self.tintWeatherArtwork=iconImg;
+             }
+ 
+             [self.menuView addSubview:btn];
+@@ -280,7 +269,7 @@
+             [self.styleLabels addObject:lbl];
+         }
+ 
+-        self.slidersContainer = [[UIView alloc] initWithFrame:CGRectMake(0, 168, menuWidth, 105)];
++        self.slidersContainer = [[UIView alloc] initWithFrame:CGRectMake(0, 184, menuWidth, 110)];
+         self.slidersContainer.alpha = 0.0;
+         self.slidersContainer.userInteractionEnabled = NO;
+         [self.menuView addSubview:self.slidersContainer];
+@@ -295,7 +284,7 @@
+ }
+ 
+ - (void)setupSliders {
+-    CGFloat pad = 24.0;
++    CGFloat pad = 22.0;
+     CGFloat sliderW = self.slidersContainer.frame.size.width - (pad * 2);
+     CGFloat sliderH = 32.0;
+     CGFloat thumbSize = 36.0;
+@@ -327,7 +316,7 @@
+     self.hueThumb.layer.cornerRadius = thumbSize / 2.0;
+     self.hueThumb.layer.borderColor = [UIColor whiteColor].CGColor;
+     self.hueThumb.layer.borderWidth = 3.5;
+-    self.hueThumb.layer.shadowColor = [UIColor blackColor].CGColor;
++    self.hueThumb.layer.shadowColor = [UIColor whiteColor].CGColor;
+     self.hueThumb.layer.shadowOpacity = 0.35;
+     self.hueThumb.layer.shadowRadius = 4;
+     self.hueThumb.layer.shadowOffset = CGSizeMake(0, 2);
+@@ -339,7 +328,7 @@
+     UITapGestureRecognizer *hueTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleHuePan:)];
+     [self.hueSlider addGestureRecognizer:hueTap];
+ 
+-    self.brightnessSlider = [[UIView alloc] initWithFrame:CGRectMake(pad, 52, sliderW, sliderH)];
++    self.brightnessSlider = [[UIView alloc] initWithFrame:CGRectMake(pad, 72, sliderW, sliderH)];
+     self.brightnessSlider.clipsToBounds = NO;
+     [self.slidersContainer addSubview:self.brightnessSlider];
+ 
+@@ -359,7 +348,7 @@
+     self.brightnessThumb.layer.cornerRadius = thumbSize / 2.0;
+     self.brightnessThumb.layer.borderColor = [UIColor whiteColor].CGColor;
+     self.brightnessThumb.layer.borderWidth = 3.5;
+-    self.brightnessThumb.layer.shadowColor = [UIColor blackColor].CGColor;
++    self.brightnessThumb.layer.shadowColor = [UIColor whiteColor].CGColor;
+     self.brightnessThumb.layer.shadowOpacity = 0.35;
+     self.brightnessThumb.layer.shadowRadius = 4;
+     self.brightnessThumb.layer.shadowOffset = CGSizeMake(0, 2);
+@@ -371,13 +360,13 @@
      UITapGestureRecognizer *brTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleBrightnessPan:)];
      [self.brightnessSlider addGestureRecognizer:brTap];
  
@@ -1310,7 +1517,26 @@
      }
  
      [self _updateThumbPositions];
-@@ -412,9 +412,9 @@
+@@ -398,23 +387,23 @@
+ 
+     CGFloat sat = 1.0 - self.currentBrightness;
+     UIColor *currentColor = [UIColor colorWithHue:self.currentHue saturation:sat brightness:1.0 alpha:1.0];
+-    self.brightnessThumb.backgroundColor = currentColor;
+-
+-    if (self.tintWeatherOverlay) {
+-        self.tintWeatherOverlay.backgroundColor = [currentColor colorWithAlphaComponent:0.45];
++    self.brightnessThumb.backgroundColor = H18PanelColor(currentColor);
++
++    if (self.tintWeatherArtwork) {
++        self.tintWeatherImageView.image=[[LGCustomIconGenerator2 sharedGenerator] home18TintedImage:self.tintWeatherArtwork color:currentColor];
+     }
+ }
+ 
+ - (void)_updateBrightnessGradient {
+     UIColor *c1 = [UIColor colorWithHue:self.currentHue saturation:1.0 brightness:1.0 alpha:1.0];
+     UIColor *c2 = [UIColor colorWithHue:self.currentHue saturation:0.0 brightness:1.0 alpha:1.0];
+-    self.brightnessGradient.colors = @[(id)c1.CGColor, (id)c2.CGColor];
++    self.brightnessGradient.colors = @[(id)H18PanelColor(c1).CGColor, (id)H18PanelColor(c2).CGColor];
  }
  
  - (void)updateStyleSelection:(BOOL)animated {
@@ -1323,7 +1549,27 @@
  
      NSUInteger activeIndex = 0;
      if ([style isEqualToString:@"Tinted"]) {
-@@ -470,60 +470,26 @@
+@@ -430,7 +419,7 @@
+     }
+ 
+     BOOL isTinted = (activeIndex == 3);
+-    CGFloat targetHeight = isTinted ? 285.0 : 175.0;
++    CGFloat targetHeight = isTinted ? 338.0 : 184.0;
+ 
+     void (^updateBlock)(void) = ^{
+ 
+@@ -438,8 +427,8 @@
+             UIButton *btn = self.styleButtons[i];
+             UILabel *lbl = self.styleLabels[i];
+             if (i == activeIndex) {
+-                btn.layer.borderWidth = 2.5;
+-                btn.layer.borderColor = [UIColor whiteColor].CGColor;
++                btn.layer.borderWidth = 2.0;
++                btn.layer.borderColor = [UIColor colorWithWhite:0.32 alpha:1].CGColor;
+                 lbl.textColor = [UIColor whiteColor];
+                 lbl.font = [UIFont systemFontOfSize:13 weight:UIFontWeightSemibold];
+             } else {
+@@ -470,60 +459,26 @@
  
  - (void)selectStyle:(UIButton *)sender {
      NSUInteger index = sender.tag - 100;
@@ -1393,7 +1639,7 @@
      dispatch_async(dispatch_get_main_queue(), ^{
          Home26PostStyleUpdate18();
      });
-@@ -531,8 +497,8 @@
+@@ -531,8 +486,8 @@
  
  - (void)selectScaleSmall:(UIButton *)sender {
      Home26Log(@"[User Action] iOS 18 Menu - Selected scale: Small");
@@ -1404,7 +1650,14 @@
      [defaults synchronize];
  
      [UIView animateWithDuration:0.25 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-@@ -546,13 +512,13 @@
+@@ -540,19 +495,19 @@
+         f.origin.x = 0;
+         self.scalePill.frame = f;
+ 
+-        [self.smallBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
++        [self.smallBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+         self.smallBtn.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];
+         [self.largeBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
          self.largeBtn.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
      } completion:nil];
  
@@ -1421,7 +1674,12 @@
      [defaults synchronize];
  
      CGFloat itemWidth = self.scaleSegment.frame.size.width / 2.0;
-@@ -567,15 +533,15 @@
+@@ -563,19 +518,19 @@
+ 
+         [self.smallBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+         self.smallBtn.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
+-        [self.largeBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
++        [self.largeBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
          self.largeBtn.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];
      } completion:nil];
  
@@ -1441,7 +1699,7 @@
      [defaults synchronize];
  
      UIImageSymbolConfiguration *config = [UIImageSymbolConfiguration configurationWithPointSize:20 weight:UIFontWeightMedium];
-@@ -586,13 +552,13 @@
+@@ -586,13 +541,13 @@
          sender.tintColor = next ? [UIColor whiteColor] : [UIColor colorWithWhite:1.0 alpha:0.55];
      } completion:nil];
  
@@ -1459,7 +1717,7 @@
  
      CGFloat sat = 1.0 - self.currentBrightness;
      UIColor *color = [UIColor colorWithHue:self.currentHue saturation:sat brightness:1.0 alpha:1.0];
-@@ -600,28 +566,28 @@
+@@ -600,28 +555,28 @@
      [color getRed:&r green:&g blue:&b alpha:&a];
      NSString *hex = [NSString stringWithFormat:@"#%02lX%02lX%02lX", lroundf(r * 255), lroundf(g * 255), lroundf(b * 255)];
      Home26Log(@"[User Action] iOS 18 Menu - Updated tint color to: %@", hex);
@@ -1496,7 +1754,7 @@
  }
  
  - (void)handleHuePan:(UIGestureRecognizer *)gesture {
-@@ -662,7 +628,7 @@
+@@ -662,7 +617,7 @@
          self.alpha = 0.0;
      }];
  
@@ -1505,7 +1763,7 @@
  
      dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
  #pragma clang diagnostic push
-@@ -698,7 +664,7 @@
+@@ -698,7 +653,7 @@
              [UIView animateWithDuration:0.3 animations:^{
                  self.alpha = 1.0;
              }];
@@ -1514,9 +1772,327 @@
          };
          [keyWindow addSubview:overlay];
      });
+--- a/Hooks/BadgesAndWidgets.x
++++ b/Hooks/BadgesAndWidgets.x
+@@ -11,126 +11,7 @@
+ 
+ %end
+ 
+-%hook SBIconBadgeView
+ 
+-- (void)layoutSubviews {
+-    %orig;
+-
+-    NSString *style = g_iconStyle ?: @"Default";
+-    UIView *view = (UIView *)self;
+-    if ([style isEqualToString:@"Dark"]) {
+-        NSString *darkIconMode = g_darkIconMode ?: @"Always";
+-        if ([darkIconMode isEqualToString:@"Auto"]) {
+-            if (view.traitCollection.userInterfaceStyle != UIUserInterfaceStyleDark) {
+-                style = @"Default";
+-            }
+-        }
+-    }
+-
+-    UIColor *badgeBgColor = nil;
+-    UIColor *badgeTextColor = nil;
+-    BOOL useCustomBadge = NO;
+-
+-    if ([style isEqualToString:@"Clear"]) {
+-        useCustomBadge = YES;
+-        badgeBgColor = [UIColor whiteColor];
+-        badgeTextColor = [UIColor colorWithWhite:0.22 alpha:1.0];
+-    } else if ([style isEqualToString:@"Tinted"]) {
+-        useCustomBadge = YES;
+-
+-        NSString *tintHex = g_tintColor ?: @"#00FFFF";
+-        unsigned rgbValue = 0;
+-        NSScanner *scanner = [NSScanner scannerWithString:tintHex];
+-        if ([tintHex hasPrefix:@"#"]) {
+-            [scanner setScanLocation:1];
+-        }
+-        [scanner scanHexInt:&rgbValue];
+-
+-        CGFloat r = ((rgbValue & 0xFF0000) >> 16) / 255.0;
+-        CGFloat g = ((rgbValue & 0xFF00) >> 8) / 255.0;
+-        CGFloat b = (rgbValue & 0xFF) / 255.0;
+-        badgeBgColor = [UIColor colorWithRed:r green:g blue:b alpha:1.0];
+-
+-        CGFloat luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+-        if (luminance > 0.55) {
+-            badgeTextColor = [UIColor colorWithWhite:0.12 alpha:1.0];
+-        } else {
+-            badgeTextColor = [UIColor whiteColor];
+-        }
+-    } else {
+-        useCustomBadge = NO;
+-    }
+-
+-    UIView *bgView = [view valueForKey:@"_backgroundView"];
+-    UIView *textView = [view valueForKey:@"_textView"];
+-    UIView *myBgView = bgView ? [bgView viewWithTag:2626] : [view viewWithTag:2626];
+-    UILabel *myLabel = [view viewWithTag:2627];
+-
+-    if (useCustomBadge) {
+-        if (bgView) {
+-            if (!myBgView) {
+-                myBgView = [[UIView alloc] initWithFrame:bgView.bounds];
+-                myBgView.tag = 2626;
+-                myBgView.clipsToBounds = YES;
+-                myBgView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+-                [bgView addSubview:myBgView];
+-            }
+-            myBgView.frame = bgView.bounds;
+-            myBgView.layer.cornerRadius = myBgView.bounds.size.height / 2.0;
+-            myBgView.backgroundColor = badgeBgColor;
+-            myBgView.hidden = NO;
+-        }
+-
+-        if (textView) {
+-            textView.hidden = YES;
+-        }
+-
+-        NSString *badgeText = nil;
+-        @try {
+-            badgeText = [view valueForKey:@"_text"];
+-        } @catch (NSException *e) {}
+-        if (!badgeText && [view respondsToSelector:@selector(text)]) {
+-            badgeText = [(id)view performSelector:@selector(text)];
+-        }
+-        if (!badgeText && textView && [textView respondsToSelector:@selector(string)]) {
+-            badgeText = [textView performSelector:@selector(string)];
+-        }
+-        if (!badgeText && [view.superview respondsToSelector:@selector(icon)]) {
+-            id icon = [(id)view.superview performSelector:@selector(icon)];
+-            if ([icon respondsToSelector:@selector(badgeNumberOrString)]) {
+-                id val = [icon performSelector:@selector(badgeNumberOrString)];
+-                if ([val isKindOfClass:[NSString class]]) badgeText = val;
+-                else if ([val isKindOfClass:[NSNumber class]]) badgeText = [val stringValue];
+-            }
+-        }
+-
+-        if (!myLabel) {
+-            myLabel = [[UILabel alloc] initWithFrame:view.bounds];
+-            myLabel.tag = 2627;
+-            myLabel.textAlignment = NSTextAlignmentCenter;
+-            myLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+-            [view addSubview:myLabel];
+-        }
+-        myLabel.frame = view.bounds;
+-        myLabel.font = [UIFont systemFontOfSize:view.bounds.size.height * 0.58 weight:UIFontWeightBold];
+-        myLabel.text = badgeText ?: @"";
+-        myLabel.textColor = badgeTextColor;
+-        myLabel.hidden = NO;
+-        [view bringSubviewToFront:myLabel];
+-    } else {
+-        if (myBgView) {
+-            myBgView.hidden = YES;
+-        }
+-        if (myLabel) {
+-            myLabel.hidden = YES;
+-        }
+-        if (textView) {
+-            textView.hidden = NO;
+-        }
+-    }
+-}
+-
+-%end
+ 
+ void _26home_applyWidgetTintToView(UIView *view) {
+     if (!view) return;
 --- a/Hooks/EditingButtons.x
 +++ b/Hooks/EditingButtons.x
-@@ -292,7 +292,7 @@
+@@ -1,184 +1,26 @@
+ #import "HooksCommon.h"
+ 
+-static void updateLiquidGlassLayout(UIView *button);
+-
+-static CGRect getStandardEditingButtonFrame(UIView *button) {
+-    BOOL isDone = [button isKindOfClass:%c(SBHEditingDoneButton)];
+-    CGFloat pillWidth = isDone ? 64.0 : 58.0;
+-    CGFloat pillHeight = 32.0;
+-
+-    CGRect b = button.bounds;
+-    CGFloat pillX = (b.size.width > pillWidth) ? (b.size.width - pillWidth) / 2.0 : 0.0;
+-
+-    CGFloat safeAreaTop = 0;
+-    UIWindow *w = button.window;
+-    if (!w) {
+-#pragma clang diagnostic push
+-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+-        w = [UIApplication sharedApplication].keyWindow ?: [UIApplication sharedApplication].windows.firstObject;
+-#pragma clang diagnostic pop
+-    }
+-    if (@available(iOS 11.0, *)) {
+-        if (w) {
+-            safeAreaTop = w.safeAreaInsets.top;
+-        }
+-    }
+-    if (safeAreaTop <= 0) {
+-        safeAreaTop = 44.0;
+-    }
+-
+-    CGFloat targetScreenY = safeAreaTop + 6.0;
+-
+-    CGPoint screenOrigin = CGPointZero;
+-    if (button.window) {
+-        screenOrigin = [button convertPoint:CGPointZero toView:nil];
+-    }
+-
+-    CGFloat pillY = targetScreenY - screenOrigin.y;
+-
+-    if (pillY < 0.0 || pillY + pillHeight > b.size.height) {
+-        if (b.size.height > pillHeight + 8.0) {
+-            pillY = b.size.height - pillHeight - 6.0;
+-        } else {
+-            pillY = (b.size.height > pillHeight) ? (b.size.height - pillHeight) / 2.0 : 0.0;
+-        }
+-    }
+-
+-    return CGRectMake(roundf(pillX), roundf(pillY), pillWidth, pillHeight);
+-}
+-
+-static void replaceMaterialViewWithLiquidGlass(UIView *button, CGFloat blurRadius) {
+-    if ([button viewWithTag:999]) {
+-        updateLiquidGlassLayout(button);
+-        return;
+-    }
+-
+-    button.backgroundColor = [UIColor clearColor];
+-    button.layer.backgroundColor = [UIColor clearColor].CGColor;
+-    button.clipsToBounds = NO;
+-    button.layer.masksToBounds = NO;
+-
+-    if ([button respondsToSelector:@selector(backgroundView)]) {
+-        UIView *bg = [button performSelector:@selector(backgroundView)];
+-        if (bg) {
+-            bg.hidden = YES;
+-            bg.alpha = 0;
+-            bg.layer.hidden = YES;
+-        }
+-    }
+-    if ([button respondsToSelector:@selector(materialView)]) {
+-        UIView *mv = [button performSelector:@selector(materialView)];
+-        if (mv) {
+-            mv.hidden = YES;
+-            mv.alpha = 0;
+-            mv.layer.hidden = YES;
+-        }
+-    }
+-
+-    for (UIView *subview in button.subviews) {
+-        if (subview.tag != 999) {
+-            subview.hidden = YES;
+-            subview.alpha = 0;
+-            subview.layer.hidden = YES;
+-        }
+-    }
+-
+-    BOOL isDone = [button isKindOfClass:%c(SBHEditingDoneButton)];
+-    CGRect initialFrame = getStandardEditingButtonFrame(button);
+-
+-    NSString *title = isDone ? @"Done" : @"Edit";
+-    LGButtonView *btnView = [[LGButtonView alloc] initWithFrame:initialFrame title:title blurRadius:blurRadius];
+-    btnView.tag = 999;
+-    [button addSubview:btnView];
+-    btnView.lgView.hidden = NO;
+-}
+-
+-static void updateLiquidGlassLayout(UIView *button) {
+-    button.backgroundColor = [UIColor clearColor];
+-    button.layer.backgroundColor = [UIColor clearColor].CGColor;
+-    button.clipsToBounds = NO;
+-    button.layer.masksToBounds = NO;
+-    button.layer.shadowOpacity = 0.0;
+-
+-    CGRect targetFrame = getStandardEditingButtonFrame(button);
+-
+-    if ([button respondsToSelector:@selector(backgroundView)]) {
+-        UIView *bg = [button performSelector:@selector(backgroundView)];
+-        if (bg) {
+-            bg.hidden = YES;
+-            bg.alpha = 0;
+-            bg.layer.hidden = YES;
+-        }
+-    }
+-    if ([button respondsToSelector:@selector(materialView)]) {
+-        UIView *mv = [button performSelector:@selector(materialView)];
+-        if (mv) {
+-            mv.hidden = YES;
+-            mv.alpha = 0;
+-            mv.layer.hidden = YES;
+-        }
+-    }
+-
+-    LGButtonView *coverView = (LGButtonView *)[button viewWithTag:999];
+-    if (coverView && [coverView isKindOfClass:[LGButtonView class]]) {
+-        [coverView updateLayoutWithFrame:targetFrame];
+-        coverView.lgView.hidden = NO;
+-    }
+-
+-    for (UIView *subview in button.subviews) {
+-        if (subview.tag != 999) {
+-            subview.hidden = YES;
+-            subview.alpha = 0;
+-            subview.layer.hidden = YES;
+-        }
+-    }
+-}
+-
++// Preserve the system's matte editing UI. Only attach a standard iOS menu.
+ %hook SBHEditingWidgetButton
+-
+-- (void)layoutSubviews {
+-    %orig;
+-    updateLiquidGlassLayout(self);
+-}
+-
+ - (void)didMoveToWindow {
+     %orig;
+     if (self.window) {
+-        replaceMaterialViewWithLiquidGlass(self, 8.0);
+-
+-        if (@available(iOS 14.0, *)) {
+-            self.showsMenuAsPrimaryAction = NO;
+-            self.menu = nil;
+-        }
+         [self removeTarget:nil action:NULL forControlEvents:UIControlEventAllEvents];
+-        [self addTarget:self action:@selector(_26home_handleEditButtonTap) forControlEvents:UIControlEventTouchUpInside];
++        [self _26home_handleEditButtonTap];
+     }
+ }
+-
+ %new
+ - (void)_26home_handleEditButtonTap {
+-    static NSTimeInterval s_lastEditButtonTapTime = 0;
+-    NSTimeInterval now = [NSDate date].timeIntervalSinceReferenceDate;
+-    if (now - s_lastEditButtonTapTime < 0.35) {
+-        return;
+-    }
+-    s_lastEditButtonTapTime = now;
+-
+-    if ([[Home26LiquidMenu sharedMenu] isOpen]) {
+-        [[Home26LiquidMenu sharedMenu] dismiss];
+-        return;
+-    }
+-
+     __weak typeof(self) weakSelf = self;
+ 
+-    Home26LiquidMenuItem *addWidget = [Home26LiquidMenuItem itemWithTitle:@"Add Widget" icon:LGImageNamed(@"widget.small.badge.plus") action:^{
++    Home26LiquidMenuItem *addWidget = [Home26LiquidMenuItem itemWithTitle:@"Добавить виджет" icon:LGImageNamed(@"widget.small.badge.plus") action:^{
+         SBRootFolderController *rootVC = ResolveRootFolderController(weakSelf);
+         if (rootVC) {
+             [rootVC rootFolderViewWantsWidgetEditingViewControllerPresented:nil];
+         }
+     }];
+ 
+-    Home26LiquidMenuItem *customize = [Home26LiquidMenuItem itemWithTitle:@"Customize" icon:LGImageNamed(@"apps.iphone.badge.paintbrush") action:^{
++    Home26LiquidMenuItem *customize = [Home26LiquidMenuItem itemWithTitle:@"Настроить" icon:LGImageNamed(@"apps.iphone.badge.paintbrush") action:^{
+         if (g_editingDoneTarget && g_editingDoneAction) {
+ #pragma clang diagnostic push
+ #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+@@ -292,13 +134,13 @@
              }
  
              if (targetView) {
@@ -1525,6 +2101,436 @@
                  [container presentInView:targetView];
              }
          });
+     }];
+ 
+-    Home26LiquidMenuItem *editWallpaper = [Home26LiquidMenuItem itemWithTitle:@"Edit Wallpaper" icon:LGImageNamed(@"apple.photos") action:^{
++    Home26LiquidMenuItem *editWallpaper = [Home26LiquidMenuItem itemWithTitle:@"Изменить обои" icon:LGImageNamed(@"apple.photos") action:^{
+         id iconController = [%c(SBIconController) sharedInstance];
+         if ([iconController respondsToSelector:@selector(setIsEditing:)]) {
+             void (*setIsEditing)(id, SEL, BOOL) = (void (*)(id, SEL, BOOL))[iconController methodForSelector:@selector(setIsEditing:)];
+@@ -332,7 +174,7 @@
+         });
+     }];
+ 
+-    Home26LiquidMenuItem *editPages = [Home26LiquidMenuItem itemWithTitle:@"Edit Pages" icon:LGImageNamed(@"apps.iphone.on.rectangle.portrait") action:^{
++    Home26LiquidMenuItem *editPages = [Home26LiquidMenuItem itemWithTitle:@"Изменить страницы" icon:LGImageNamed(@"apps.iphone.on.rectangle.portrait") action:^{
+         SBRootFolderController *rootVC = ResolveRootFolderController(weakSelf);
+         if (rootVC) {
+             [rootVC _presentPageManagement:nil];
+@@ -340,396 +182,16 @@
+     }];
+ 
+     NSArray *items = @[addWidget, customize, editWallpaper, editPages];
+-    [[Home26LiquidMenu sharedMenu] presentFromButton:self items:items];
+-}
+-
+-- (BOOL)beginTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event {
+-    BOOL result = %orig;
+-    LGButtonView *btnView = (LGButtonView *)[self viewWithTag:999];
+-    if (btnView && [btnView isKindOfClass:[LGButtonView class]]) {
+-        CGPoint pt = [touch locationInView:btnView];
+-        [btnView handleTouchDownAtPoint:pt];
++    NSMutableArray<UIMenuElement *> *actions = [NSMutableArray array];
++    for (Home26LiquidMenuItem *item in items) {
++        UIAction *action = [UIAction actionWithTitle:item.title image:item.icon identifier:nil handler:^(__kindof UIAction *action) {
++            if (item.action) item.action();
++        }];
++        [actions addObject:action];
+     }
+-    return result;
+-}
+-
+-- (BOOL)continueTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event {
+-    LGButtonView *btnView = (LGButtonView *)[self viewWithTag:999];
+-    if (btnView && [btnView isKindOfClass:[LGButtonView class]]) {
+-        CGPoint pt = [touch locationInView:btnView];
+-        [btnView handleTouchMovedToPoint:pt];
+-        return YES;
+-    }
+-    return %orig;
+-}
+-
+-- (void)endTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event {
+-    %orig;
+-    LGButtonView *btnView = (LGButtonView *)[self viewWithTag:999];
+-    if (btnView && [btnView isKindOfClass:[LGButtonView class]]) {
+-        [btnView handleTouchEnded];
+-    }
+-
+-    CGPoint loc = [touch locationInView:self];
+-    if (CGRectContainsPoint(CGRectInset(self.bounds, -12, -12), loc)) {
+-        [self _26home_handleEditButtonTap];
+-    }
+-}
+-
+-- (void)cancelTrackingWithEvent:(UIEvent *)event {
+-    %orig;
+-    LGButtonView *btnView = (LGButtonView *)[self viewWithTag:999];
+-    if (btnView && [btnView isKindOfClass:[LGButtonView class]]) {
+-        [btnView handleTouchEnded];
+-    }
++    self.menu = [UIMenu menuWithChildren:actions];
++    self.showsMenuAsPrimaryAction = YES;
+ }
+ %end
+ 
+-%hook SBHEditingDoneButton
+-
+-- (void)layoutSubviews {
+-    %orig;
+-    updateLiquidGlassLayout(self);
+-}
+-
+-- (void)didMoveToWindow {
+-    %orig;
+-    if (self.window) {
+-        replaceMaterialViewWithLiquidGlass(self, 8.0);
+-
+-        NSSet *targets = [self allTargets];
+-        for (id target in targets) {
+-            NSArray *actions = [self actionsForTarget:target forControlEvent:UIControlEventTouchUpInside];
+-            if (actions.count > 0) {
+-                g_editingDoneTarget = target;
+-                g_editingDoneAction = NSSelectorFromString(actions.firstObject);
+-            }
+-        }
+-    }
+-}
+-
+-- (BOOL)beginTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event {
+-    BOOL result = %orig;
+-    LGButtonView *btnView = (LGButtonView *)[self viewWithTag:999];
+-    if (btnView && [btnView isKindOfClass:[LGButtonView class]]) {
+-        CGPoint pt = [touch locationInView:btnView];
+-        [btnView handleTouchDownAtPoint:pt];
+-    }
+-    return result;
+-}
+-
+-- (BOOL)continueTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event {
+-    LGButtonView *btnView = (LGButtonView *)[self viewWithTag:999];
+-    if (btnView && [btnView isKindOfClass:[LGButtonView class]]) {
+-        CGPoint pt = [touch locationInView:btnView];
+-        [btnView handleTouchMovedToPoint:pt];
+-        return YES;
+-    }
+-    return %orig;
+-}
+-
+-- (void)endTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event {
+-    %orig;
+-    LGButtonView *btnView = (LGButtonView *)[self viewWithTag:999];
+-    if (btnView && [btnView isKindOfClass:[LGButtonView class]]) {
+-        [btnView handleTouchEnded];
+-    }
+-}
+-
+-- (void)cancelTrackingWithEvent:(UIEvent *)event {
+-    %orig;
+-    LGButtonView *btnView = (LGButtonView *)[self viewWithTag:999];
+-    if (btnView && [btnView isKindOfClass:[LGButtonView class]]) {
+-        [btnView handleTouchEnded];
+-    }
+-}
+-%end
+-
+-static void setupLiquidGlassForMinusButton(UIView *minusView) {
+-    if ([minusView viewWithTag:996] || [minusView viewWithTag:997]) return;
+-
+-    if (minusView.superview) {
+-        for (UIView *sibling in minusView.superview.subviews) {
+-            if ([sibling isKindOfClass:%c(LGLiveBackdropView)] && sibling != minusView && CGRectEqualToRect(sibling.frame, minusView.frame)) {
+-                [sibling removeFromSuperview];
+-            }
+-        }
+-    }
+-
+-    for (UIView *subview in minusView.subviews) {
+-        if ([NSStringFromClass([subview class]) containsString:@"Material"]) {
+-            for (UIView *innerView in subview.subviews) {
+-                innerView.hidden = YES;
+-                innerView.alpha = 0;
+-            }
+-        }
+-    }
+-
+-    UIImageSymbolConfiguration *config = [UIImageSymbolConfiguration configurationWithPointSize:14 weight:UIImageSymbolWeightBold];
+-    UIImageView *minusIcon = [[UIImageView alloc] initWithFrame:minusView.bounds];
+-    minusIcon.image = [UIImage systemImageNamed:@"minus" withConfiguration:config];
+-    minusIcon.tintColor = [UIColor labelColor];
+-    minusIcon.contentMode = UIViewContentModeCenter;
+-    minusIcon.tag = 997;
+-    [minusView addSubview:minusIcon];
+-
+-    CGFloat height = minusView.bounds.size.height;
+-    LGAdjustableBlurView *blurView = [[LGAdjustableBlurView alloc] initWithFrame:minusView.bounds blurRadius:4.0];
+-    blurView.qualityScale = 0.35;
+-    blurView.capturesAppIcon = YES;
+-    blurView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+-    blurView.clipsToBounds = YES;
+-    blurView.layer.cornerRadius = height / 2.0;
+-    blurView.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.18];
+-    blurView.tag = 996;
+-
+-    CAGradientLayer *specularLayer = [CAGradientLayer layer];
+-    specularLayer.frame = minusView.bounds;
+-    specularLayer.cornerRadius = height / 2.0;
+-    specularLayer.name = @"dylv.minus.specular";
+-    specularLayer.colors = @[
+-        (id)[UIColor colorWithWhite:1.0 alpha:0.85].CGColor,
+-        (id)[UIColor colorWithWhite:1.0 alpha:0.15].CGColor,
+-        (id)[UIColor colorWithWhite:1.0 alpha:0.15].CGColor,
+-        (id)[UIColor colorWithWhite:1.0 alpha:0.40].CGColor
+-    ];
+-    specularLayer.locations = @[@0.0, @0.35, @0.65, @1.0];
+-    specularLayer.startPoint = CGPointMake(0, 0);
+-    specularLayer.endPoint = CGPointMake(1, 1);
+-
+-    CAShapeLayer *mask = [CAShapeLayer layer];
+-    mask.frame = minusView.bounds;
+-    mask.path = [UIBezierPath bezierPathWithOvalInRect:CGRectInset(minusView.bounds, 0.6, 0.6)].CGPath;
+-    mask.lineWidth = 1.2;
+-    mask.fillColor = [UIColor clearColor].CGColor;
+-    mask.strokeColor = [UIColor whiteColor].CGColor;
+-    specularLayer.mask = mask;
+-
+-    [minusView insertSubview:blurView atIndex:0];
+-    [minusView.layer insertSublayer:specularLayer above:blurView.layer];
+-}
+-
+-static void updateLiquidGlassLayoutForMinus(UIView *minusView) {
+-    if (minusView.superview) {
+-        for (UIView *sibling in minusView.superview.subviews) {
+-            if ([sibling isKindOfClass:%c(LGLiveBackdropView)] && sibling != minusView && CGRectEqualToRect(sibling.frame, minusView.frame)) {
+-                [sibling removeFromSuperview];
+-            }
+-        }
+-    }
+-
+-    LGAdjustableBlurView *blurView = [minusView viewWithTag:996];
+-    if (blurView) {
+-        blurView.frame = minusView.bounds;
+-        blurView.layer.cornerRadius = minusView.bounds.size.height / 2.0;
+-    }
+-
+-    for (CALayer *sublayer in minusView.layer.sublayers) {
+-        if ([sublayer.name isEqualToString:@"dylv.minus.specular"]) {
+-            sublayer.frame = minusView.bounds;
+-            sublayer.cornerRadius = minusView.bounds.size.height / 2.0;
+-            if ([sublayer.mask isKindOfClass:[CAShapeLayer class]]) {
+-                CAShapeLayer *mask = (CAShapeLayer *)sublayer.mask;
+-                mask.frame = minusView.bounds;
+-                mask.path = [UIBezierPath bezierPathWithOvalInRect:CGRectInset(minusView.bounds, 0.6, 0.6)].CGPath;
+-            }
+-        }
+-    }
+-
+-    UIImageView *minusIcon = [minusView viewWithTag:997];
+-    if (minusIcon) {
+-        minusIcon.frame = minusView.bounds;
+-    }
+-
+-    for (UIView *subview in minusView.subviews) {
+-        if ([NSStringFromClass([subview class]) containsString:@"Material"]) {
+-            for (UIView *innerView in subview.subviews) {
+-                innerView.hidden = YES;
+-                innerView.alpha = 0;
+-            }
+-        }
+-    }
+-}
+-
+-%hook SBMinusCloseBoxView
+-
+-- (void)layoutSubviews {
+-    %orig;
+-    UIView *view = (UIView *)self;
+-    setupLiquidGlassForMinusButton(view);
+-    updateLiquidGlassLayoutForMinus(view);
+-}
+-
+-%end
+-
+-static void setupLiquidGlassForPageCell(UIView *cell) {
+-    for (UIView *subview in cell.subviews) {
+-        if ([subview isKindOfClass:NSClassFromString(@"MTMaterialView")] && subview.frame.size.height > 100) {
+-            subview.hidden = YES;
+-            subview.alpha = 0;
+-        } else if ([NSStringFromClass([subview class]) isEqualToString:@"UIView"] && subview.frame.size.height > 100) {
+-            subview.hidden = YES;
+-            subview.alpha = 0;
+-        }
+-    }
+-
+-    if ([cell viewWithTag:991]) return;
+-
+-    CGRect cardFrame = CGRectZero;
+-    for (UIView *subview in cell.subviews) {
+-        if ([subview isKindOfClass:NSClassFromString(@"MTMaterialView")] && subview.frame.size.height > 100) {
+-            cardFrame = subview.frame;
+-            break;
+-        }
+-    }
+-
+-    if (CGRectIsEmpty(cardFrame)) return;
+-
+-    LGAdjustableBlurView *blurView = [[LGAdjustableBlurView alloc] initWithFrame:cardFrame blurRadius:15.0];
+-    blurView.qualityScale = 0.50;
+-    blurView.clipsToBounds = YES;
+-    blurView.tag = 991;
+-    [blurView.layer setValue:@"dylv.liquidglass.blur.pageCell" forKey:@"groupName"];
+-
+-    LGLiveBackdropView *lgView = [[LGLiveBackdropView alloc] initWithFrame:cardFrame];
+-    lgView.qualityScale = 0.50;
+-    lgView.clipsToBounds = YES;
+-    lgView.tag = 992;
+-    lgView.layer.borderWidth = 0.5;
+-    lgView.layer.borderColor = [UIColor colorWithWhite:1.0 alpha:0.35].CGColor;
+-
+-    [cell insertSubview:blurView atIndex:0];
+-    [cell insertSubview:lgView aboveSubview:blurView];
+-
+-    __weak LGLiveBackdropView *weakBackdrop = lgView;
+-    for (NSNumber *delay in @[@0.5, @1.5]) {
+-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay.doubleValue * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+-            [weakBackdrop forceReapplyForRegistrationRace];
+-        });
+-    }
+-}
+-
+-static void updateLiquidGlassLayoutForPageCell(UIView *cell) {
+-    LGAdjustableBlurView *blurView = [cell viewWithTag:991];
+-    LGLiveBackdropView *lgView = [cell viewWithTag:992];
+-
+-    if (blurView && lgView) {
+-        BOOL isAnimating = cell.bounds.size.width > 120;
+-
+-        for (UIView *subview in cell.subviews) {
+-            if ([subview isKindOfClass:NSClassFromString(@"MTMaterialView")] && subview.frame.size.height > 100) {
+-                blurView.frame = subview.frame;
+-                lgView.frame = subview.frame;
+-
+-                CGFloat cr = subview.layer.cornerRadius;
+-                if (cr > 0) {
+-                    blurView.layer.cornerRadius = cr;
+-                    lgView.layer.cornerRadius = cr;
+-                } else {
+-                    blurView.layer.cornerRadius = 24.0;
+-                    lgView.layer.cornerRadius = 24.0;
+-                }
+-
+-                if (isAnimating) {
+-                    blurView.hidden = YES;
+-                    lgView.hidden = YES;
+-                    subview.hidden = NO;
+-                    subview.alpha = 1;
+-                } else {
+-                    blurView.hidden = NO;
+-                    lgView.hidden = NO;
+-                    subview.hidden = YES;
+-                    subview.alpha = 0;
+-                }
+-            } else if ([NSStringFromClass([subview class]) isEqualToString:@"UIView"] && CGRectEqualToRect(subview.frame, blurView.frame)) {
+-                if (isAnimating) {
+-                    subview.hidden = NO;
+-                    subview.alpha = 1;
+-                } else {
+-                    subview.hidden = YES;
+-                    subview.alpha = 0;
+-                }
+-            }
+-        }
+-    }
+-}
+-
+-%hook SBHPageManagementCellView
+-
+-- (void)layoutSubviews {
+-    %orig;
+-    UIView *view = (UIView *)self;
+-    setupLiquidGlassForPageCell(view);
+-    updateLiquidGlassLayoutForPageCell(view);
+-}
+-
+-%end
+-
+-static void setupLiquidGlassForPageCheckbox(UIView *checkbox) {
+-    for (UIView *subview in checkbox.subviews) {
+-        if ([subview isKindOfClass:NSClassFromString(@"MTMaterialView")] ||
+-           ([NSStringFromClass([subview class]) isEqualToString:@"UIView"] && subview.subviews.count == 0)) {
+-            subview.hidden = YES;
+-            subview.alpha = 0;
+-        }
+-    }
+-
+-    if ([checkbox viewWithTag:993]) return;
+-
+-    LGAdjustableBlurView *blurView = [[LGAdjustableBlurView alloc] initWithFrame:checkbox.bounds blurRadius:4.0];
+-    blurView.capturesAppIcon = YES;
+-    blurView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+-    blurView.clipsToBounds = YES;
+-    blurView.tag = 993;
+-
+-    LGLiveBackdropView *lgView = [[LGLiveBackdropView alloc] initWithFrame:checkbox.bounds];
+-    lgView.capturesAppIcon = YES;
+-    lgView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+-    lgView.clipsToBounds = YES;
+-    lgView.tag = 994;
+-    lgView.layer.borderWidth = 0.5;
+-    lgView.layer.borderColor = [UIColor colorWithWhite:1.0 alpha:0.35].CGColor;
+-
+-    [checkbox insertSubview:blurView atIndex:0];
+-    [checkbox insertSubview:lgView atIndex:1];
+-
+-    __weak LGLiveBackdropView *weakBackdrop = lgView;
+-    for (NSNumber *delay in @[@0.5, @1.5]) {
+-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay.doubleValue * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+-            [weakBackdrop forceReapplyForRegistrationRace];
+-        });
+-    }
+-}
+-
+-static void updateLiquidGlassLayoutForPageCheckbox(UIView *checkbox) {
+-    LGAdjustableBlurView *blurView = [checkbox viewWithTag:993];
+-    LGLiveBackdropView *lgView = [checkbox viewWithTag:994];
+-
+-    if (blurView && lgView) {
+-        blurView.layer.cornerRadius = checkbox.bounds.size.height / 2.0;
+-        lgView.layer.cornerRadius = checkbox.bounds.size.height / 2.0;
+-
+-        for (UIView *subview in checkbox.subviews) {
+-            if ([subview isKindOfClass:NSClassFromString(@"MTMaterialView")] ||
+-               ([NSStringFromClass([subview class]) isEqualToString:@"UIView"] && subview.subviews.count == 0)) {
+-                subview.hidden = YES;
+-                subview.alpha = 0;
+-            }
+-        }
+-    }
+-}
+-
+-%hook SBHPageManagementCheckbox
+-
+-- (void)layoutSubviews {
+-    %orig;
+-    UIView *view = (UIView *)self;
+-    setupLiquidGlassForPageCheckbox(view);
+-    updateLiquidGlassLayoutForPageCheckbox(view);
+-}
+-
+-%end
+-
+-void Home26InitEditingButtonsHooks(void) {
+-    %init();
+-}
++void Home26InitEditingButtonsHooks(void) { %init(); }
+--- a/Hooks/HooksCommon.h
++++ b/Hooks/HooksCommon.h
+@@ -94,3 +94,5 @@
+ #ifdef __cplusplus
+ }
+ #endif
++
++void Home26InitUIKitIconHooks(void);
 --- a/Hooks/HooksCommon.m
 +++ b/Hooks/HooksCommon.m
 @@ -3,21 +3,21 @@
@@ -1554,7 +2560,7 @@
  
  BOOL g_isAppOpening = NO;
  BOOL g_isFolderOpen = NO;
-@@ -206,76 +206,70 @@
+@@ -206,76 +206,64 @@
  }
  
  void reload26HomePrefs(void) {
@@ -1578,14 +2584,10 @@
 -    }
 -
 -    CFPropertyListRef packVal = CFPreferencesCopyAppValue(CFSTR("ngkhoi.26home.selectedIconPack"), CFSTR("com.ngkhoi.26home"));
-+        g_engineVersion = [prefs stringForKey:@"icontint15.26base.icongen.engineVersion"] ?: @"IconGen3";
-+    }
-+
-+    CFPropertyListRef packVal = CFPreferencesCopyAppValue(CFSTR("icontint15.26base.selectedIconPack"), CFSTR("local.icontint15.26base"));
-     if (packVal && [(__bridge id)packVal isKindOfClass:[NSString class]]) {
-         g_selectedIconPack = [(__bridge NSString *)packVal copy];
-         CFRelease(packVal);
-     } else {
+-    if (packVal && [(__bridge id)packVal isKindOfClass:[NSString class]]) {
+-        g_selectedIconPack = [(__bridge NSString *)packVal copy];
+-        CFRelease(packVal);
+-    } else {
 -        g_selectedIconPack = [prefs stringForKey:@"ngkhoi.26home.selectedIconPack"] ?: [prefs stringForKey:@"ngkhoi.26home.activePackId"] ?: @"SolidGlass";
 -    }
 -
@@ -1597,8 +2599,10 @@
 -    g_disableLiquidGlassIcons = CFPreferencesGetAppBooleanValue(CFSTR("ngkhoi.26home.disableLiquidGlassIcons"), CFSTR("com.ngkhoi.26home"), NULL);
 -
 -    CFPropertyListRef excludedVal = CFPreferencesCopyAppValue(CFSTR("ngkhoi.26home.excludedApps"), CFSTR("com.ngkhoi.26home"));
-+        g_selectedIconPack = [prefs stringForKey:@"icontint15.26base.selectedIconPack"] ?: [prefs stringForKey:@"icontint15.26base.activePackId"] ?: @"Home18";
++        g_engineVersion = [prefs stringForKey:@"icontint15.26base.icongen.engineVersion"] ?: @"IconGen3";
 +    }
++
++    g_selectedIconPack = @"Home18";
 +
 +    g_iconStyle = [prefs stringForKey:@"icontint15.26base.iconStyle"] ?: @"Default";
 +    if ([g_iconStyle isEqualToString:@"Clear"]) g_iconStyle = @"Default";
@@ -1666,7 +2670,59 @@
          CFRelease(qualityVal);
 --- a/Hooks/IconView.x
 +++ b/Hooks/IconView.x
-@@ -521,9 +521,9 @@
+@@ -1,4 +1,6 @@
+ #import "HooksCommon.h"
++#import "../Home18Pixels.h"
++#import "../LGCustomIconGenerator2.h"
+ 
+ static void applyClockHandsInversion(CALayer *layer, BOOL apply, CGSize parentBoundsSize, CALayer *secondsLayer) {
+     if (!layer) return;
+@@ -78,6 +80,29 @@
+ 
+         CALayer *secondsLayer = secondsView ? secondsView.layer : nil;
+         applyClockHandsInversion(view.layer, needsWhiteHands, view.bounds.size, secondsLayer);
++        // Only color the native hand views; never filter the whole clock backdrop.
++        if ([g_iconStyle isEqualToString:@"Tinted"]) {
++            UIColor *chosen=[[LGCustomIconGenerator2 sharedGenerator] adjustedTintColorFromHex:g_tintColor isDarkTheme:YES];
++            CGFloat r=1,g=1,b=1,a=1;[chosen getRed:&r green:&g blue:&b alpha:&a];
++            float rr=r,gg=g,bb=b;H18Color(&rr,&gg,&bb);
++            struct H18HandMatrix {float m[20];} matrix={{0,0,0,rr,0, 0,0,0,gg,0, 0,0,0,bb,0, 0,0,0,1,0}};
++            for (NSString *key in @[@"_hourHandView",@"_hourView",@"_minuteHandView",@"_minuteView",@"_secondHandView",@"_secondsView"]) {
++                @try {
++                    id hand=[view valueForKey:key];
++                    CALayer *handLayer=[hand isKindOfClass:UIView.class] ? [(UIView *)hand layer] : ([hand isKindOfClass:CALayer.class] ? hand : nil);
++                    if (!handLayer) continue;
++#pragma clang diagnostic push
++#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
++                    id filter=[NSClassFromString(@"CAFilter") performSelector:NSSelectorFromString(@"filterWithType:") withObject:@"colorMatrix"];
++#pragma clang diagnostic pop
++                    if (filter) {
++                        [filter setValue:[NSValue valueWithBytes:&matrix objCType:@encode(struct H18HandMatrix)] forKey:@"inputColorMatrix"];
++                        handLayer.filters=@[filter];
++                    }
++                } @catch (NSException *exception) {}
++            }
++        }
++
+     }
+ }
+ 
+@@ -153,9 +178,11 @@
+     UIView *iconImageView = [self valueForKey:@"_iconImageView"];
+     if (iconImageView) {
+         CGFloat standardCornerRadius = GetIconCornerRadius(iconImageView, self);
+-        iconImageView.layer.cornerRadius = standardCornerRadius;
+-        iconImageView.layer.cornerCurve = kCACornerCurveCircular;
+-        iconImageView.layer.masksToBounds = NO;
++        if (![g_menuAppearance isEqualToString:@"iOS18"]) {
++            iconImageView.layer.cornerRadius = standardCornerRadius;
++            iconImageView.layer.cornerCurve = kCACornerCurveCircular;
++            iconImageView.layer.masksToBounds = NO;
++        }
+         updateClockHandsInversionForView(iconImageView);
+     }
+ 
+@@ -521,9 +548,9 @@
  - (instancetype)initWithConfigurationOptions:(NSUInteger)options listLayoutProvider:(id)provider {
      id orig = %orig;
      if (orig) {
@@ -1679,7 +2735,7 @@
      }
      return orig;
  }
-@@ -833,16 +833,16 @@
+@@ -833,16 +860,16 @@
  - (void)didMoveToWindow {
      %orig;
      if (self.window) {
@@ -1700,7 +2756,7 @@
      %orig;
  }
  
-@@ -1087,8 +1087,8 @@
+@@ -1087,8 +1114,8 @@
  - (instancetype)initWithFrame:(CGRect)frame {
      id orig = %orig;
      if (orig) {
@@ -1711,7 +2767,7 @@
      }
      return orig;
  }
-@@ -1164,13 +1164,13 @@
+@@ -1164,13 +1191,13 @@
  - (instancetype)initWithFolder:(id)folder {
      id orig = %orig;
      if (orig) {
@@ -1729,7 +2785,15 @@
  
 --- a/Hooks/Main.x
 +++ b/Hooks/Main.x
-@@ -263,21 +263,21 @@
+@@ -8,6 +8,7 @@
+         return;
+     }
+ 
++    Home26InitUIKitIconHooks();
+     NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
+     if ([bundleId isEqualToString:@"com.apple.Preferences"]) {
+         Home26InitPreferencesHooks();
+@@ -263,21 +264,21 @@
          }
      };
  
@@ -1754,7 +2818,7 @@
          Home26Log(@"=== UpdateIconStyle Notification Received ===");
          reload26HomePrefs();
          [[LGCustomIconGenerator2 sharedGenerator] clearCache];
-@@ -326,21 +326,21 @@
+@@ -326,21 +327,21 @@
          }
      };
  
@@ -1780,7 +2844,7 @@
          Home26Log(@"=== Darwin clearCache Notification Received ===");
          reload26HomePrefs();
          [[LGCustomIconGenerator2 sharedGenerator] clearDiskCache];
-@@ -367,11 +367,11 @@
+@@ -367,11 +368,11 @@
          }
  
          refreshKnownIcons();
@@ -1794,7 +2858,7 @@
          Home26Log(@"=== Darwin UpdateIconStyle Notification Received ===");
          reload26HomePrefs();
          [[LGCustomIconGenerator2 sharedGenerator] clearCache];
-@@ -381,19 +381,19 @@
+@@ -381,19 +382,19 @@
      });
  
      int largeToken;
@@ -1817,7 +2881,7 @@
          updateLiveGlassAndBlur();
      });
  
-@@ -443,7 +443,7 @@
+@@ -443,7 +444,7 @@
                          [[NSFileManager defaultManager] createDirectoryAtPath:dir withIntermediateDirectories:YES attributes:nil error:nil];
                          NSString *wpPath = [dir stringByAppendingPathComponent:@"26HomeCurrentWallpaper.jpg"];
                          [data writeToFile:wpPath atomically:YES];
@@ -1826,7 +2890,7 @@
                      });
                  }
              } @catch (NSException *e) {
-@@ -459,7 +459,7 @@
+@@ -459,7 +460,7 @@
      };
  
      int wpToken;
@@ -1842,7 +2906,7 @@
  
      CGFloat targetScale = orig.scale > 0 ? orig.scale : (scale > 0 ? scale : [UIScreen mainScreen].scale);
 -    NSString *cacheKey = [NSString stringWithFormat:@"%@_%@_%@_%d_%.0fx%.0f_%.0f", bundleID, g_selectedIconPack ?: @"SolidGlass", style, format, orig.size.width, orig.size.height, targetScale];
-+    NSString *cacheKey = [NSString stringWithFormat:@"%@_%@_%@_%d_%.0fx%.0f_%.0f", bundleID, g_selectedIconPack ?: @"Home18", style, format, orig.size.width, orig.size.height, targetScale];
++    NSString *cacheKey = [NSString stringWithFormat:@"%@_%@_%@_%d_%.0fx%.0f_%.0f", bundleID, g_selectedIconPack ?: @"Home18", [style stringByAppendingFormat:@"_%@_%@_%@",g_tintColor,g_themeMode,g_darkIconMode], format, orig.size.width, orig.size.height, targetScale];
      UIImage *cached = [g_appIconImageCache objectForKey:cacheKey];
      if (cached) return cached;
  
@@ -1881,6 +2945,16 @@
          reload26HomePrefs();
          if (g_preferencesStyledIconCache) {
              [g_preferencesStyledIconCache removeAllObjects];
+@@ -320,6 +320,8 @@
+ 
+ void Home26InitPreferencesHooks(void) {
+     Home26RegisterPreferencesNotifications();
+-    %init(UIKitHooks);
++
+     %init(PreferencesHooks);
+ }
++
++void Home26InitUIKitIconHooks(void) { %init(UIKitHooks); }
 --- a/Hooks/Spotlight.x
 +++ b/Hooks/Spotlight.x
 @@ -2,7 +2,7 @@
@@ -2060,18 +3134,82 @@
          notifyAllIconsVisibilityChanged();
      });
  }
+@@ -329,6 +329,46 @@
+ 
+ %end
+ 
++// The switcher header uses image containers instead of SBIconImageView.
++static char H18HeaderOriginalKey, H18HeaderRenderedKey, H18HeaderStyleKey;
++static void H18RefreshSwitcherHeader(UIView *header) {
++    Ivar ivar=class_getInstanceVariable([header class], "_itemsToIconImageViews");
++    if (!ivar) return;
++    id mapping=object_getIvar(header,ivar);
++    if (![mapping isKindOfClass:NSDictionary.class]) return;
++    NSString *stamp=[NSString stringWithFormat:@"%@/%@/%@/%@",g_iconStyle,g_tintColor,g_themeMode,g_darkIconMode];
++    for (id item in [mapping allKeys]) {
++        id display=item;
++        if (![display respondsToSelector:@selector(bundleIdentifier)] && [display respondsToSelector:@selector(displayItem)]) display=[display performSelector:@selector(displayItem)];
++        if (![display respondsToSelector:@selector(bundleIdentifier)]) continue;
++        NSString *bundle=[display performSelector:@selector(bundleIdentifier)];
++        id container=mapping[item];
++        if (![bundle isKindOfClass:NSString.class] || isAppExcluded(bundle) || ![container respondsToSelector:@selector(image)] || ![container respondsToSelector:@selector(setImage:)]) continue;
++        UIImage *image=[container performSelector:@selector(image)];
++        if (![image isKindOfClass:UIImage.class]) continue;
++        UIImage *previous=objc_getAssociatedObject(container,&H18HeaderRenderedKey);
++        if (image==previous && [stamp isEqual:objc_getAssociatedObject(container,&H18HeaderStyleKey)]) continue;
++        UIImage *original=image==previous ? objc_getAssociatedObject(container,&H18HeaderOriginalKey) : image;
++        UIImage *styled=Home26RequestStyledIcon(original,bundle);
++        if (!styled) continue;
++        UIGraphicsBeginImageContextWithOptions(original.size,NO,original.scale);
++        [styled drawInRect:(CGRect){CGPointZero,original.size}];
++        UIImage *resized=UIGraphicsGetImageFromCurrentImageContext();
++        UIGraphicsEndImageContext();
++        if (!resized) continue;
++        objc_setAssociatedObject(container,&H18HeaderOriginalKey,original,OBJC_ASSOCIATION_RETAIN_NONATOMIC);
++        objc_setAssociatedObject(container,&H18HeaderRenderedKey,resized,OBJC_ASSOCIATION_RETAIN_NONATOMIC);
++        objc_setAssociatedObject(container,&H18HeaderStyleKey,stamp,OBJC_ASSOCIATION_COPY_NONATOMIC);
++        [container performSelector:@selector(setImage:) withObject:resized];
++    }
++}
++%hook SBFluidSwitcherItemContainerHeaderView
++- (void)layoutSubviews {
++    %orig;
++    H18RefreshSwitcherHeader((UIView *)self);
++}
++%end
++
+ void Home26InitSpringBoardCoreHooks(void) {
+     %init();
+ }
+--- a/LGCustomIconGenerator2.h
++++ b/LGCustomIconGenerator2.h
+@@ -42,5 +42,6 @@
+ - (void)requestIconAsyncForImage:(UIImage *)orig bundleID:(NSString *)bundleID completion:(void (^)(UIImage *styled))completion;
+ - (UIImage *)_upscaleImageIfNeeded:(UIImage *)image toSize:(CGSize)targetSize;
+ 
++- (UIImage *)home18TintedImage:(UIImage *)image color:(UIColor *)color;
+ @end
+ 
 --- a/LGCustomIconGenerator2.m
 +++ b/LGCustomIconGenerator2.m
-@@ -67,7 +67,7 @@
+@@ -2,6 +2,7 @@
+ #import "LGCustomIconGenerator2.h"
+ #import <CoreImage/CoreImage.h>
+ #import <notify.h>
++#import "Home18Pixels.h"
+ 
+ extern NSString *g_iconStyle;
+ extern NSString *g_themeMode;
+@@ -67,7 +68,7 @@
  
          NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
          NSString *basePath = paths.firstObject;
 -        self.cacheDirectory = [basePath stringByAppendingPathComponent:@"ngkhoi.26home.icons"];
-+        self.cacheDirectory = [basePath stringByAppendingPathComponent:@"icontint15.26base.icons"];
++        self.cacheDirectory = [basePath stringByAppendingPathComponent:@"icontint15.26base.icons.18r3"];
  
          if (![[NSFileManager defaultManager] fileExistsAtPath:self.cacheDirectory]) {
              [[NSFileManager defaultManager] createDirectoryAtPath:self.cacheDirectory
-@@ -77,17 +77,17 @@
+@@ -77,17 +78,17 @@
          }
  
          dispatch_queue_attr_t qosAttr = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_UTILITY, 0);
@@ -2092,20 +3230,19 @@
              [self clearCache];
          });
      }
-@@ -115,44 +115,24 @@
+@@ -114,45 +115,12 @@
+     return [name lowercaseString];
  }
  
- - (NSString *)activePackId {
+-- (NSString *)activePackId {
 -    CFPreferencesAppSynchronize(CFSTR("com.ngkhoi.26home"));
 -    CFPropertyListRef packVal = CFPreferencesCopyAppValue(CFSTR("ngkhoi.26home.selectedIconPack"), CFSTR("com.ngkhoi.26home"));
-+    CFPreferencesAppSynchronize(CFSTR("local.icontint15.26base"));
-+    CFPropertyListRef packVal = CFPreferencesCopyAppValue(CFSTR("icontint15.26base.selectedIconPack"), CFSTR("local.icontint15.26base"));
-     NSString *selectedPack = nil;
-     if (packVal && [(__bridge id)packVal isKindOfClass:[NSString class]]) {
-         selectedPack = [(__bridge NSString *)packVal copy];
-         CFRelease(packVal);
-     }
-     if (!selectedPack || selectedPack.length == 0) {
+-    NSString *selectedPack = nil;
+-    if (packVal && [(__bridge id)packVal isKindOfClass:[NSString class]]) {
+-        selectedPack = [(__bridge NSString *)packVal copy];
+-        CFRelease(packVal);
+-    }
+-    if (!selectedPack || selectedPack.length == 0) {
 -        NSUserDefaults *prefs = [[NSUserDefaults alloc] initWithSuiteName:@"com.ngkhoi.26home"];
 -        selectedPack = [prefs stringForKey:@"ngkhoi.26home.selectedIconPack"] ?: [prefs stringForKey:@"ngkhoi.26home.activePackId"] ?: @"SolidGlass";
 -    }
@@ -2136,29 +3273,42 @@
 -- (BOOL)isSpecularEnabled {
 -    return ![[self specularStyle] isEqualToString:@"none"];
 -}
-+        NSUserDefaults *prefs = [[NSUserDefaults alloc] initWithSuiteName:@"local.icontint15.26base"];
-+        selectedPack = [prefs stringForKey:@"icontint15.26base.selectedIconPack"] ?: [prefs stringForKey:@"icontint15.26base.activePackId"] ?: @"Home18";
-+    }
-+    return selectedPack ?: @"Home18";
-+}
++- (NSString *)activePackId { return @"Home18"; }
 +
-+// 18-style fork: upstream image/mask pipeline retained, highlights disabled.
++
 +- (NSString *)specularStyle { return @"none"; }
 +
 +- (BOOL)isSpecularEnabled { return NO; }
  
  - (void)getSpecularStart:(CGPoint *)outStart end:(CGPoint *)outEnd forSize:(CGSize)size {
      NSString *style = [self specularStyle];
-@@ -166,7 +146,7 @@
+@@ -165,23 +133,8 @@
+     }
  }
  
- - (NSString *)packDirectoryForId:(NSString *)packId {
+-- (NSString *)packDirectoryForId:(NSString *)packId {
 -    if (!packId || packId.length == 0) packId = @"SolidGlass";
-+    if (!packId || packId.length == 0) packId = @"Home18";
+-
+-    NSString *p1 = jbroot([NSString stringWithFormat:@"/Library/Application Support/26Home/IconPacks/%@", packId]);
+-    if ([[NSFileManager defaultManager] fileExistsAtPath:p1]) return p1;
+-
+-    NSString *p2 = [NSString stringWithFormat:@"/Library/Application Support/26Home/IconPacks/%@", packId];
+-    if ([[NSFileManager defaultManager] fileExistsAtPath:p2]) return p2;
+-
+-    NSString *l1 = jbroot([NSString stringWithFormat:@"/Library/Application Support/26Home/%@", packId]);
+-    if ([[NSFileManager defaultManager] fileExistsAtPath:l1]) return l1;
+-
+-    NSString *l2 = [NSString stringWithFormat:@"/Library/Application Support/26Home/%@", packId];
+-    if ([[NSFileManager defaultManager] fileExistsAtPath:l2]) return l2;
+-
+-    return p1;
+-}
++- (NSString *)packDirectoryForId:(NSString *)packId { return Home18PackDirectory(); }
++
  
-     NSString *p1 = jbroot([NSString stringWithFormat:@"/Library/Application Support/26Home/IconPacks/%@", packId]);
-     if ([[NSFileManager defaultManager] fileExistsAtPath:p1]) return p1;
-@@ -189,17 +169,17 @@
+ - (NSString *)activePackDirectory {
+     return [self packDirectoryForId:[self activePackId]];
+@@ -189,17 +142,17 @@
  
  - (NSArray<NSString *> *)orderedPacksList {
      NSString *primaryPack = [self activePackId];
@@ -2181,7 +3331,7 @@
                  return @[primaryPack];
              }
          } else {
-@@ -210,15 +190,15 @@
+@@ -210,15 +163,15 @@
      NSMutableArray<NSString *> *result = [NSMutableArray array];
      [result addObject:primaryPack];
  
@@ -2200,7 +3350,7 @@
      }
      if (userList) {
          for (id item in userList) {
-@@ -241,8 +221,8 @@
+@@ -241,8 +194,8 @@
          }
      }
  
@@ -2211,34 +3361,456 @@
      }
  
      return [result copy];
-@@ -811,7 +791,7 @@
-         }
+@@ -320,6 +273,8 @@
+     @synchronized (self) {
+         self.themeIconsCache = buildingCache;
+     }
++    Home26Log(@"[Home18] pack=%@ darkIDs=%lu lightIDs=%lu", Home18PackDirectory(),
++        (unsigned long)buildingCache[@"Dark"].count, (unsigned long)buildingCache[@"Light"].count);
+ }
  
-         dispatch_async(dispatch_get_main_queue(), ^{
+ - (void)saveOriginalImage:(UIImage *)image forBundleID:(NSString *)bundleID {
+@@ -523,36 +478,33 @@
+     return nil;
+ }
+ 
++- (UIImage *)home18TintedImage:(UIImage *)image color:(UIColor *)color {
++    if (!image.CGImage) return image;
++    const size_t width=256, height=256, stride=width*4;
++    unsigned char *pixels=calloc(height,stride);
++    if (!pixels) return image;
++    CGColorSpaceRef space=CGColorSpaceCreateDeviceRGB();
++    CGContextRef context=CGBitmapContextCreate(pixels,width,height,8,stride,space,kCGImageAlphaPremultipliedLast|kCGBitmapByteOrder32Big);
++    CGColorSpaceRelease(space);
++    if (!context) { free(pixels); return image; }
++    CGContextDrawImage(context,CGRectMake(0,0,width,height),image.CGImage);
++    CGFloat r=1,g=1,b=1,a=1;
++    [color getRed:&r green:&g blue:&b alpha:&a];
++    H18TintRGBA(pixels,width,height,stride,r,g,b);
++    CGImageRef result=CGBitmapContextCreateImage(context);
++    UIImage *output=result ? [UIImage imageWithCGImage:result scale:1 orientation:image.imageOrientation] : image;
++    if (result) CGImageRelease(result);
++    CGContextRelease(context); free(pixels);
++    return output;
++}
++
+ - (UIColor *)adjustedTintColorFromHex:(NSString *)hex isDarkTheme:(BOOL)isDarkTheme {
+-    NSString *tintHex = hex ?: @"#00FFFF";
+-    unsigned rgbValue = 0;
+-    NSScanner *scanner = [NSScanner scannerWithString:tintHex];
+-    if ([tintHex hasPrefix:@"#"]) {
+-        [scanner setScanLocation:1];
+-    }
+-    [scanner scanHexInt:&rgbValue];
+-
+-    UIColor *rawColor = [UIColor colorWithRed:((rgbValue & 0xFF0000) >> 16)/255.0
+-                                        green:((rgbValue & 0xFF00) >> 8)/255.0
+-                                         blue:((rgbValue & 0xFF)/255.0)
+-                                        alpha:1.0];
+-
+-    CGFloat h, s, b, a;
+-    [rawColor getHue:&h saturation:&s brightness:&b alpha:&a];
+-
+-    s = s * 0.70;
+-
+-    if (isDarkTheme) {
+-        b = MIN(b * 0.85, 0.85);
+-        b = MAX(b, 0.20);
+-    } else {
+-
+-        b = MIN(b * 0.70, 0.70);
+-        b = MAX(b, 0.20);
+-    }
+-
+-    return [UIColor colorWithHue:h saturation:s brightness:b alpha:1.0];
+-}
++    unsigned value=0x9999FF;
++    NSString *digits=[(hex ?: @"#9999FF") stringByReplacingOccurrencesOfString:@"#" withString:@""];
++    if (digits.length == 6) [[NSScanner scannerWithString:digits] scanHexInt:&value];
++    return [UIColor colorWithRed:((value>>16)&255)/255.0 green:((value>>8)&255)/255.0 blue:(value&255)/255.0 alpha:1];
++}
++
+ 
+ - (void)_resolveEffectiveStyle:(NSString **)outEffectiveStyle isDarkTheme:(BOOL *)outIsDarkTheme {
+     NSString *style = g_iconStyle ?: @"Default";
+@@ -593,6 +545,7 @@
+ }
+ 
+ - (UIImage *)generateDynamicIconForBundleID:(NSString *)bundleID style:(NSString *)style isDarkTheme:(BOOL)isDarkTheme {
++    if ([bundleID isEqualToString:@"com.apple.mobiletimer"] && [style isEqualToString:@"Default"]) return nil;
+ 
+     NSString *themeName = @"Light";
+     if ([style isEqualToString:@"Dark"]) {
+@@ -690,135 +643,9 @@
+ }
+ 
+ - (UIImage *)requestStyledImageForImage:(UIImage *)orig bundleID:(NSString *)bundleID {
+-    if (!orig || !bundleID) return nil;
+-
+-    NSString *style = g_iconStyle;
+-    if (!style) style = @"Default";
+-
+-    NSString *themeMode = g_themeMode;
+-    BOOL isDarkTheme = NO;
+-    if ([themeMode isEqualToString:@"Dark"]) {
+-        isDarkTheme = YES;
+-    } else if ([themeMode isEqualToString:@"Light"]) {
+-        isDarkTheme = NO;
+-    } else {
+-        isDarkTheme = ([UIScreen mainScreen].traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark);
+-    }
+-
+-    BOOL isDynamicIcon = ([bundleID isEqualToString:@"com.apple.mobiletimer"] || [bundleID isEqualToString:@"com.apple.mobilecal"]);
+-    if (isDynamicIcon) {
+-        return [self generateDynamicIconForBundleID:bundleID style:style isDarkTheme:isDarkTheme];
+-    }
+-
+-    if ([style isEqualToString:@"Clear"]) {
+-        UIImage *premade = [self _premadeIconForBundleID:bundleID style:isDarkTheme ? @"ClearDark" : @"ClearLight"];
+-        if (premade) return premade;
+-    }
+-
+-    UIImage *baseOrig = orig;
+-    if ([style isEqualToString:@"Clear"] || [style isEqualToString:@"Tinted"]) {
+-        UIImage *premadeDark = [self _premadeIconForBundleID:bundleID style:@"Dark"];
+-        if (premadeDark) {
+-            baseOrig = premadeDark;
+-        }
+-    }
+-
+-    NSString *packId = [self activePackId];
+-    NSString *cacheKey = [NSString stringWithFormat:@"%@_%@_%@_v11_spec_%@", bundleID, packId, style, [self specularStyle]];
+-
+-    UIImage *memCached = [self.memoryCache objectForKey:cacheKey];
+-    if (memCached) return memCached;
+-
+-    NSString *diskPath = [self.cacheDirectory stringByAppendingPathComponent:[cacheKey stringByAppendingString:@".png"]];
+-    if ([[NSFileManager defaultManager] fileExistsAtPath:diskPath]) {
+-        UIImage *diskCached = [UIImage imageWithContentsOfFile:diskPath];
+-        if (diskCached) {
+-            [self.memoryCache setObject:diskCached forKey:cacheKey];
+-            return diskCached;
+-        }
+-    }
+-
+-    @synchronized (self.processingIdentifiers) {
+-        if ([self.processingIdentifiers containsObject:cacheKey]) return nil;
+-        [self.processingIdentifiers addObject:cacheKey];
+-    }
+-
+-    dispatch_async(self.processingQueue, ^{
+-        UIImage *styled = nil;
+-        if ([style isEqualToString:@"Dark"]) {
+-            styled = [self generateDarkIconForImage:baseOrig bundleID:bundleID];
+-        } else if ([style isEqualToString:@"Clear"] || [style isEqualToString:@"Tinted"]) {
+-            styled = [self generateClearIconForImage:baseOrig bundleID:bundleID];
+-        } else {
+-            styled = baseOrig;
+-        }
+-
+-        if (styled) {
+-
+-            UIGraphicsBeginImageContextWithOptions(styled.size, NO, styled.scale);
+-            CGFloat radius = styled.size.width * 0.256;
+-            UIBezierPath *path = Home26CreateSquirclePath(CGRectMake(0, 0, styled.size.width, styled.size.height), radius);
+-            [path addClip];
+-            [styled drawAtPoint:CGPointZero];
+-
+-            if (([style isEqualToString:@"Default"] || [style isEqualToString:@"Dark"]) && [self isSpecularEnabled]) {
+-                CGContextRef context = UIGraphicsGetCurrentContext();
+-
+-                [path setLineWidth:3.0];
+-                CGFloat perimeterAlpha = [style isEqualToString:@"Dark"] ? 0.10 : 0.15;
+-                [[UIColor colorWithWhite:1.0 alpha:perimeterAlpha] setStroke];
+-                [path stroke];
+-
+-                CGContextSaveGState(context);
+-                CGContextSetLineWidth(context, 3.0);
+-                CGContextAddPath(context, path.CGPath);
+-                CGContextReplacePathWithStrokedPath(context);
+-                CGContextClip(context);
+-
+-                CGColorSpaceRef rimColorSpace = CGColorSpaceCreateDeviceRGB();
+-                CGFloat rimTopAlpha = [style isEqualToString:@"Dark"] ? kDarkIconRimTopOpacity : 0.75;
+-                CGFloat rimBottomAlpha = [style isEqualToString:@"Dark"] ? kDarkIconRimBottomOpacity : 0.35;
+-                NSArray *rimColors = @[(id)[UIColor colorWithWhite:1.0 alpha:rimTopAlpha].CGColor,
+-                                       (id)[UIColor colorWithWhite:1.0 alpha:0.0].CGColor,
+-                                       (id)[UIColor colorWithWhite:1.0 alpha:0.0].CGColor,
+-                                       (id)[UIColor colorWithWhite:1.0 alpha:rimBottomAlpha].CGColor];
+-
+-                CGFloat rimLocations[] = {0.0, 0.35, 0.65, 1.0};
+-                CGGradientRef rimGradient = CGGradientCreateWithColors(rimColorSpace, (__bridge CFArrayRef)rimColors, rimLocations);
+-
+-                CGPoint rimStart, rimEnd;
+-                [self getSpecularStart:&rimStart end:&rimEnd forSize:styled.size];
+-
+-                CGContextSetBlendMode(context, kCGBlendModePlusLighter);
+-        CGContextDrawLinearGradient(context, rimGradient, rimStart, rimEnd, 0);
+-
+-                CGGradientRelease(rimGradient);
+-                CGColorSpaceRelease(rimColorSpace);
+-                CGContextRestoreGState(context);
+-            }
+-
+-            styled = UIGraphicsGetImageFromCurrentImageContext();
+-            UIGraphicsEndImageContext();
+-            styled = [self applySquircleMaskToImage:styled];
+-
+-            [self.memoryCache setObject:styled forKey:cacheKey];
+-            NSData *pngData = UIImagePNGRepresentation(styled);
+-            [pngData writeToFile:diskPath atomically:YES];
+-        }
+-
+-        @synchronized (self.processingIdentifiers) {
+-            [self.processingIdentifiers removeObject:cacheKey];
+-        }
+-
+-        dispatch_async(dispatch_get_main_queue(), ^{
 -            [[NSNotificationCenter defaultCenter] postNotificationName:@"ngkhoi.26home.IconReady"
-+            [[NSNotificationCenter defaultCenter] postNotificationName:@"icontint15.26base.IconReady"
-                                                                 object:nil
-                                                               userInfo:@{@"bundleID": bundleID}];
-         });
-@@ -836,7 +816,7 @@
-     if ([style isEqualToString:@"Tinted"]) {
-         tintHex = g_tintColor ?: @"#00FFFF";
-     }
--    BOOL disableGrad = [[[NSUserDefaults alloc] initWithSuiteName:@"com.ngkhoi.26home"] boolForKey:@"ngkhoi.26home.disableDarkTintGradient"];
-+    BOOL disableGrad = [[[NSUserDefaults alloc] initWithSuiteName:@"local.icontint15.26base"] boolForKey:@"icontint15.26base.disableDarkTintGradient"];
-     NSString *skelKey = [NSString stringWithFormat:@"skel_%@_%@_%@_%@_%d_%.0fx%.0f", style ?: @"Default", isDarkTheme ? @"dark" : @"light", tintHex, [self specularStyle], disableGrad, canvasSize.width, canvasSize.height];
+-                                                                object:nil
+-                                                              userInfo:@{@"bundleID": bundleID}];
+-        });
+-    });
+-
+-    return nil;
+-}
++    return [self requestIconImageWithBackgroundForImage:orig bundleID:bundleID];
++}
++
  
-     UIImage *cached = [self.skeletonCache objectForKey:skelKey];
-@@ -1170,7 +1150,7 @@
-     if ([effectiveStyle isEqualToString:@"Tinted"]) {
-         tintHex = g_tintColor ?: @"#00FFFF";
-     }
+ - (UIImage *)compositeGlyph:(UIImage *)glyph withBackgroundStyle:(NSString *)style isDarkTheme:(BOOL)isDarkTheme {
+     return [self compositeGlyph:glyph withBackgroundStyle:style isDarkTheme:isDarkTheme tintColor:nil isAutoGenerated:YES drawSpecular:YES];
+@@ -827,189 +654,16 @@
+     return [self compositeGlyph:glyph withBackgroundStyle:style isDarkTheme:isDarkTheme tintColor:tintColor isAutoGenerated:isAutoGenerated drawSpecular:drawSpecular isStockArtwork:NO];
+ }
+ - (UIImage *)skeletonBackgroundForStyle:(NSString *)style isDarkTheme:(BOOL)isDarkTheme tintColor:(UIColor *)tintColor size:(CGSize)size scale:(CGFloat)scale {
+-    CGFloat targetW = MAX(256.0, size.width * (scale > 0 ? scale : 1.0));
+-    CGFloat targetH = MAX(256.0, size.height * (scale > 0 ? scale : 1.0));
+-    CGSize canvasSize = CGSizeMake(targetW, targetH);
+-    CGFloat canvasScale = 1.0;
+-
+-    NSString *tintHex = @"";
+-    if ([style isEqualToString:@"Tinted"]) {
+-        tintHex = g_tintColor ?: @"#00FFFF";
+-    }
 -    BOOL disableGrad = [[[NSUserDefaults alloc] initWithSuiteName:@"com.ngkhoi.26home"] boolForKey:@"ngkhoi.26home.disableDarkTintGradient"];
-+    BOOL disableGrad = [[[NSUserDefaults alloc] initWithSuiteName:@"local.icontint15.26base"] boolForKey:@"icontint15.26base.disableDarkTintGradient"];
-     NSString *packId = [self activePackId];
-     BOOL isException = isAppInExceptionList(bundleID);
-     BOOL skipIconGen = isException && g_exceptionsNoIconProcessing;
-@@ -1280,7 +1260,7 @@
+-    NSString *skelKey = [NSString stringWithFormat:@"skel_%@_%@_%@_%@_%d_%.0fx%.0f", style ?: @"Default", isDarkTheme ? @"dark" : @"light", tintHex, [self specularStyle], disableGrad, canvasSize.width, canvasSize.height];
+-
+-    UIImage *cached = [self.skeletonCache objectForKey:skelKey];
+-    if (cached) return cached;
+-
+-    UIGraphicsBeginImageContextWithOptions(canvasSize, NO, canvasScale);
+-    CGContextRef context = UIGraphicsGetCurrentContext();
+-    CGContextSetAllowsAntialiasing(context, YES);
+-    CGContextSetShouldAntialias(context, YES);
+-    CGContextSetInterpolationQuality(context, kCGInterpolationHigh);
+-
+-    CGFloat radius = canvasSize.width * 0.256;
+-    UIBezierPath *path = Home26CreateSquirclePath(CGRectMake(0, 0, canvasSize.width, canvasSize.height), radius);
+-    [path addClip];
+-
+-    if ([style isEqualToString:@"Tinted"] && !isDarkTheme) {
+-        [[UIColor colorWithWhite:0.0 alpha:0.16] setFill];
+-        [path fill];
+-
+-        CGFloat topOpacity = 0.20;
+-        CGFloat botOpacity = 0.04;
+-        CGFloat strokeOpacity = 0.22;
+-
+-        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+-        NSArray *colors = @[(id)[(tintColor ?: [UIColor cyanColor]) colorWithAlphaComponent:topOpacity].CGColor,
+-                            (id)[(tintColor ?: [UIColor cyanColor]) colorWithAlphaComponent:botOpacity].CGColor];
+-
+-        CGFloat locations[] = {0.0, 1.0};
+-        CGGradientRef gradient = CGGradientCreateWithColors(colorSpace, (__bridge CFArrayRef)colors, locations);
+-
+-        CGPoint startPoint = CGPointMake(canvasSize.width/2, 0);
+-        CGPoint endPoint = CGPointMake(canvasSize.width/2, canvasSize.height);
+-
+-        CGContextDrawLinearGradient(context, gradient, startPoint, endPoint, 0);
+-        CGGradientRelease(gradient);
+-        CGColorSpaceRelease(colorSpace);
+-
+-        CGFloat strokeWidth = MAX(1.5, canvasSize.width * 0.008);
+-        CGFloat rimWidth = MAX(3.0, canvasSize.width * 0.024);
+-        [path setLineWidth:strokeWidth];
+-        [[(tintColor ?: [UIColor cyanColor]) colorWithAlphaComponent:strokeOpacity] setStroke];
+-        [path stroke];
+-
+-        if ([self isSpecularEnabled]) {
+-            CGContextSaveGState(context);
+-            [path setLineWidth:rimWidth];
+-            CGContextAddPath(context, path.CGPath);
+-            CGContextReplacePathWithStrokedPath(context);
+-            CGContextClip(context);
+-
+-            CGColorSpaceRef rimColorSpace = CGColorSpaceCreateDeviceRGB();
+-            NSArray *rimColors = @[(id)[UIColor colorWithWhite:1.0 alpha:0.55].CGColor,
+-                                   (id)[UIColor colorWithWhite:1.0 alpha:0.0].CGColor,
+-                                   (id)[UIColor colorWithWhite:1.0 alpha:0.0].CGColor,
+-                                   (id)[UIColor colorWithWhite:1.0 alpha:0.25].CGColor];
+-
+-            CGFloat rimLocations[] = {0.0, 0.35, 0.65, 1.0};
+-            CGGradientRef rimGradient = CGGradientCreateWithColors(rimColorSpace, (__bridge CFArrayRef)rimColors, rimLocations);
+-
+-            CGPoint rimStart, rimEnd;
+-            [self getSpecularStart:&rimStart end:&rimEnd forSize:canvasSize];
+-
+-            CGContextSetBlendMode(context, kCGBlendModePlusLighter);
+-            CGContextDrawLinearGradient(context, rimGradient, rimStart, rimEnd, 0);
+-            CGGradientRelease(rimGradient);
+-            CGColorSpaceRelease(rimColorSpace);
+-            CGContextRestoreGState(context);
+-        }
+-    } else if ([style isEqualToString:@"Clear"] || ([style isEqualToString:@"Tinted"] && isDarkTheme)) {
+-        if ([style isEqualToString:@"Tinted"] && isDarkTheme) {
+-            [[UIColor colorWithWhite:0.06 alpha:1.0] setFill];
+-            [path fill];
+-            [[UIColor colorWithWhite:0.0 alpha:0.40] setFill];
+-            [path fill];
+-        }
+-
+-        CGFloat topOpacity = 0.2;
+-        CGFloat botOpacity = 0.03;
+-        CGFloat strokeOpacity = 0.2;
+-        CGFloat rimTopOpacity = 1.0;
+-        CGFloat rimBotOpacity = 1.0;
+-
+-        if ([style isEqualToString:@"Tinted"] && isDarkTheme) {
+-            if (disableGrad) {
+-                topOpacity = 0.0;
+-                botOpacity = 0.0;
+-                strokeOpacity = 0.0;
+-                rimTopOpacity = 0.0;
+-                rimBotOpacity = 0.0;
+-            } else {
+-                topOpacity = kDarkTintedTopOpacity;
+-                botOpacity = kDarkTintedBottomOpacity;
+-                strokeOpacity = kDarkTintedStrokeOpacity;
+-                rimTopOpacity = kDarkTintedRimTopOpacity;
+-                rimBotOpacity = kDarkTintedRimBottomOpacity;
+-            }
+-        } else if (isDarkTheme) {
+-            topOpacity = kDarkClearTopOpacity;
+-            botOpacity = kDarkClearBottomOpacity;
+-            strokeOpacity = kDarkClearStrokeOpacity;
+-            rimTopOpacity = kDarkClearRimTopOpacity;
+-            rimBotOpacity = kDarkClearRimBottomOpacity;
+-        } else {
+-            topOpacity = kLightClearTopOpacity;
+-            botOpacity = kLightClearBottomOpacity;
+-            strokeOpacity = kLightClearStrokeOpacity;
+-            rimTopOpacity = kLightClearRimTopOpacity;
+-            rimBotOpacity = kLightClearRimBottomOpacity;
+-        }
+-
+-        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+-        NSArray *colors = @[(id)[UIColor colorWithWhite:1.0 alpha:topOpacity].CGColor,
+-                            (id)[UIColor colorWithWhite:1.0 alpha:botOpacity].CGColor];
+-
+-        CGFloat locations[] = {0.0, 1.0};
+-        CGGradientRef gradient = CGGradientCreateWithColors(colorSpace, (__bridge CFArrayRef)colors, locations);
+-
+-        CGPoint startPoint = CGPointMake(canvasSize.width/2, 0);
+-        CGPoint endPoint = CGPointMake(canvasSize.width/2, canvasSize.height);
+-
+-        CGContextDrawLinearGradient(context, gradient, startPoint, endPoint, 0);
+-        CGGradientRelease(gradient);
+-        CGColorSpaceRelease(colorSpace);
+-
+-        CGFloat strokeWidth = MAX(1.5, canvasSize.width * 0.008);
+-        CGFloat rimWidth = MAX(3.0, canvasSize.width * 0.024);
+-        [path setLineWidth:strokeWidth];
+-        [[UIColor colorWithWhite:1.0 alpha:strokeOpacity] setStroke];
+-        [path stroke];
+-
+-        if ([self isSpecularEnabled] && ![g_menuAppearance isEqualToString:@"iOS18"]) {
+-            CGContextSaveGState(context);
+-            [path setLineWidth:rimWidth];
+-            CGContextAddPath(context, path.CGPath);
+-            CGContextReplacePathWithStrokedPath(context);
+-            CGContextClip(context);
+-
+-            CGColorSpaceRef rimColorSpace = CGColorSpaceCreateDeviceRGB();
+-            NSArray *rimColors = @[(id)[UIColor colorWithWhite:1.0 alpha:rimTopOpacity].CGColor,
+-                                   (id)[UIColor colorWithWhite:1.0 alpha:0.0].CGColor,
+-                                   (id)[UIColor colorWithWhite:1.0 alpha:0.0].CGColor,
+-                                   (id)[UIColor colorWithWhite:1.0 alpha:rimBotOpacity].CGColor];
+-
+-            CGFloat rimLocations[] = {0.0, 0.35, 0.65, 1.0};
+-            CGGradientRef rimGradient = CGGradientCreateWithColors(rimColorSpace, (__bridge CFArrayRef)rimColors, rimLocations);
+-
+-            CGPoint rimStart, rimEnd;
+-            [self getSpecularStart:&rimStart end:&rimEnd forSize:canvasSize];
+-
+-            CGContextSetBlendMode(context, kCGBlendModePlusLighter);
+-            CGContextDrawLinearGradient(context, rimGradient, rimStart, rimEnd, 0);
+-            CGGradientRelease(rimGradient);
+-            CGColorSpaceRelease(rimColorSpace);
+-            CGContextRestoreGState(context);
+-        }
+-    } else {
+-        UIColor *bgColor = [UIColor clearColor];
+-        if ([style isEqualToString:@"Dark"]) {
+-            bgColor = [UIColor colorWithWhite:0.1 alpha:1.0];
+-        }
+-        [bgColor setFill];
+-        [path fill];
+-    }
+-
+-    UIImage *skeleton = UIGraphicsGetImageFromCurrentImageContext();
++    if ([style isEqualToString:@"Default"]) return nil;
++    CGSize canvas=CGSizeMake(256,256);
++    UIGraphicsBeginImageContextWithOptions(canvas,NO,1);
++    [[UIColor colorWithWhite:0.10 alpha:1] setFill];
++    UIRectFill((CGRect){CGPointZero,canvas});
++    UIImage *result=UIGraphicsGetImageFromCurrentImageContext();
+     UIGraphicsEndImageContext();
+-
+-    if (skeleton) {
+-        skeleton = [self applySquircleMaskToImage:skeleton];
+-        [self.skeletonCache setObject:skeleton forKey:skelKey];
+-    }
+-    return skeleton;
+-}
++    return [self applySquircleMaskToImage:result];
++}
++
+ 
+ - (UIImage *)skeletonBackgroundForBundleID:(NSString *)bundleID size:(CGSize)size scale:(CGFloat)scale {
+     NSString *effectiveStyle = @"Default";
+@@ -1165,16 +819,9 @@
+     return [self applySquircleMaskToImage:result];
+ }
+ 
+-- (NSString *)_cacheKeyForBundleID:(NSString *)bundleID effectiveStyle:(NSString *)effectiveStyle isDarkTheme:(BOOL)isDarkTheme nsPremade:(UIImage *)nsPremade {
+-    NSString *tintHex = @"";
+-    if ([effectiveStyle isEqualToString:@"Tinted"]) {
+-        tintHex = g_tintColor ?: @"#00FFFF";
+-    }
+-    BOOL disableGrad = [[[NSUserDefaults alloc] initWithSuiteName:@"com.ngkhoi.26home"] boolForKey:@"ngkhoi.26home.disableDarkTintGradient"];
+-    NSString *packId = [self activePackId];
+-    BOOL isException = isAppInExceptionList(bundleID);
+-    BOOL skipIconGen = isException && g_exceptionsNoIconProcessing;
+-    return [NSString stringWithFormat:@"%@_%@_%@_v54_bg_%@_%@_%@_%d%@%@_spec_%@", bundleID, packId, effectiveStyle, isDarkTheme ? @"dark" : @"light", tintHex, g_menuAppearance, disableGrad, nsPremade ? @"_ns4" : @"", skipIconGen ? @"_noGen2" : @"", [self specularStyle]];
++- (NSString *)_cacheKeyForBundleID:(NSString *)bundleID effectiveStyle:(NSString *)style isDarkTheme:(BOOL)isDarkTheme nsPremade:(UIImage *)nsPremade {
++    NSString *color=[style isEqualToString:@"Tinted"] ? (g_tintColor ?: @"#9999FF") : @"none";
++    return [NSString stringWithFormat:@"18r3_%@_%@_%@",bundleID,style,color];
+ }
+ 
+ - (UIImage *)fastCachedIconForBundleID:(NSString *)bundleID {
+@@ -1186,7 +833,9 @@
+ 
+     BOOL isDynamicIcon = ([bundleID isEqualToString:@"com.apple.mobiletimer"] || [bundleID isEqualToString:@"com.apple.mobilecal"]);
+     if (isDynamicIcon) {
+-        return [self generateDynamicIconForBundleID:bundleID style:effectiveStyle isDarkTheme:isDarkTheme];
++        BOOL tinted=[effectiveStyle isEqualToString:@"Tinted"];
++        UIImage *base=[self generateDynamicIconForBundleID:bundleID style:(tinted ? @"Dark" : effectiveStyle) isDarkTheme:(tinted || isDarkTheme)];
++        return tinted ? [self home18TintedImage:base color:[self adjustedTintColorFromHex:g_tintColor isDarkTheme:YES]] : base;
+     }
+ 
+     if ([effectiveStyle isEqualToString:@"Clear"]) {
+@@ -1280,7 +929,7 @@
              }
  
              if (styled) {
@@ -2247,22 +3819,193 @@
                                                                      object:nil
                                                                    userInfo:@{@"bundleID": bundleID, @"image": styled}];
              }
-@@ -1349,12 +1329,10 @@
-             isAutoGenerated = YES;
-             isStockArtwork = YES;
-         } else {
-+            // 18-style fork: use the imported dark artwork to retain the intended glyph.
-+            UIImage *premadeDark = [self _premadeIconForBundleID:bundleID style:@"Dark"];
-             UIImage *premadeLight = [self _premadeIconForBundleID:bundleID style:@"Light"];
+@@ -1290,159 +939,36 @@
+ 
+ - (UIImage *)requestIconImageWithBackgroundForImage:(UIImage *)orig bundleID:(NSString *)bundleID {
+     if (!orig || !bundleID) return nil;
+-
+-    NSString *effectiveStyle = @"Default";
+-    BOOL isDarkTheme = NO;
+-    [self _resolveEffectiveStyle:&effectiveStyle isDarkTheme:&isDarkTheme];
+-
+-    BOOL isDynamicIcon = ([bundleID isEqualToString:@"com.apple.mobiletimer"] || [bundleID isEqualToString:@"com.apple.mobilecal"]);
+-    if (isDynamicIcon) {
+-        return [self generateDynamicIconForBundleID:bundleID style:effectiveStyle isDarkTheme:isDarkTheme];
+-    }
+-
+-    if ([effectiveStyle isEqualToString:@"Clear"]) {
+-        NSString *clearStyle = isDarkTheme ? @"ClearDark" : @"ClearLight";
+-        UIImage *premade = [self _premadeIconForBundleID:bundleID style:clearStyle];
+-        if (premade) return premade;
+-    }
+-
+-    UIImage *nsPremade = nil;
+-    if ([effectiveStyle isEqualToString:@"Dark"]) {
+-        nsPremade = [self _premadeIconForBundleID:bundleID style:@"DarkNS"];
+-    } else if ([effectiveStyle isEqualToString:@"Default"]) {
+-        nsPremade = [self _premadeIconForBundleID:bundleID style:@"LightNS"];
+-    }
+-
+-    NSString *cacheKey = [self _cacheKeyForBundleID:bundleID effectiveStyle:effectiveStyle isDarkTheme:isDarkTheme nsPremade:nsPremade];
+-    UIImage *memCached = [self.memoryCache objectForKey:cacheKey];
+-    if (memCached) {
+-        return memCached;
+-    }
+-
+-    NSString *diskPath = [self.cacheDirectory stringByAppendingPathComponent:[cacheKey stringByAppendingString:@".png"]];
+-    if ([[NSFileManager defaultManager] fileExistsAtPath:diskPath]) {
+-        UIImage *diskCached = [UIImage imageWithContentsOfFile:diskPath];
+-        if (diskCached) {
+-            [self.memoryCache setObject:diskCached forKey:cacheKey];
+-            return diskCached;
+-        }
+-    }
+-
+-    BOOL isException = isAppInExceptionList(bundleID);
+-    BOOL skipIconGen = isException && g_exceptionsNoIconProcessing;
+-    NSString *tintHex = @"";
+-    if ([effectiveStyle isEqualToString:@"Tinted"]) {
+-        tintHex = g_tintColor ?: @"#00FFFF";
+-    }
+-
+-    BOOL isAutoGenerated = NO;
+-    BOOL isStockArtwork = NO;
+-    UIImage *glyph = nil;
+-    if ([effectiveStyle isEqualToString:@"Tinted"]) {
+-        NSString *clearStyle = isDarkTheme ? @"ClearDark" : @"ClearLight";
+-        UIImage *premadeClear = [self _premadeIconForBundleID:bundleID style:clearStyle];
+-        if (premadeClear) {
+-            glyph = premadeClear;
+-            isAutoGenerated = NO;
+-        } else if (skipIconGen) {
+-            glyph = orig;
+-            isAutoGenerated = YES;
+-            isStockArtwork = YES;
+-        } else {
+-            UIImage *premadeLight = [self _premadeIconForBundleID:bundleID style:@"Light"];
 -            if (premadeLight) {
 -                glyph = [self generateClearIconForImage:premadeLight bundleID:bundleID];
 -            } else {
 -                glyph = [self generateClearIconForImage:orig bundleID:bundleID];
 -            }
-+            glyph = [self generateClearIconForImage:(premadeDark ?: premadeLight ?: orig) bundleID:bundleID];
-             isAutoGenerated = YES;
-         }
-     } else if ([effectiveStyle isEqualToString:@"Clear"]) {
+-            isAutoGenerated = YES;
+-        }
+-    } else if ([effectiveStyle isEqualToString:@"Clear"]) {
+-        NSString *clearStyle = isDarkTheme ? @"ClearDark" : @"ClearLight";
+-        UIImage *premadeClear = [self _premadeIconForBundleID:bundleID style:clearStyle];
+-        if (premadeClear) {
+-            glyph = premadeClear;
+-            isAutoGenerated = NO;
+-        } else if (skipIconGen) {
+-            glyph = orig;
+-            isAutoGenerated = YES;
+-            isStockArtwork = YES;
+-        } else {
+-            UIImage *premadeLight = [self _premadeIconForBundleID:bundleID style:@"Light"];
+-            if (premadeLight) {
+-                glyph = [self generateClearIconForImage:premadeLight bundleID:bundleID];
+-            } else {
+-                glyph = [self generateClearIconForImage:orig bundleID:bundleID];
+-            }
+-            isAutoGenerated = YES;
+-        }
+-    } else if ([effectiveStyle isEqualToString:@"Dark"]) {
+-        if (nsPremade) {
+-            glyph = nsPremade;
+-            isAutoGenerated = NO;
+-        } else {
+-            UIImage *premadeDark = [self _premadeIconForBundleID:bundleID style:@"Dark"];
+-            if (premadeDark) {
+-                return [self applySquircleMaskToImage:premadeDark];
+-            } else {
+-                glyph = [self generateDarkIconForImage:orig bundleID:bundleID];
+-                isAutoGenerated = YES;
+-            }
+-        }
+-    } else {
+-        if (nsPremade) {
+-            glyph = nsPremade;
+-            isAutoGenerated = NO;
+-        } else {
+-            UIImage *premadeLight = [self _premadeIconForBundleID:bundleID style:@"Light"];
+-            if (premadeLight) {
+-                return [self applySquircleMaskToImage:premadeLight];
+-            } else {
+-                glyph = orig;
+-                isAutoGenerated = YES;
+-            }
+-        }
+-    }
+-
+-    UIColor *tintColor = [self adjustedTintColorFromHex:tintHex isDarkTheme:isDarkTheme];
+-
+-    UIImage *styled = [self compositeGlyph:glyph withBackgroundStyle:effectiveStyle isDarkTheme:isDarkTheme tintColor:tintColor isAutoGenerated:isAutoGenerated drawSpecular:YES isStockArtwork:isStockArtwork];
+-
+-    if ([effectiveStyle isEqualToString:@"Tinted"] && isDarkTheme && styled) {
+-        UIGraphicsBeginImageContextWithOptions(styled.size, NO, styled.scale);
+-        CGFloat radius = styled.size.width * 0.256;
+-        UIBezierPath *path = Home26CreateSquirclePath(CGRectMake(0, 0, styled.size.width, styled.size.height), radius);
+-        [path addClip];
+-
+-        [tintColor setFill];
+-        UIRectFill(CGRectMake(0, 0, styled.size.width, styled.size.height));
+-
+-        [styled drawInRect:CGRectMake(0, 0, styled.size.width, styled.size.height) blendMode:kCGBlendModeLuminosity alpha:1.0];
+-
+-        [styled drawInRect:CGRectMake(0, 0, styled.size.width, styled.size.height) blendMode:kCGBlendModeDestinationIn alpha:1.0];
+-
+-        styled = UIGraphicsGetImageFromCurrentImageContext();
+-        UIGraphicsEndImageContext();
+-    }
+-
+-    if (styled && [self isSpecularEnabled] && ![g_menuAppearance isEqualToString:@"iOS18"]) {
+-        BOOL isDark = isDarkTheme || [effectiveStyle isEqualToString:@"Dark"];
+-        CGFloat topA = isDark ? kDarkIconRimTopOpacity : 0.75;
+-        CGFloat botA = isDark ? kDarkIconRimBottomOpacity : 0.35;
+-        CGFloat perimA = isDark ? 0.16 : 0.20;
+-        styled = [self _applySpecularHighlightToImage:styled topAlpha:topA bottomAlpha:botA perimeterAlpha:perimA];
+-    }
+-
+-    if (styled) {
+-        styled = [self applySquircleMaskToImage:styled];
+-        [self.memoryCache setObject:styled forKey:cacheKey];
++    NSString *style=@"Default"; BOOL dark=NO;
++    [self _resolveEffectiveStyle:&style isDarkTheme:&dark];
++    BOOL tinted=[style isEqualToString:@"Tinted"];
++    BOOL dynamic=[bundleID isEqualToString:@"com.apple.mobiletimer"] || [bundleID isEqualToString:@"com.apple.mobilecal"];
++    NSString *tintHex=[g_tintColor copy] ?: @"#9999FF";
++    NSString *key=[NSString stringWithFormat:@"18r3_%@_%@_%@",bundleID,style,tinted ? tintHex : @"none"];
++    if (!dynamic) {
++        UIImage *cached=[self.memoryCache objectForKey:key];
++        if (cached) return cached;
++        NSString *path=[self.cacheDirectory stringByAppendingPathComponent:[key stringByAppendingString:@".png"]];
++        cached=[UIImage imageWithContentsOfFile:path];
++        if (cached) { [self.memoryCache setObject:cached forKey:key]; return cached; }
++    }
++    UIImage *artwork=orig;
++    if (dynamic) {
++        artwork=[self generateDynamicIconForBundleID:bundleID style:(tinted ? @"Dark" : style) isDarkTheme:(tinted || dark)] ?: orig;
++    } else if (tinted || [style isEqualToString:@"Dark"]) {
++        artwork=[self _premadeIconForBundleID:bundleID style:@"Dark"];
++        if (!artwork) artwork=[self generateDarkIconForImage:orig bundleID:bundleID] ?: orig;
++    }
++    if (tinted) artwork=[self home18TintedImage:artwork color:[self adjustedTintColorFromHex:tintHex isDarkTheme:YES]];
++    UIImage *output=[self applySquircleMaskToImage:artwork];
++    if (output && !dynamic) {
++        [self.memoryCache setObject:output forKey:key];
+         dispatch_async(self.processingQueue, ^{
+-            NSData *pngData = UIImagePNGRepresentation(styled);
+-            [pngData writeToFile:diskPath atomically:YES];
++            NSString *path=[self.cacheDirectory stringByAppendingPathComponent:[key stringByAppendingString:@".png"]];
++            [UIImagePNGRepresentation(output) writeToFile:path atomically:YES];
+         });
+     }
+-
+-    return [self applySquircleMaskToImage:styled];
++    return output;
+ }
+ 
+ typedef struct {
 --- a/LGDebugger.h
 +++ b/LGDebugger.h
 @@ -97,7 +97,7 @@
@@ -2291,7 +4034,7 @@
 +Name: IconTint15 (26Home base)
  Depends: mobilesubstrate
 -Version: 1.2.0-test
-+Version: 0.2.0~source1
++Version: 0.2.2~source1
  Architecture: iphoneos-arm64
 -Description: iOS 26 Homescreen customization.
 -Maintainer: ngkhoi
@@ -2304,13 +4047,118 @@
 +Replaces: com.ngkhoi.26home
 --- a/layout/DEBIAN/postinst
 +++ b/layout/DEBIAN/postinst
-@@ -5,7 +5,8 @@
- if [ -d "/var/jb/Library/Application Support/26Home/SolidGlass" ] && [ ! -d "/var/jb/Library/Application Support/26Home/IconPacks/SolidGlass" ]; then
-     cp -a "/var/jb/Library/Application Support/26Home/SolidGlass" "/var/jb/Library/Application Support/26Home/IconPacks/SolidGlass"
- fi
+@@ -1,11 +1,18 @@
+ #!/bin/sh
+-
+-# Set correct permissions for 26Home resources
+-mkdir -p "/var/jb/Library/Application Support/26Home/IconPacks"
+-if [ -d "/var/jb/Library/Application Support/26Home/SolidGlass" ] && [ ! -d "/var/jb/Library/Application Support/26Home/IconPacks/SolidGlass" ]; then
+-    cp -a "/var/jb/Library/Application Support/26Home/SolidGlass" "/var/jb/Library/Application Support/26Home/IconPacks/SolidGlass"
+-fi
 -chmod -R 777 "/var/jb/Library/Application Support/26Home"
-+find "/var/jb/Library/Application Support/26Home" -type d -exec chmod 755 {} \;
-+find "/var/jb/Library/Application Support/26Home" -type f -exec chmod 644 {} \;
- chown -R mobile:mobile "/var/jb/Library/Application Support/26Home"
- 
+-chown -R mobile:mobile "/var/jb/Library/Application Support/26Home"
+-
++set -eu
++case "${1:-configure}" in
++    configure)
++        pack_root="/var/jb/Library/Application Support/26Home/IconPacks"
++        printf '%s\n' 'IconTint15: configuring icon-pack directory...'
++        if [ ! -d "$pack_root" ]; then
++            printf '%s\n' 'IconTint15: icon-pack directory is missing.' >&2
++            exit 1
++        fi
++        # Packaged files already have readable 0644/0755 modes. Only this
++        # directory needs mobile ownership so that the manager can add packs.
++        chown mobile:mobile "$pack_root"
++        chmod 755 "$pack_root"
++        printf '%s\n' 'IconTint15: setup complete.'
++        ;;
++esac
  exit 0
+--- /dev/null
++++ b/Home18Pixels.h
+@@ -0,0 +1,49 @@
++#pragma once
++#include <math.h>
++#include <stddef.h>
++
++// Shared by the iOS bitmap renderer and native host tests. RGBA is premultiplied.
++static inline float H18Unit(float x) {
++    return isfinite(x) ? fminf(1.f, fmaxf(0.f, x)) : 0.f;
++}
++static inline float H18Smooth(float low, float high, float x) {
++    float t = H18Unit((x-low)/(high-low));
++    return t*t*(3.f-2.f*t);
++}
++// Endpoint mapping inferred from the supplied iOS 18 reference; not Apple's private transform.
++static inline void H18Color(float *r, float *g, float *b) {
++    float hi=fmaxf(*r,fmaxf(*g,*b)),lo=fminf(*r,fminf(*g,*b));
++    if (hi<=0) return;
++    float saturation=(hi-lo)/hi;
++    float value=hi*(1.f-.32f*saturation);
++    float floor=value*(1.f-.62f*saturation);
++    float scale=(value-floor)/fmaxf(hi-lo,.000001f);
++    *r=floor+(*r-lo)*scale; *g=floor+(*g-lo)*scale; *b=floor+(*b-lo)*scale;
++}
++static inline void H18TintRGBA(unsigned char *pixels, size_t width, size_t height,
++                              size_t stride, float red, float green, float blue) {
++    red=H18Unit(red); green=H18Unit(green); blue=H18Unit(blue);
++    H18Color(&red,&green,&blue);
++    for (size_t y=0; y<height; y++) {
++        for (size_t x=0; x<width; x++) {
++            unsigned char *p=pixels+y*stride+x*4;
++            if (!p[3]) { p[0]=p[1]=p[2]=0; continue; }
++            float alpha=p[3]/255.f;
++            float r=H18Unit(p[0]/(255.f*alpha));
++            float g=H18Unit(p[1]/(255.f*alpha));
++            float b=H18Unit(p[2]/(255.f*alpha));
++            float maximum=fmaxf(r,fmaxf(g,b)), minimum=fminf(r,fminf(g,b));
++            float luminance=.2126f*r+.7152f*g+.0722f*b;
++            // Preserve neutral dark artwork as the backdrop; color the bright
++            // or chromatic foreground directly, without cutting out the glyph.
++            float foreground=fmaxf(H18Smooth(.03f,.15f,maximum-minimum),
++                                    H18Smooth(.36f,.62f,maximum));
++            float detail=.22f+.78f*powf(luminance,.65f);
++            float neutral=luminance*(1.f-foreground);
++            float amount=detail*foreground;
++            p[0]=(unsigned char)(H18Unit(neutral+red*amount)*alpha*255.f+.5f);
++            p[1]=(unsigned char)(H18Unit(neutral+green*amount)*alpha*255.f+.5f);
++            p[2]=(unsigned char)(H18Unit(neutral+blue*amount)*alpha*255.f+.5f);
++        }
++    }
++}
+--- /dev/null
++++ b/tests/test_pixels.c
+@@ -0,0 +1,32 @@
++#include "../Home18Pixels.h"
++#include <assert.h>
++#include <stdio.h>
++#include <stdint.h>
++
++int main(void) {
++    for (int c=0;c<=90;c++) {
++        unsigned char p[4]={(unsigned char)c,(unsigned char)c,(unsigned char)c,255};
++        H18TintRGBA(p,1,1,4,.6f,.4f,.9f);
++        assert(p[0]==c && p[1]==c && p[2]==c && p[3]==255);
++    }
++    unsigned char white[4]={255,255,255,255};
++    H18TintRGBA(white,1,1,4,.6f,.4f,.9f);
++    assert(white[0]>white[1] && white[2]>white[0] && white[2]<230 && white[3]==255);
++    unsigned char red[4]={255,255,255,255};
++    H18TintRGBA(red,1,1,4,1,0,0);
++    assert(red[0]>=170 && red[0]<=175 && red[1]>=64 && red[1]<=68 && red[1]==red[2]);
++    uint32_t state=1234567;
++    for (int i=0;i<100000;i++) {
++        state=state*1664525U+1013904223U;
++        unsigned char alpha=state>>24;
++        unsigned char p[4]={(unsigned char)((state&255)*alpha/255),
++                           (unsigned char)(((state>>8)&255)*alpha/255),
++                           (unsigned char)(((state>>16)&255)*alpha/255),alpha};
++        H18TintRGBA(p,1,1,4,.6f,.4f,.9f);
++        assert(p[3]==alpha && p[0]<=alpha && p[1]<=alpha && p[2]<=alpha);
++    }
++    unsigned char transparent[4]={77,88,99,0};
++    H18TintRGBA(transparent,1,1,4,1,0,0);
++    assert(!transparent[0] && !transparent[1] && !transparent[2] && !transparent[3]);
++    puts("PASS: neutral dark backgrounds unchanged; white foreground follows chosen tint; 100000 premultiplied-alpha cases passed.");
++}

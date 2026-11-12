@@ -898,13 +898,18 @@
  
  #import "LGDebugger.h"
  
-@@ -347,3 +362,6 @@
+@@ -347,3 +362,11 @@
  extern BOOL g_exceptionsNoIconProcessing;
  extern BOOL g_exceptionsApplyOnlyToSolid;
  
 +
 +@interface SBFluidSwitcherItemContainerHeaderView : UIView
 +@end
++
++static inline UIColor *Home18ResolvedPanelColor(CGFloat hue,CGFloat position) {
++ CGFloat p=MIN(1,MAX(0,position));
++ return [UIColor colorWithHue:hue saturation:(p<=.5 ? .75 : 1.5*(1-p)) brightness:(p<=.5 ? .55+.9*p : 1) alpha:1];
++}
 --- a/HomeCustomizationMenu.m
 +++ b/HomeCustomizationMenu.m
 @@ -2,26 +2,26 @@
@@ -1332,25 +1337,26 @@
 -        self.menuView = [[UIView alloc] initWithFrame:CGRectMake(10, frame.size.height, menuWidth, initialHeight)];
 -        self.menuView.layer.cornerRadius = 40;
 +        self.menuView = [[UIView alloc] initWithFrame:CGRectMake(0, frame.size.height, menuWidth, initialHeight)];
-+        self.menuView.layer.cornerRadius = 32;
++        self.menuView.layer.cornerRadius = 28;
          self.menuView.layer.masksToBounds = YES;
 -        self.menuView.layer.borderWidth = 0.5;
 +        self.menuView.layer.borderWidth = 0;
-+        self.menuView.backgroundColor = [UIColor colorWithWhite:0.16 alpha:1];
++        self.menuView.backgroundColor = UIColor.clearColor;
          self.menuView.layer.borderColor = [[UIColor whiteColor] colorWithAlphaComponent:0.15].CGColor;
  
 -        UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemChromeMaterialDark];
-+        UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
++        UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemThinMaterial];
          if (!blurEffect) {
-             blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
+-            blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
++            blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemThinMaterial];
          }
          UIVisualEffectView *blurView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
          blurView.frame = self.menuView.bounds;
          blurView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 -        blurView.layer.cornerRadius = 40;
-+        blurView.layer.cornerRadius = 32;
++        blurView.layer.cornerRadius = 28;
          blurView.clipsToBounds = YES;
-+        blurView.alpha = 0.18;
++        blurView.alpha = 1.0;
          [self.menuView addSubview:blurView];
  
          UIPanGestureRecognizer *menuPan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleMenuPull:)];
@@ -1372,12 +1378,12 @@
  
 -        CGFloat segWidth = 140;
 -        CGFloat segHeight = 36;
-+        CGFloat segWidth = menuWidth * 0.48;
++        CGFloat segWidth = 200;
 +        CGFloat segHeight = 32;
          self.scaleSegment = [[UIView alloc] initWithFrame:CGRectMake((menuWidth - segWidth) / 2.0, 17, segWidth, segHeight)];
          self.scaleSegment.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.14];
          self.scaleSegment.layer.cornerRadius = segHeight / 2.0;
-@@ -186,23 +185,23 @@
+@@ -186,24 +185,24 @@
  
          CGFloat itemWidth = segWidth / 2.0;
          self.scalePill = [[UIView alloc] initWithFrame:CGRectMake(isLarge ? itemWidth : 0, 0, itemWidth, segHeight)];
@@ -1391,9 +1397,10 @@
          self.smallBtn.frame = CGRectMake(0, 0, itemWidth, segHeight);
 -        [self.smallBtn setTitle:@"Small" forState:UIControlStateNormal];
 -        [self.smallBtn setTitleColor:(isLarge ? [UIColor whiteColor] : [UIColor blackColor]) forState:UIControlStateNormal];
+-        self.smallBtn.titleLabel.font = isLarge ? [UIFont systemFontOfSize:14 weight:UIFontWeightMedium] : [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];
 +        [self.smallBtn setTitle:@"Малые" forState:UIControlStateNormal];
 +        [self.smallBtn setTitleColor:(isLarge ? [UIColor whiteColor] : [UIColor whiteColor]) forState:UIControlStateNormal];
-         self.smallBtn.titleLabel.font = isLarge ? [UIFont systemFontOfSize:14 weight:UIFontWeightMedium] : [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];
++        self.smallBtn.titleLabel.font = isLarge ? [UIFont systemFontOfSize:13 weight:UIFontWeightRegular] : [UIFont systemFontOfSize:13 weight:UIFontWeightRegular];
          [self.smallBtn addTarget:self action:@selector(selectScaleSmall:) forControlEvents:UIControlEventTouchUpInside];
          [self.scaleSegment addSubview:self.smallBtn];
  
@@ -1401,19 +1408,21 @@
          self.largeBtn.frame = CGRectMake(itemWidth, 0, itemWidth, segHeight);
 -        [self.largeBtn setTitle:@"Large" forState:UIControlStateNormal];
 -        [self.largeBtn setTitleColor:(isLarge ? [UIColor blackColor] : [UIColor whiteColor]) forState:UIControlStateNormal];
+-        self.largeBtn.titleLabel.font = isLarge ? [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold] : [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
 +        [self.largeBtn setTitle:@"Крупные" forState:UIControlStateNormal];
 +        [self.largeBtn setTitleColor:(isLarge ? [UIColor whiteColor] : [UIColor whiteColor]) forState:UIControlStateNormal];
-         self.largeBtn.titleLabel.font = isLarge ? [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold] : [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
++        self.largeBtn.titleLabel.font = isLarge ? [UIFont systemFontOfSize:13 weight:UIFontWeightRegular] : [UIFont systemFontOfSize:13 weight:UIFontWeightRegular];
          [self.largeBtn addTarget:self action:@selector(selectScaleLarge:) forControlEvents:UIControlEventTouchUpInside];
          [self.scaleSegment addSubview:self.largeBtn];
-@@ -217,24 +216,12 @@
+ 
+@@ -217,28 +216,16 @@
          self.eyedropperBtn.userInteractionEnabled = NO;
          [self.menuView addSubview:self.eyedropperBtn];
  
 -        NSArray *styleTitles = @[@"Light", @"Dark", @"Automatic", @"Tinted"];
 -        CGFloat buttonSize = 60.0;
 +        NSArray *styleTitles = @[@"Светлые", @"Тёмные", @"Авто", @"Цвет"];
-+        CGFloat buttonSize = menuWidth * 0.16;
++        CGFloat buttonSize = 74.5;
          CGFloat spacing = (menuWidth - (buttonSize * 4)) / 5.0;
 -        CGFloat startY = 70.0;
 -
@@ -1436,7 +1445,19 @@
          for (int i = 0; i < 4; i++) {
              CGFloat x = spacing + i * (buttonSize + spacing);
              UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(x, startY, buttonSize, buttonSize)];
-@@ -261,11 +248,13 @@
+-            btn.layer.cornerRadius = 16;
++            btn.layer.cornerRadius = 19.25;
+             btn.layer.cornerCurve = kCACornerCurveContinuous;
+             btn.clipsToBounds = YES;
+             btn.tag = 100 + i;
+@@ -256,22 +243,25 @@
+             }
+ 
+             UIImageView *iv = [[UIImageView alloc] initWithImage:iconImg];
+-            iv.frame = btn.bounds;
++            iv.frame = CGRectInset(btn.bounds,4.25,4.25);
++            iv.layer.cornerRadius=15;iv.layer.masksToBounds=YES;
+             iv.contentMode = UIViewContentModeScaleAspectFill;
              iv.userInteractionEnabled = NO;
              [btn addSubview:iv];
  
@@ -1454,7 +1475,14 @@
              }
  
              [self.menuView addSubview:btn];
-@@ -280,7 +269,7 @@
+             [self.styleButtons addObject:btn];
+ 
+-            UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(x - 10, startY + buttonSize + 6, buttonSize + 20, 20)];
++            UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(x - 10, startY + buttonSize + 8, buttonSize + 20, 20)];
+             lbl.text = styleTitles[i];
+             lbl.textColor = [UIColor whiteColor];
+             lbl.textAlignment = NSTextAlignmentCenter;
+@@ -280,7 +270,7 @@
              [self.styleLabels addObject:lbl];
          }
  
@@ -1463,16 +1491,19 @@
          self.slidersContainer.alpha = 0.0;
          self.slidersContainer.userInteractionEnabled = NO;
          [self.menuView addSubview:self.slidersContainer];
-@@ -295,7 +284,7 @@
+@@ -295,9 +285,9 @@
  }
  
  - (void)setupSliders {
 -    CGFloat pad = 24.0;
 +    CGFloat pad = 22.0;
      CGFloat sliderW = self.slidersContainer.frame.size.width - (pad * 2);
-     CGFloat sliderH = 32.0;
+-    CGFloat sliderH = 32.0;
++    CGFloat sliderH = 36.0;
      CGFloat thumbSize = 36.0;
-@@ -327,7 +316,7 @@
+ 
+     self.hueSlider = [[UIView alloc] initWithFrame:CGRectMake(pad, 8, sliderW, sliderH)];
+@@ -327,7 +317,7 @@
      self.hueThumb.layer.cornerRadius = thumbSize / 2.0;
      self.hueThumb.layer.borderColor = [UIColor whiteColor].CGColor;
      self.hueThumb.layer.borderWidth = 3.5;
@@ -1481,7 +1512,7 @@
      self.hueThumb.layer.shadowOpacity = 0.35;
      self.hueThumb.layer.shadowRadius = 4;
      self.hueThumb.layer.shadowOffset = CGSizeMake(0, 2);
-@@ -339,7 +328,7 @@
+@@ -339,7 +329,7 @@
      UITapGestureRecognizer *hueTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleHuePan:)];
      [self.hueSlider addGestureRecognizer:hueTap];
  
@@ -1490,7 +1521,7 @@
      self.brightnessSlider.clipsToBounds = NO;
      [self.slidersContainer addSubview:self.brightnessSlider];
  
-@@ -359,7 +348,7 @@
+@@ -359,7 +349,7 @@
      self.brightnessThumb.layer.cornerRadius = thumbSize / 2.0;
      self.brightnessThumb.layer.borderColor = [UIColor whiteColor].CGColor;
      self.brightnessThumb.layer.borderWidth = 3.5;
@@ -1499,7 +1530,7 @@
      self.brightnessThumb.layer.shadowOpacity = 0.35;
      self.brightnessThumb.layer.shadowRadius = 4;
      self.brightnessThumb.layer.shadowOffset = CGSizeMake(0, 2);
-@@ -371,13 +360,13 @@
+@@ -371,13 +361,13 @@
      UITapGestureRecognizer *brTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleBrightnessPan:)];
      [self.brightnessSlider addGestureRecognizer:brTap];
  
@@ -1517,14 +1548,17 @@
      }
  
      [self _updateThumbPositions];
-@@ -398,23 +387,23 @@
+@@ -396,25 +386,27 @@
+     CGFloat bX = self.currentBrightness * maxTravel;
+     self.brightnessThumb.frame = CGRectMake(bX, (sliderH - thumbSize) / 2.0, thumbSize, thumbSize);
  
-     CGFloat sat = 1.0 - self.currentBrightness;
-     UIColor *currentColor = [UIColor colorWithHue:self.currentHue saturation:sat brightness:1.0 alpha:1.0];
+-    CGFloat sat = 1.0 - self.currentBrightness;
+-    UIColor *currentColor = [UIColor colorWithHue:self.currentHue saturation:sat brightness:1.0 alpha:1.0];
 -    self.brightnessThumb.backgroundColor = currentColor;
 -
 -    if (self.tintWeatherOverlay) {
 -        self.tintWeatherOverlay.backgroundColor = [currentColor colorWithAlphaComponent:0.45];
++    UIColor *currentColor = Home18ResolvedPanelColor(self.currentHue,self.currentBrightness);
 +    self.brightnessThumb.backgroundColor = H18PanelColor(currentColor);
 +
 +    if (self.tintWeatherArtwork) {
@@ -1536,7 +1570,10 @@
      UIColor *c1 = [UIColor colorWithHue:self.currentHue saturation:1.0 brightness:1.0 alpha:1.0];
      UIColor *c2 = [UIColor colorWithHue:self.currentHue saturation:0.0 brightness:1.0 alpha:1.0];
 -    self.brightnessGradient.colors = @[(id)c1.CGColor, (id)c2.CGColor];
-+    self.brightnessGradient.colors = @[(id)H18PanelColor(c1).CGColor, (id)H18PanelColor(c2).CGColor];
++    (void)c1; (void)c2;
++    NSMutableArray *colors=[NSMutableArray array];
++    for(int i=0;i<=20;i++) [colors addObject:(id)Home18ResolvedPanelColor(self.currentHue,i/20.0).CGColor];
++    self.brightnessGradient.colors=colors;
  }
  
  - (void)updateStyleSelection:(BOOL)animated {
@@ -1549,7 +1586,7 @@
  
      NSUInteger activeIndex = 0;
      if ([style isEqualToString:@"Tinted"]) {
-@@ -430,7 +419,7 @@
+@@ -430,7 +422,7 @@
      }
  
      BOOL isTinted = (activeIndex == 3);
@@ -1558,7 +1595,7 @@
  
      void (^updateBlock)(void) = ^{
  
-@@ -438,8 +427,8 @@
+@@ -438,8 +430,8 @@
              UIButton *btn = self.styleButtons[i];
              UILabel *lbl = self.styleLabels[i];
              if (i == activeIndex) {
@@ -1569,7 +1606,7 @@
                  lbl.textColor = [UIColor whiteColor];
                  lbl.font = [UIFont systemFontOfSize:13 weight:UIFontWeightSemibold];
              } else {
-@@ -470,60 +459,26 @@
+@@ -470,60 +462,27 @@
  
  - (void)selectStyle:(UIButton *)sender {
      NSUInteger index = sender.tag - 100;
@@ -1595,6 +1632,7 @@
      } else if (index == 3) {
 -        [defaults setObject:@"Tinted" forKey:@"ngkhoi.26home.iconStyle"];
 +        [defaults setObject:@"Tinted" forKey:@"icontint15.26base.iconStyle"];
++        [self _saveTintColor];
      }
      [defaults synchronize];
  
@@ -1639,7 +1677,7 @@
      dispatch_async(dispatch_get_main_queue(), ^{
          Home26PostStyleUpdate18();
      });
-@@ -531,8 +486,8 @@
+@@ -531,8 +490,8 @@
  
  - (void)selectScaleSmall:(UIButton *)sender {
      Home26Log(@"[User Action] iOS 18 Menu - Selected scale: Small");
@@ -1650,15 +1688,17 @@
      [defaults synchronize];
  
      [UIView animateWithDuration:0.25 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-@@ -540,19 +495,19 @@
+@@ -540,19 +499,19 @@
          f.origin.x = 0;
          self.scalePill.frame = f;
  
 -        [self.smallBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+-        self.smallBtn.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];
 +        [self.smallBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-         self.smallBtn.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];
++        self.smallBtn.titleLabel.font = [UIFont systemFontOfSize:13 weight:UIFontWeightRegular];
          [self.largeBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-         self.largeBtn.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
+-        self.largeBtn.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
++        self.largeBtn.titleLabel.font = [UIFont systemFontOfSize:13 weight:UIFontWeightRegular];
      } completion:nil];
  
 -    [[NSNotificationCenter defaultCenter] postNotificationName:@"ngkhoi.26home.UpdateLargeIcons" object:nil];
@@ -1674,13 +1714,16 @@
      [defaults synchronize];
  
      CGFloat itemWidth = self.scaleSegment.frame.size.width / 2.0;
-@@ -563,19 +518,19 @@
+@@ -562,20 +521,20 @@
+         self.scalePill.frame = f;
  
          [self.smallBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-         self.smallBtn.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
+-        self.smallBtn.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
 -        [self.largeBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+-        self.largeBtn.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];
++        self.smallBtn.titleLabel.font = [UIFont systemFontOfSize:13 weight:UIFontWeightRegular];
 +        [self.largeBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-         self.largeBtn.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];
++        self.largeBtn.titleLabel.font = [UIFont systemFontOfSize:13 weight:UIFontWeightRegular];
      } completion:nil];
  
 -    [[NSNotificationCenter defaultCenter] postNotificationName:@"ngkhoi.26home.UpdateLargeIcons" object:nil];
@@ -1699,7 +1742,7 @@
      [defaults synchronize];
  
      UIImageSymbolConfiguration *config = [UIImageSymbolConfiguration configurationWithPointSize:20 weight:UIFontWeightMedium];
-@@ -586,13 +541,13 @@
+@@ -586,42 +545,40 @@
          sender.tintColor = next ? [UIColor whiteColor] : [UIColor colorWithWhite:1.0 alpha:0.55];
      } completion:nil];
  
@@ -1711,13 +1754,15 @@
 -    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"com.ngkhoi.26home"];
 -    [defaults setFloat:self.currentHue forKey:@"ngkhoi.26home.tintHue"];
 -    [defaults setFloat:self.currentBrightness forKey:@"ngkhoi.26home.tintBrightness"];
+-
+-    CGFloat sat = 1.0 - self.currentBrightness;
+-    UIColor *color = [UIColor colorWithHue:self.currentHue saturation:sat brightness:1.0 alpha:1.0];
 +    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"local.icontint15.26base"];
 +    [defaults setFloat:self.currentHue forKey:@"icontint15.26base.tintHue"];
 +    [defaults setFloat:self.currentBrightness forKey:@"icontint15.26base.tintBrightness"];
- 
-     CGFloat sat = 1.0 - self.currentBrightness;
-     UIColor *color = [UIColor colorWithHue:self.currentHue saturation:sat brightness:1.0 alpha:1.0];
-@@ -600,28 +555,28 @@
++
++    UIColor *color = Home18ResolvedPanelColor(self.currentHue,self.currentBrightness);
+     CGFloat r, g, b, a;
      [color getRed:&r green:&g blue:&b alpha:&a];
      NSString *hex = [NSString stringWithFormat:@"#%02lX%02lX%02lX", lroundf(r * 255), lroundf(g * 255), lroundf(b * 255)];
      Home26Log(@"[User Action] iOS 18 Menu - Updated tint color to: %@", hex);
@@ -1736,12 +1781,14 @@
 -    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"com.ngkhoi.26home"];
 -    [defaults setFloat:self.currentHue forKey:@"ngkhoi.26home.tintHue"];
 -    [defaults setFloat:self.currentBrightness forKey:@"ngkhoi.26home.tintBrightness"];
+-
+-    CGFloat sat = 1.0 - self.currentBrightness;
+-    UIColor *color = [UIColor colorWithHue:self.currentHue saturation:sat brightness:1.0 alpha:1.0];
 +    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"local.icontint15.26base"];
 +    [defaults setFloat:self.currentHue forKey:@"icontint15.26base.tintHue"];
 +    [defaults setFloat:self.currentBrightness forKey:@"icontint15.26base.tintBrightness"];
- 
-     CGFloat sat = 1.0 - self.currentBrightness;
-     UIColor *color = [UIColor colorWithHue:self.currentHue saturation:sat brightness:1.0 alpha:1.0];
++
++    UIColor *color = Home18ResolvedPanelColor(self.currentHue,self.currentBrightness);
      CGFloat r, g, b, a;
      [color getRed:&r green:&g blue:&b alpha:&a];
      NSString *hex = [NSString stringWithFormat:@"#%02lX%02lX%02lX", lroundf(r * 255), lroundf(g * 255), lroundf(b * 255)];
@@ -1754,7 +1801,7 @@
  }
  
  - (void)handleHuePan:(UIGestureRecognizer *)gesture {
-@@ -662,7 +617,7 @@
+@@ -662,7 +619,7 @@
          self.alpha = 0.0;
      }];
  
@@ -1763,7 +1810,23 @@
  
      dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
  #pragma clang diagnostic push
-@@ -698,7 +653,7 @@
+@@ -682,14 +639,8 @@
+         overlay.onColorSelected = ^(UIColor *color) {
+             CGFloat h, s, b, a;
+             if ([color getHue:&h saturation:&s brightness:&b alpha:&a]) {
+-                CGFloat boostedSat = 0.0;
+-                if (s < 0.08) {
+-                    boostedSat = 0.0;
+-                } else {
+-                    boostedSat = MIN(1.0, s * 1.8);
+-                }
+                 self.currentHue = h;
+-                self.currentBrightness = 1.0 - boostedSat;
++                self.currentBrightness = MAX(0,MIN(1,s<.75 ? 1-s/1.5 : (b-.55)/.9));
+                 [self _updateThumbPositions];
+                 [self _updateBrightnessGradient];
+                 [self _saveTintColor];
+@@ -698,7 +649,7 @@
              [UIView animateWithDuration:0.3 animations:^{
                  self.alpha = 1.0;
              }];
@@ -2560,7 +2623,7 @@
  
  BOOL g_isAppOpening = NO;
  BOOL g_isFolderOpen = NO;
-@@ -206,76 +206,64 @@
+@@ -206,76 +206,69 @@
  }
  
  void reload26HomePrefs(void) {
@@ -2610,6 +2673,11 @@
 +    if ([g_iconStyle isEqualToString:@"Tinted"]) g_themeMode = @"Dark";
 +    g_darkIconMode = [prefs stringForKey:@"icontint15.26base.darkIconMode"] ?: @"Always";
 +    g_tintColor = [prefs stringForKey:@"icontint15.26base.tintColor"] ?: @"#00FFFF";
++    if ([prefs objectForKey:@"icontint15.26base.tintHue"] && [prefs objectForKey:@"icontint15.26base.tintBrightness"]) {
++        UIColor *resolved=Home18ResolvedPanelColor([prefs floatForKey:@"icontint15.26base.tintHue"],[prefs floatForKey:@"icontint15.26base.tintBrightness"]);
++        CGFloat r,g,b,a;[resolved getRed:&r green:&g blue:&b alpha:&a];
++        g_tintColor=[NSString stringWithFormat:@"#%02lX%02lX%02lX",lround(r*255),lround(g*255),lround(b*255)];
++    }
 +    g_largeIconsEnabled = [prefs boolForKey:@"icontint15.26base.largeIcons"];
 +    g_disableLiquidGlassIcons = YES; // 18-style fork: no live glass overlays.
 +
@@ -3183,13 +3251,14 @@
  }
 --- a/LGCustomIconGenerator2.h
 +++ b/LGCustomIconGenerator2.h
-@@ -42,5 +42,6 @@
+@@ -42,5 +42,7 @@
  - (void)requestIconAsyncForImage:(UIImage *)orig bundleID:(NSString *)bundleID completion:(void (^)(UIImage *styled))completion;
  - (UIImage *)_upscaleImageIfNeeded:(UIImage *)image toSize:(CGSize)targetSize;
  
 +- (UIImage *)home18TintedImage:(UIImage *)image color:(UIColor *)color;
  @end
  
++
 --- a/LGCustomIconGenerator2.m
 +++ b/LGCustomIconGenerator2.m
 @@ -2,6 +2,7 @@
@@ -3205,7 +3274,7 @@
          NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
          NSString *basePath = paths.firstObject;
 -        self.cacheDirectory = [basePath stringByAppendingPathComponent:@"ngkhoi.26home.icons"];
-+        self.cacheDirectory = [basePath stringByAppendingPathComponent:@"icontint15.26base.icons.18r3"];
++        self.cacheDirectory = [basePath stringByAppendingPathComponent:@"icontint15.26base.icons.18r4"];
  
          if (![[NSFileManager defaultManager] fileExistsAtPath:self.cacheDirectory]) {
              [[NSFileManager defaultManager] createDirectoryAtPath:self.cacheDirectory
@@ -3370,11 +3439,14 @@
  }
  
  - (void)saveOriginalImage:(UIImage *)image forBundleID:(NSString *)bundleID {
-@@ -523,36 +478,33 @@
+@@ -523,36 +478,36 @@
      return nil;
  }
  
 +- (UIImage *)home18TintedImage:(UIImage *)image color:(UIColor *)color {
++    return [self home18TintedImage:image color:color prepared:YES];
++}
++- (UIImage *)home18TintedImage:(UIImage *)image color:(UIColor *)color prepared:(BOOL)prepared {
 +    if (!image.CGImage) return image;
 +    const size_t width=256, height=256, stride=width*4;
 +    unsigned char *pixels=calloc(height,stride);
@@ -3386,7 +3458,7 @@
 +    CGContextDrawImage(context,CGRectMake(0,0,width,height),image.CGImage);
 +    CGFloat r=1,g=1,b=1,a=1;
 +    [color getRed:&r green:&g blue:&b alpha:&a];
-+    H18TintRGBA(pixels,width,height,stride,r,g,b);
++    H18TintRGBAMode(pixels,width,height,stride,r,g,b,prepared);
 +    CGImageRef result=CGBitmapContextCreateImage(context);
 +    UIImage *output=result ? [UIImage imageWithCGImage:result scale:1 orientation:image.imageOrientation] : image;
 +    if (result) CGImageRelease(result);
@@ -3433,7 +3505,7 @@
  
  - (void)_resolveEffectiveStyle:(NSString **)outEffectiveStyle isDarkTheme:(BOOL *)outIsDarkTheme {
      NSString *style = g_iconStyle ?: @"Default";
-@@ -593,6 +545,7 @@
+@@ -593,6 +548,7 @@
  }
  
  - (UIImage *)generateDynamicIconForBundleID:(NSString *)bundleID style:(NSString *)style isDarkTheme:(BOOL)isDarkTheme {
@@ -3441,7 +3513,7 @@
  
      NSString *themeName = @"Light";
      if ([style isEqualToString:@"Dark"]) {
-@@ -690,135 +643,9 @@
+@@ -690,135 +646,9 @@
  }
  
  - (UIImage *)requestStyledImageForImage:(UIImage *)orig bundleID:(NSString *)bundleID {
@@ -3580,7 +3652,7 @@
  
  - (UIImage *)compositeGlyph:(UIImage *)glyph withBackgroundStyle:(NSString *)style isDarkTheme:(BOOL)isDarkTheme {
      return [self compositeGlyph:glyph withBackgroundStyle:style isDarkTheme:isDarkTheme tintColor:nil isAutoGenerated:YES drawSpecular:YES];
-@@ -827,189 +654,16 @@
+@@ -827,189 +657,16 @@
      return [self compositeGlyph:glyph withBackgroundStyle:style isDarkTheme:isDarkTheme tintColor:tintColor isAutoGenerated:isAutoGenerated drawSpecular:drawSpecular isStockArtwork:NO];
  }
  - (UIImage *)skeletonBackgroundForStyle:(NSString *)style isDarkTheme:(BOOL)isDarkTheme tintColor:(UIColor *)tintColor size:(CGSize)size scale:(CGFloat)scale {
@@ -3779,7 +3851,7 @@
  
  - (UIImage *)skeletonBackgroundForBundleID:(NSString *)bundleID size:(CGSize)size scale:(CGFloat)scale {
      NSString *effectiveStyle = @"Default";
-@@ -1165,16 +819,9 @@
+@@ -1165,16 +822,9 @@
      return [self applySquircleMaskToImage:result];
  }
  
@@ -3795,11 +3867,11 @@
 -    return [NSString stringWithFormat:@"%@_%@_%@_v54_bg_%@_%@_%@_%d%@%@_spec_%@", bundleID, packId, effectiveStyle, isDarkTheme ? @"dark" : @"light", tintHex, g_menuAppearance, disableGrad, nsPremade ? @"_ns4" : @"", skipIconGen ? @"_noGen2" : @"", [self specularStyle]];
 +- (NSString *)_cacheKeyForBundleID:(NSString *)bundleID effectiveStyle:(NSString *)style isDarkTheme:(BOOL)isDarkTheme nsPremade:(UIImage *)nsPremade {
 +    NSString *color=[style isEqualToString:@"Tinted"] ? (g_tintColor ?: @"#9999FF") : @"none";
-+    return [NSString stringWithFormat:@"18r3_%@_%@_%@",bundleID,style,color];
++    return [NSString stringWithFormat:@"18r4_%@_%@_%@",bundleID,style,color];
  }
  
  - (UIImage *)fastCachedIconForBundleID:(NSString *)bundleID {
-@@ -1186,7 +833,9 @@
+@@ -1186,7 +836,9 @@
  
      BOOL isDynamicIcon = ([bundleID isEqualToString:@"com.apple.mobiletimer"] || [bundleID isEqualToString:@"com.apple.mobilecal"]);
      if (isDynamicIcon) {
@@ -3810,7 +3882,7 @@
      }
  
      if ([effectiveStyle isEqualToString:@"Clear"]) {
-@@ -1280,7 +929,7 @@
+@@ -1280,7 +932,7 @@
              }
  
              if (styled) {
@@ -3819,7 +3891,7 @@
                                                                      object:nil
                                                                    userInfo:@{@"bundleID": bundleID, @"image": styled}];
              }
-@@ -1290,159 +939,36 @@
+@@ -1290,159 +942,37 @@
  
  - (UIImage *)requestIconImageWithBackgroundForImage:(UIImage *)orig bundleID:(NSString *)bundleID {
      if (!orig || !bundleID) return nil;
@@ -3974,7 +4046,7 @@
 +    BOOL tinted=[style isEqualToString:@"Tinted"];
 +    BOOL dynamic=[bundleID isEqualToString:@"com.apple.mobiletimer"] || [bundleID isEqualToString:@"com.apple.mobilecal"];
 +    NSString *tintHex=[g_tintColor copy] ?: @"#9999FF";
-+    NSString *key=[NSString stringWithFormat:@"18r3_%@_%@_%@",bundleID,style,tinted ? tintHex : @"none"];
++    NSString *key=[NSString stringWithFormat:@"18r4_%@_%@_%@",bundleID,style,tinted ? tintHex : @"none"];
 +    if (!dynamic) {
 +        UIImage *cached=[self.memoryCache objectForKey:key];
 +        if (cached) return cached;
@@ -3982,14 +4054,15 @@
 +        cached=[UIImage imageWithContentsOfFile:path];
 +        if (cached) { [self.memoryCache setObject:cached forKey:key]; return cached; }
 +    }
-+    UIImage *artwork=orig;
++    UIImage *artwork=orig; BOOL prepared=dynamic;
 +    if (dynamic) {
 +        artwork=[self generateDynamicIconForBundleID:bundleID style:(tinted ? @"Dark" : style) isDarkTheme:(tinted || dark)] ?: orig;
 +    } else if (tinted || [style isEqualToString:@"Dark"]) {
 +        artwork=[self _premadeIconForBundleID:bundleID style:@"Dark"];
-+        if (!artwork) artwork=[self generateDarkIconForImage:orig bundleID:bundleID] ?: orig;
++        prepared=(artwork!=nil);
++        if (!artwork) artwork=tinted ? orig : ([self generateDarkIconForImage:orig bundleID:bundleID] ?: orig);
 +    }
-+    if (tinted) artwork=[self home18TintedImage:artwork color:[self adjustedTintColorFromHex:tintHex isDarkTheme:YES]];
++    if (tinted) artwork=[self home18TintedImage:artwork color:[self adjustedTintColorFromHex:tintHex isDarkTheme:YES] prepared:prepared];
 +    UIImage *output=[self applySquircleMaskToImage:artwork];
 +    if (output && !dynamic) {
 +        [self.memoryCache setObject:output forKey:key];
@@ -4034,7 +4107,7 @@
 +Name: IconTint15 (26Home base)
  Depends: mobilesubstrate
 -Version: 1.2.0-test
-+Version: 0.2.2~source1
++Version: 0.3.0~source1
  Architecture: iphoneos-arm64
 -Description: iOS 26 Homescreen customization.
 -Maintainer: ngkhoi
@@ -4077,88 +4150,449 @@
  exit 0
 --- /dev/null
 +++ b/Home18Pixels.h
-@@ -0,0 +1,49 @@
+@@ -0,0 +1,36 @@
 +#pragma once
 +#include <math.h>
 +#include <stddef.h>
-+
-+// Shared by the iOS bitmap renderer and native host tests. RGBA is premultiplied.
-+static inline float H18Unit(float x) {
-+    return isfinite(x) ? fminf(1.f, fmaxf(0.f, x)) : 0.f;
++// Independent implementation of the measured Homescreen18 rendering equations.
++// Evidence and method addresses: home18-analysis/RENDERING.md.
++static inline float H18Unit(float x) { return isfinite(x)?fminf(1,fmaxf(0,x)):0; }
++static inline float H18Smooth(float a,float b,float x) {float t=H18Unit((x-a)/(b-a));return t*t*(3-2*t);}
++// Colors are now resolved by the panel's original two-stage HSV control.
++static inline void H18Color(float *r,float *g,float *b) {*r=H18Unit(*r);*g=H18Unit(*g);*b=H18Unit(*b);}
++static inline void H18TintRGB(float r,float g,float b,float cr,float cg,float cb,int prepared,float *out) {
++ float luma=fmaf(b,.0722f,fmaf(r,.2126f,g*.7152f));
++ float hi=fmaxf(cr,fmaxf(cg,cb)),lo=fminf(cr,fminf(cg,cb));
++ float sat=hi>0?(hi-lo)/hi:0;
++ float value=H18Unit(fmaxf(hi,.55f)*fminf(1,fmaxf(.12f,fmaf(luma,.78f,.22f))));
++ float ratio=hi>0?value/hi:0;
++ out[0]=sat<.05f?value:cr*ratio;out[1]=sat<.05f?value:cg*ratio;out[2]=sat<.05f?value:cb*ratio;
++ if (prepared) {
++  float mx=fmaxf(r,fmaxf(g,b)),mn=fminf(r,fminf(g,b));
++  float s=mx>0?(mx-mn)/mx:0;
++  float preserve=(1-H18Smooth(.26f,.38f,luma))*(1-H18Smooth(.20f,.34f,s));
++  if(preserve>.001f) {out[0]=fmaf(r-out[0],preserve,out[0]);out[1]=fmaf(g-out[1],preserve,out[1]);out[2]=fmaf(b-out[2],preserve,out[2]);}
++ }
 +}
-+static inline float H18Smooth(float low, float high, float x) {
-+    float t = H18Unit((x-low)/(high-low));
-+    return t*t*(3.f-2.f*t);
++static inline void H18TintRGBAMode(unsigned char *pixels,size_t width,size_t height,size_t stride,float red,float green,float blue,int prepared) {
++ for(size_t y=0;y<height;y++)for(size_t x=0;x<width;x++) {
++  unsigned char *p=pixels+y*stride+x*4;
++  if(p[3]<=4){p[0]=p[1]=p[2]=p[3]=0;continue;}
++  float alpha=p[3]/255.f,r=H18Unit(p[0]/(255.f*alpha)),g=H18Unit(p[1]/(255.f*alpha)),b=H18Unit(p[2]/(255.f*alpha)),o[3];
++  H18TintRGB(r,g,b,red,green,blue,prepared && alpha>=.08f,o);
++  float hi=fmaxf(red,fmaxf(green,blue)),lo=fminf(red,fminf(green,blue));
++  float outputAlpha=(hi>0 && (hi-lo)/hi>=.05f)?1:alpha;
++  for(int k=0;k<3;k++)p[k]=(unsigned char)(H18Unit(o[k])*outputAlpha*255.f+.5f);
++  p[3]=(unsigned char)(outputAlpha*255.f+.5f);
++ }
 +}
-+// Endpoint mapping inferred from the supplied iOS 18 reference; not Apple's private transform.
-+static inline void H18Color(float *r, float *g, float *b) {
-+    float hi=fmaxf(*r,fmaxf(*g,*b)),lo=fminf(*r,fminf(*g,*b));
-+    if (hi<=0) return;
-+    float saturation=(hi-lo)/hi;
-+    float value=hi*(1.f-.32f*saturation);
-+    float floor=value*(1.f-.62f*saturation);
-+    float scale=(value-floor)/fmaxf(hi-lo,.000001f);
-+    *r=floor+(*r-lo)*scale; *g=floor+(*g-lo)*scale; *b=floor+(*b-lo)*scale;
-+}
-+static inline void H18TintRGBA(unsigned char *pixels, size_t width, size_t height,
-+                              size_t stride, float red, float green, float blue) {
-+    red=H18Unit(red); green=H18Unit(green); blue=H18Unit(blue);
-+    H18Color(&red,&green,&blue);
-+    for (size_t y=0; y<height; y++) {
-+        for (size_t x=0; x<width; x++) {
-+            unsigned char *p=pixels+y*stride+x*4;
-+            if (!p[3]) { p[0]=p[1]=p[2]=0; continue; }
-+            float alpha=p[3]/255.f;
-+            float r=H18Unit(p[0]/(255.f*alpha));
-+            float g=H18Unit(p[1]/(255.f*alpha));
-+            float b=H18Unit(p[2]/(255.f*alpha));
-+            float maximum=fmaxf(r,fmaxf(g,b)), minimum=fminf(r,fminf(g,b));
-+            float luminance=.2126f*r+.7152f*g+.0722f*b;
-+            // Preserve neutral dark artwork as the backdrop; color the bright
-+            // or chromatic foreground directly, without cutting out the glyph.
-+            float foreground=fmaxf(H18Smooth(.03f,.15f,maximum-minimum),
-+                                    H18Smooth(.36f,.62f,maximum));
-+            float detail=.22f+.78f*powf(luminance,.65f);
-+            float neutral=luminance*(1.f-foreground);
-+            float amount=detail*foreground;
-+            p[0]=(unsigned char)(H18Unit(neutral+red*amount)*alpha*255.f+.5f);
-+            p[1]=(unsigned char)(H18Unit(neutral+green*amount)*alpha*255.f+.5f);
-+            p[2]=(unsigned char)(H18Unit(neutral+blue*amount)*alpha*255.f+.5f);
-+        }
-+    }
-+}
++static inline void H18TintRGBA(unsigned char *p,size_t w,size_t h,size_t stride,float r,float g,float b) {H18TintRGBAMode(p,w,h,stride,r,g,b,1);}
 --- /dev/null
 +++ b/tests/test_pixels.c
-@@ -0,0 +1,32 @@
+@@ -0,0 +1,406 @@
 +#include "../Home18Pixels.h"
 +#include <assert.h>
++#include <stdlib.h>
 +#include <stdio.h>
-+#include <stdint.h>
-+
 +int main(void) {
-+    for (int c=0;c<=90;c++) {
-+        unsigned char p[4]={(unsigned char)c,(unsigned char)c,(unsigned char)c,255};
-+        H18TintRGBA(p,1,1,4,.6f,.4f,.9f);
-+        assert(p[0]==c && p[1]==c && p[2]==c && p[3]==255);
-+    }
-+    unsigned char white[4]={255,255,255,255};
-+    H18TintRGBA(white,1,1,4,.6f,.4f,.9f);
-+    assert(white[0]>white[1] && white[2]>white[0] && white[2]<230 && white[3]==255);
-+    unsigned char red[4]={255,255,255,255};
-+    H18TintRGBA(red,1,1,4,1,0,0);
-+    assert(red[0]>=170 && red[0]<=175 && red[1]>=64 && red[1]<=68 && red[1]==red[2]);
-+    uint32_t state=1234567;
-+    for (int i=0;i<100000;i++) {
-+        state=state*1664525U+1013904223U;
-+        unsigned char alpha=state>>24;
-+        unsigned char p[4]={(unsigned char)((state&255)*alpha/255),
-+                           (unsigned char)(((state>>8)&255)*alpha/255),
-+                           (unsigned char)(((state>>16)&255)*alpha/255),alpha};
-+        H18TintRGBA(p,1,1,4,.6f,.4f,.9f);
-+        assert(p[3]==alpha && p[0]<=alpha && p[1]<=alpha && p[2]<=alpha);
-+    }
-+    unsigned char transparent[4]={77,88,99,0};
-+    H18TintRGBA(transparent,1,1,4,1,0,0);
-+    assert(!transparent[0] && !transparent[1] && !transparent[2] && !transparent[3]);
-+    puts("PASS: neutral dark backgrounds unchanged; white foreground follows chosen tint; 100000 premultiplied-alpha cases passed.");
-+}
++{unsigned char p[4]={37,91,92,93};unsigned char expected[4]={117,124,42,255};H18TintRGBAMode(p,1,1,4,0.315177268f,0.334559703f,0.113271695f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={37,91,92,93};unsigned char expected[4]={117,124,42,255};H18TintRGBAMode(p,1,1,4,0.315177268f,0.334559703f,0.113271695f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={45,21,58,89};unsigned char expected[4]={36,66,63,255};H18TintRGBAMode(p,1,1,4,0.143287834f,0.264530303f,0.24981574f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={45,21,58,89};unsigned char expected[4]={36,66,63,255};H18TintRGBAMode(p,1,1,4,0.143287834f,0.264530303f,0.24981574f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={49,41,76,103};unsigned char expected[4]={79,4,64,255};H18TintRGBAMode(p,1,1,4,0.234557868f,0.013128576f,0.191230071f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={49,41,76,103};unsigned char expected[4]={79,4,64,255};H18TintRGBAMode(p,1,1,4,0.234557868f,0.013128576f,0.191230071f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={133,58,81,135};unsigned char expected[4]={111,14,127,255};H18TintRGBAMode(p,1,1,4,0.663782456f,0.0818397568f,0.756101026f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={133,58,81,135};unsigned char expected[4]={111,14,127,255};H18TintRGBAMode(p,1,1,4,0.663782456f,0.0818397568f,0.756101026f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={112,96,75,138};unsigned char expected[4]={108,7,3,255};H18TintRGBAMode(p,1,1,4,0.220440535f,0.013959542f,0.0053611901f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={112,96,75,138};unsigned char expected[4]={108,7,3,255};H18TintRGBAMode(p,1,1,4,0.220440535f,0.013959542f,0.0053611901f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={78,24,81,82};unsigned char expected[4]={58,68,84,255};H18TintRGBAMode(p,1,1,4,0.0800149667f,0.0939556532f,0.114830205f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={78,24,81,82};unsigned char expected[4]={58,68,84,255};H18TintRGBAMode(p,1,1,4,0.0800149667f,0.0939556532f,0.114830205f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={13,42,49,51};unsigned char expected[4]={145,160,56,255};H18TintRGBAMode(p,1,1,4,0.73401529f,0.8066351f,0.284541942f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={13,42,49,51};unsigned char expected[4]={145,160,56,255};H18TintRGBAMode(p,1,1,4,0.73401529f,0.8066351f,0.284541942f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={170,236,44,251};unsigned char expected[4]={122,97,110,255};H18TintRGBAMode(p,1,1,4,0.259408217f,0.207205466f,0.234671297f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={170,236,44,251};unsigned char expected[4]={122,97,110,255};H18TintRGBAMode(p,1,1,4,0.259408217f,0.207205466f,0.234671297f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={37,142,82,201};unsigned char expected[4]={94,92,79,255};H18TintRGBAMode(p,1,1,4,0.0788423661f,0.0774921408f,0.0668434454f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={37,142,82,201};unsigned char expected[4]={94,92,79,255};H18TintRGBAMode(p,1,1,4,0.0788423661f,0.0774921408f,0.0668434454f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={3,65,42,244};unsigned char expected[4]={53,12,66,255};H18TintRGBAMode(p,1,1,4,0.543812639f,0.124008776f,0.681528499f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={3,65,42,244};unsigned char expected[4]={53,12,66,255};H18TintRGBAMode(p,1,1,4,0.543812639f,0.124008776f,0.681528499f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={48,100,146,184};unsigned char expected[4]={51,86,65,255};H18TintRGBAMode(p,1,1,4,0.229377945f,0.385344814f,0.291951582f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={48,100,146,184};unsigned char expected[4]={51,86,65,255};H18TintRGBAMode(p,1,1,4,0.229377945f,0.385344814f,0.291951582f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={5,2,8,9};unsigned char expected[4]={105,100,69,255};H18TintRGBAMode(p,1,1,4,0.846065757f,0.806312463f,0.55970057f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={5,2,8,9};unsigned char expected[4]={105,100,69,255};H18TintRGBAMode(p,1,1,4,0.846065757f,0.806312463f,0.55970057f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={44,0,47,51};unsigned char expected[4]={81,47,68,255};H18TintRGBAMode(p,1,1,4,0.76848662f,0.442951717f,0.640948997f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={44,0,47,51};unsigned char expected[4]={81,47,68,255};H18TintRGBAMode(p,1,1,4,0.76848662f,0.442951717f,0.640948997f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={171,204,200,212};unsigned char expected[4]={132,56,52,255};H18TintRGBAMode(p,1,1,4,0.2573595f,0.109332359f,0.101132401f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={171,204,200,212};unsigned char expected[4]={132,56,52,255};H18TintRGBAMode(p,1,1,4,0.2573595f,0.109332359f,0.101132401f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={85,65,66,188};unsigned char expected[4]={103,16,101,255};H18TintRGBAMode(p,1,1,4,0.792150782f,0.127201627f,0.780679064f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={85,65,66,188};unsigned char expected[4]={103,18,101,255};H18TintRGBAMode(p,1,1,4,0.792150782f,0.127201627f,0.780679064f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={14,54,27,77};unsigned char expected[4]={76,65,93,255};H18TintRGBAMode(p,1,1,4,0.0477900962f,0.0411580953f,0.0585380255f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={14,54,27,77};unsigned char expected[4]={76,65,93,255};H18TintRGBAMode(p,1,1,4,0.0477900962f,0.0411580953f,0.0585380255f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={25,14,32,54};unsigned char expected[4]={67,49,56,255};H18TintRGBAMode(p,1,1,4,0.0763995958f,0.056363256f,0.0647665207f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={25,14,32,54};unsigned char expected[4]={67,49,56,255};H18TintRGBAMode(p,1,1,4,0.0763995958f,0.056363256f,0.0647665207f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={108,141,69,203};unsigned char expected[4]={94,97,100,255};H18TintRGBAMode(p,1,1,4,0.307277359f,0.317388816f,0.328499057f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={108,141,69,203};unsigned char expected[4]={94,97,100,255};H18TintRGBAMode(p,1,1,4,0.307277359f,0.317388816f,0.328499057f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={0,13,20,23};unsigned char expected[4]={27,14,82,255};H18TintRGBAMode(p,1,1,4,0.136120607f,0.0702147781f,0.409330523f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={0,13,20,23};unsigned char expected[4]={27,14,82,255};H18TintRGBAMode(p,1,1,4,0.136120607f,0.0702147781f,0.409330523f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={39,22,52,69};unsigned char expected[4]={45,63,75,255};H18TintRGBAMode(p,1,1,4,0.0535819562f,0.0755647708f,0.0896368117f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={39,22,52,69};unsigned char expected[4]={45,63,75,255};H18TintRGBAMode(p,1,1,4,0.0535819562f,0.0755647708f,0.0896368117f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={29,23,42,45};unsigned char expected[4]={43,33,93,255};H18TintRGBAMode(p,1,1,4,0.0410867533f,0.0314798227f,0.0893767037f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={29,23,42,45};unsigned char expected[4]={43,33,93,255};H18TintRGBAMode(p,1,1,4,0.0410867533f,0.0314798227f,0.0893767037f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={71,36,21,112};unsigned char expected[4]={71,72,67,255};H18TintRGBAMode(p,1,1,4,0.456412525f,0.467532455f,0.432091593f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={71,36,21,112};unsigned char expected[4]={71,72,67,255};H18TintRGBAMode(p,1,1,4,0.456412525f,0.467532455f,0.432091593f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={177,188,143,233};unsigned char expected[4]={62,135,76,255};H18TintRGBAMode(p,1,1,4,0.294556745f,0.638909403f,0.357344938f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={177,188,143,233};unsigned char expected[4]={62,135,76,255};H18TintRGBAMode(p,1,1,4,0.294556745f,0.638909403f,0.357344938f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={16,17,1,42};unsigned char expected[4]={92,59,120,255};H18TintRGBAMode(p,1,1,4,0.70961579f,0.453267577f,0.922925978f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={16,17,1,42};unsigned char expected[4]={92,59,120,255};H18TintRGBAMode(p,1,1,4,0.70961579f,0.453267577f,0.922925978f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={3,71,54,126};unsigned char expected[4]={25,102,55,255};H18TintRGBAMode(p,1,1,4,0.177730981f,0.713443064f,0.38271243f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={3,71,54,126};unsigned char expected[4]={25,102,55,255};H18TintRGBAMode(p,1,1,4,0.177730981f,0.713443064f,0.38271243f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={36,65,126,141};unsigned char expected[4]={23,67,80,255};H18TintRGBAMode(p,1,1,4,0.0901591908f,0.261921313f,0.314025492f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={36,65,126,141};unsigned char expected[4]={23,67,80,255};H18TintRGBAMode(p,1,1,4,0.0901591908f,0.261921313f,0.314025492f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={23,38,58,70};unsigned char expected[4]={147,91,85,255};H18TintRGBAMode(p,1,1,4,0.92480701f,0.572731723f,0.532333799f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={23,38,58,70};unsigned char expected[4]={147,91,85,255};H18TintRGBAMode(p,1,1,4,0.92480701f,0.572731723f,0.532333799f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={27,3,20,28};unsigned char expected[4]={75,29,59,255};H18TintRGBAMode(p,1,1,4,0.614232237f,0.237906953f,0.483206966f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={27,3,20,28};unsigned char expected[4]={75,29,59,255};H18TintRGBAMode(p,1,1,4,0.614232237f,0.237906953f,0.483206966f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={63,3,42,110};unsigned char expected[4]={63,72,89,255};H18TintRGBAMode(p,1,1,4,0.702228942f,0.797340609f,0.992324871f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={63,3,42,110};unsigned char expected[4]={63,72,89,255};H18TintRGBAMode(p,1,1,4,0.702228942f,0.797340609f,0.992324871f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={16,13,28,34};unsigned char expected[4]={78,13,2,255};H18TintRGBAMode(p,1,1,4,0.297260418f,0.0483641206f,0.00921926872f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={16,13,28,34};unsigned char expected[4]={78,13,2,255};H18TintRGBAMode(p,1,1,4,0.297260418f,0.0483641206f,0.00921926872f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={124,229,41,249};unsigned char expected[4]={113,15,116,255};H18TintRGBAMode(p,1,1,4,0.0284773093f,0.00388176984f,0.0292485018f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={124,229,41,249};unsigned char expected[4]={113,15,116,255};H18TintRGBAMode(p,1,1,4,0.0284773093f,0.00388176984f,0.0292485018f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={36,59,41,68};unsigned char expected[4]={94,116,113,255};H18TintRGBAMode(p,1,1,4,0.360587432f,0.444478514f,0.434231734f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={36,59,41,68};unsigned char expected[4]={94,116,113,255};H18TintRGBAMode(p,1,1,4,0.360587432f,0.444478514f,0.434231734f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={9,13,8,18};unsigned char expected[4]={87,103,16,255};H18TintRGBAMode(p,1,1,4,0.280313508f,0.329514822f,0.0518266046f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={9,13,8,18};unsigned char expected[4]={87,103,16,255};H18TintRGBAMode(p,1,1,4,0.280313508f,0.329514822f,0.0518266046f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={13,36,6,46};unsigned char expected[4]={28,31,112,255};H18TintRGBAMode(p,1,1,4,0.155708106f,0.170460084f,0.618297941f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={13,36,6,46};unsigned char expected[4]={28,31,112,255};H18TintRGBAMode(p,1,1,4,0.155708106f,0.170460084f,0.618297941f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={15,34,5,36};unsigned char expected[4]={3,116,111,255};H18TintRGBAMode(p,1,1,4,0.0104786226f,0.349150598f,0.334739626f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={15,34,5,36};unsigned char expected[4]={3,116,111,255};H18TintRGBAMode(p,1,1,4,0.0104786226f,0.349150598f,0.334739626f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={16,13,7,18};unsigned char expected[4]={111,94,107,255};H18TintRGBAMode(p,1,1,4,0.334248945f,0.283404568f,0.321752271f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={16,13,7,18};unsigned char expected[4]={111,94,107,255};H18TintRGBAMode(p,1,1,4,0.334248945f,0.283404568f,0.321752271f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={38,31,71,103};unsigned char expected[4]={68,54,60,255};H18TintRGBAMode(p,1,1,4,0.236215226f,0.18668631f,0.207703845f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={38,31,71,103};unsigned char expected[4]={68,54,60,255};H18TintRGBAMode(p,1,1,4,0.236215226f,0.18668631f,0.207703845f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={80,37,14,123};unsigned char expected[4]={35,35,35,123};H18TintRGBAMode(p,1,1,4,0.560594788f,0.543285891f,0.540830864f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={80,37,14,123};unsigned char expected[4]={35,35,35,123};H18TintRGBAMode(p,1,1,4,0.560594788f,0.543285891f,0.540830864f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={85,85,88,132};unsigned char expected[4]={29,28,101,255};H18TintRGBAMode(p,1,1,4,0.097019947f,0.0925120659f,0.338851357f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={85,85,88,132};unsigned char expected[4]={29,28,101,255};H18TintRGBAMode(p,1,1,4,0.097019947f,0.0925120659f,0.338851357f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={137,155,155,186};unsigned char expected[4]={161,215,138,255};H18TintRGBAMode(p,1,1,4,0.738849849f,0.987241674f,0.635658755f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={137,155,155,186};unsigned char expected[4]={161,215,138,255};H18TintRGBAMode(p,1,1,4,0.738849849f,0.987241674f,0.635658755f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={56,76,181,184};unsigned char expected[4]={69,17,78,255};H18TintRGBAMode(p,1,1,4,0.242292757f,0.0590489408f,0.274107855f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={56,76,181,184};unsigned char expected[4]={69,17,78,255};H18TintRGBAMode(p,1,1,4,0.242292757f,0.0590489408f,0.274107855f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={58,101,121,196};unsigned char expected[4]={74,83,59,255};H18TintRGBAMode(p,1,1,4,0.170244722f,0.190947171f,0.136969439f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={58,101,121,196};unsigned char expected[4]={74,83,59,255};H18TintRGBAMode(p,1,1,4,0.170244722f,0.190947171f,0.136969439f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={148,93,58,150};unsigned char expected[4]={74,69,105,255};H18TintRGBAMode(p,1,1,4,0.181814642f,0.168996437f,0.25786522f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={148,93,58,150};unsigned char expected[4]={74,69,105,255};H18TintRGBAMode(p,1,1,4,0.181814642f,0.168996437f,0.25786522f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={25,43,5,55};unsigned char expected[4]={57,131,187,255};H18TintRGBAMode(p,1,1,4,0.301550828f,0.699173076f,0.994058473f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={25,43,5,55};unsigned char expected[4]={57,131,187,255};H18TintRGBAMode(p,1,1,4,0.301550828f,0.699173076f,0.994058473f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={168,180,29,213};unsigned char expected[4]={163,105,155,255};H18TintRGBAMode(p,1,1,4,0.768004148f,0.49420715f,0.734035683f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={168,180,29,213};unsigned char expected[4]={163,105,155,255};H18TintRGBAMode(p,1,1,4,0.768004148f,0.49420715f,0.734035683f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={73,98,70,102};unsigned char expected[4]={221,65,181,255};H18TintRGBAMode(p,1,1,4,0.947721682f,0.278255685f,0.775702402f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={73,98,70,102};unsigned char expected[4]={221,65,181,255};H18TintRGBAMode(p,1,1,4,0.947721682f,0.278255685f,0.775702402f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={24,31,19,40};unsigned char expected[4]={109,7,7,255};H18TintRGBAMode(p,1,1,4,0.427577718f,0.0284155094f,0.0292736964f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={24,31,19,40};unsigned char expected[4]={109,7,7,255};H18TintRGBAMode(p,1,1,4,0.427577718f,0.0284155094f,0.0292736964f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={186,147,113,216};unsigned char expected[4]={85,115,28,255};H18TintRGBAMode(p,1,1,4,0.431050698f,0.581794154f,0.143055622f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={186,147,113,216};unsigned char expected[4]={85,115,28,255};H18TintRGBAMode(p,1,1,4,0.431050698f,0.581794154f,0.143055622f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={62,32,50,88};unsigned char expected[4]={88,128,94,255};H18TintRGBAMode(p,1,1,4,0.605654238f,0.881313826f,0.644199975f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={62,32,50,88};unsigned char expected[4]={88,128,94,255};H18TintRGBAMode(p,1,1,4,0.605654238f,0.881313826f,0.644199975f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={191,121,162,248};unsigned char expected[4]={138,138,138,248};H18TintRGBAMode(p,1,1,4,0.847532184f,0.833959687f,0.830219877f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={191,121,162,248};unsigned char expected[4]={138,138,138,248};H18TintRGBAMode(p,1,1,4,0.847532184f,0.833959687f,0.830219877f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={33,18,69,115};unsigned char expected[4]={82,57,12,255};H18TintRGBAMode(p,1,1,4,0.824062022f,0.57888145f,0.121802817f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={33,18,69,115};unsigned char expected[4]={82,57,12,255};H18TintRGBAMode(p,1,1,4,0.824062022f,0.57888145f,0.121802817f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={51,26,9,62};unsigned char expected[4]={107,83,90,255};H18TintRGBAMode(p,1,1,4,0.702851097f,0.546476896f,0.587039182f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={51,26,9,62};unsigned char expected[4]={107,83,90,255};H18TintRGBAMode(p,1,1,4,0.702851097f,0.546476896f,0.587039182f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={34,5,14,83};unsigned char expected[4]={45,67,56,255};H18TintRGBAMode(p,1,1,4,0.537931973f,0.788456512f,0.660001775f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={34,5,14,83};unsigned char expected[4]={45,67,56,255};H18TintRGBAMode(p,1,1,4,0.537931973f,0.788456512f,0.660001775f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={18,54,17,69};unsigned char expected[4]={100,99,5,255};H18TintRGBAMode(p,1,1,4,0.00894101714f,0.00881179203f,0.000478346008f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={18,54,17,69};unsigned char expected[4]={100,99,5,255};H18TintRGBAMode(p,1,1,4,0.00894101714f,0.00881179203f,0.000478346008f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={58,31,48,71};unsigned char expected[4]={156,60,154,255};H18TintRGBAMode(p,1,1,4,0.958887491f,0.370338061f,0.945628333f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={58,31,48,71};unsigned char expected[4]={156,60,154,255};H18TintRGBAMode(p,1,1,4,0.958887491f,0.370338061f,0.945628333f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={24,192,103,253};unsigned char expected[4]={9,13,96,255};H18TintRGBAMode(p,1,1,4,0.0423761166f,0.0568494599f,0.430646695f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={24,192,103,253};unsigned char expected[4]={9,13,96,255};H18TintRGBAMode(p,1,1,4,0.0423761166f,0.0568494599f,0.430646695f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={43,5,38,46};unsigned char expected[4]={68,45,59,255};H18TintRGBAMode(p,1,1,4,0.454720241f,0.305530977f,0.398071465f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={43,5,38,46};unsigned char expected[4]={68,45,59,255};H18TintRGBAMode(p,1,1,4,0.454720241f,0.305530977f,0.398071465f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={31,15,39,57};unsigned char expected[4]={69,39,28,255};H18TintRGBAMode(p,1,1,4,0.156367802f,0.0868531162f,0.0634220933f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={31,15,39,57};unsigned char expected[4]={69,39,28,255};H18TintRGBAMode(p,1,1,4,0.156367802f,0.0868531162f,0.0634220933f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={92,101,82,152};unsigned char expected[4]={101,31,18,255};H18TintRGBAMode(p,1,1,4,0.0285939359f,0.00879096574f,0.00503640748f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={92,101,82,152};unsigned char expected[4]={101,31,18,255};H18TintRGBAMode(p,1,1,4,0.0285939359f,0.00879096574f,0.00503640748f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={25,19,5,32};unsigned char expected[4]={72,156,134,255};H18TintRGBAMode(p,1,1,4,0.40788038f,0.886921095f,0.762199288f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={25,19,5,32};unsigned char expected[4]={72,156,134,255};H18TintRGBAMode(p,1,1,4,0.40788038f,0.886921095f,0.762199288f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={32,66,81,126};unsigned char expected[4]={101,133,52,255};H18TintRGBAMode(p,1,1,4,0.667698277f,0.884174608f,0.342414683f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={32,66,81,126};unsigned char expected[4]={101,133,52,255};H18TintRGBAMode(p,1,1,4,0.667698277f,0.884174608f,0.342414683f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={154,39,131,172};unsigned char expected[4]={86,86,86,172};H18TintRGBAMode(p,1,1,4,0.914641027f,0.924409408f,0.929708331f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={154,39,131,172};unsigned char expected[4]={86,86,86,172};H18TintRGBAMode(p,1,1,4,0.914641027f,0.924409408f,0.929708331f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={87,59,16,161};unsigned char expected[4]={88,43,86,255};H18TintRGBAMode(p,1,1,4,0.663267569f,0.327378959f,0.646750647f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={87,59,16,161};unsigned char expected[4]={88,43,86,255};H18TintRGBAMode(p,1,1,4,0.663267569f,0.327378959f,0.646750647f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={84,91,67,242};unsigned char expected[4]={62,32,71,255};H18TintRGBAMode(p,1,1,4,0.184703455f,0.0960513167f,0.210887115f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={84,91,67,242};unsigned char expected[4]={63,34,71,255};H18TintRGBAMode(p,1,1,4,0.184703455f,0.0960513167f,0.210887115f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={17,55,128,185};unsigned char expected[4]={40,80,71,255};H18TintRGBAMode(p,1,1,4,0.354332422f,0.715868153f,0.635768913f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={17,55,128,185};unsigned char expected[4]={40,80,71,255};H18TintRGBAMode(p,1,1,4,0.354332422f,0.715868153f,0.635768913f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={140,166,81,185};unsigned char expected[4]={66,122,37,255};H18TintRGBAMode(p,1,1,4,0.0955401853f,0.178005886f,0.0532398962f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={140,166,81,185};unsigned char expected[4]={66,122,37,255};H18TintRGBAMode(p,1,1,4,0.0955401853f,0.178005886f,0.0532398962f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={99,89,126,127};unsigned char expected[4]={96,112,75,255};H18TintRGBAMode(p,1,1,4,0.40540121f,0.473197577f,0.316246176f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={99,89,126,127};unsigned char expected[4]={96,112,75,255};H18TintRGBAMode(p,1,1,4,0.40540121f,0.473197577f,0.316246176f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={5,76,33,105};unsigned char expected[4]={56,91,76,255};H18TintRGBAMode(p,1,1,4,0.0884326484f,0.14490379f,0.120428696f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={5,76,33,105};unsigned char expected[4]={56,91,76,255};H18TintRGBAMode(p,1,1,4,0.0884326484f,0.14490379f,0.120428696f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={5,14,0,23};unsigned char expected[4]={100,145,144,255};H18TintRGBAMode(p,1,1,4,0.660276127f,0.956377538f,0.950625773f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={5,14,0,23};unsigned char expected[4]={100,145,144,255};H18TintRGBAMode(p,1,1,4,0.660276127f,0.956377538f,0.950625773f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={160,32,140,186};unsigned char expected[4]={68,64,70,255};H18TintRGBAMode(p,1,1,4,0.239357472f,0.224242994f,0.245822412f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={160,32,140,186};unsigned char expected[4]={68,64,70,255};H18TintRGBAMode(p,1,1,4,0.239357472f,0.224242994f,0.245822412f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={54,8,62,93};unsigned char expected[4]={98,29,6,255};H18TintRGBAMode(p,1,1,4,0.959487781f,0.284314392f,0.0589244794f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={54,8,62,93};unsigned char expected[4]={98,29,6,255};H18TintRGBAMode(p,1,1,4,0.959487781f,0.284314392f,0.0589244794f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={23,30,43,89};unsigned char expected[4]={51,67,52,255};H18TintRGBAMode(p,1,1,4,0.0716778191f,0.0937533205f,0.073270235f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={23,30,43,89};unsigned char expected[4]={51,67,52,255};H18TintRGBAMode(p,1,1,4,0.0716778191f,0.0937533205f,0.073270235f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={139,195,62,249};unsigned char expected[4]={105,105,105,249};H18TintRGBAMode(p,1,1,4,0.41720968f,0.435665947f,0.417960641f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={139,195,62,249};unsigned char expected[4]={105,105,105,249};H18TintRGBAMode(p,1,1,4,0.41720968f,0.435665947f,0.417960641f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={15,47,79,93};unsigned char expected[4]={81,28,38,255};H18TintRGBAMode(p,1,1,4,0.156170883f,0.0543603868f,0.07392022f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={15,47,79,93};unsigned char expected[4]={81,28,38,255};H18TintRGBAMode(p,1,1,4,0.156170883f,0.0543603868f,0.07392022f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={14,52,20,131};unsigned char expected[4]={13,28,71,255};H18TintRGBAMode(p,1,1,4,0.108930675f,0.235742199f,0.594960014f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={14,52,20,131};unsigned char expected[4]={13,28,71,255};H18TintRGBAMode(p,1,1,4,0.108930675f,0.235742199f,0.594960014f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={203,182,202,219};unsigned char expected[4]={67,57,125,255};H18TintRGBAMode(p,1,1,4,0.153427944f,0.129956246f,0.283901743f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={203,182,202,219};unsigned char expected[4]={67,57,125,255};H18TintRGBAMode(p,1,1,4,0.153427944f,0.129956246f,0.283901743f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={87,61,7,88};unsigned char expected[4]={12,109,77,255};H18TintRGBAMode(p,1,1,4,0.0540655844f,0.495862488f,0.352151564f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={87,61,7,88};unsigned char expected[4]={12,109,77,255};H18TintRGBAMode(p,1,1,4,0.0540655844f,0.495862488f,0.352151564f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={50,9,91,96};unsigned char expected[4]={56,29,75,255};H18TintRGBAMode(p,1,1,4,0.528762856f,0.276167955f,0.711465108f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={50,9,91,96};unsigned char expected[4]={56,29,75,255};H18TintRGBAMode(p,1,1,4,0.528762856f,0.276167955f,0.711465108f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={38,15,45,84};unsigned char expected[4]={60,56,58,255};H18TintRGBAMode(p,1,1,4,0.166980459f,0.157986022f,0.161786478f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={38,15,45,84};unsigned char expected[4]={60,56,58,255};H18TintRGBAMode(p,1,1,4,0.166980459f,0.157986022f,0.161786478f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={6,3,6,6};unsigned char expected[4]={153,123,102,255};H18TintRGBAMode(p,1,1,4,0.829687027f,0.666456308f,0.553312572f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={6,3,6,6};unsigned char expected[4]={153,123,102,255};H18TintRGBAMode(p,1,1,4,0.829687027f,0.666456308f,0.553312572f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={0,0,0,0};unsigned char expected[4]={0,0,0,0};H18TintRGBAMode(p,1,1,4,0.150601303f,0.00467331449f,0.066343558f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={0,0,0,0};unsigned char expected[4]={0,0,0,0};H18TintRGBAMode(p,1,1,4,0.150601303f,0.00467331449f,0.066343558f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={90,158,126,222};unsigned char expected[4]={153,88,140,255};H18TintRGBAMode(p,1,1,4,0.838488512f,0.482677916f,0.765989282f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={90,158,126,222};unsigned char expected[4]={153,88,140,255};H18TintRGBAMode(p,1,1,4,0.838488512f,0.482677916f,0.765989282f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={75,121,117,141};unsigned char expected[4]={176,126,27,255};H18TintRGBAMode(p,1,1,4,0.828711944f,0.594549934f,0.125662806f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={75,121,117,141};unsigned char expected[4]={176,126,27,255};H18TintRGBAMode(p,1,1,4,0.828711944f,0.594549934f,0.125662806f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={7,2,21,28};unsigned char expected[4]={50,39,59,255};H18TintRGBAMode(p,1,1,4,0.574338719f,0.446065947f,0.675235696f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={7,2,21,28};unsigned char expected[4]={50,39,59,255};H18TintRGBAMode(p,1,1,4,0.574338719f,0.446065947f,0.675235696f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={16,40,19,60};unsigned char expected[4]={29,89,93,255};H18TintRGBAMode(p,1,1,4,0.174569442f,0.536215543f,0.557711614f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={16,40,19,60};unsigned char expected[4]={29,89,93,255};H18TintRGBAMode(p,1,1,4,0.174569442f,0.536215543f,0.557711614f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={30,3,0,131};unsigned char expected[4]={69,53,25,255};H18TintRGBAMode(p,1,1,4,0.999331979f,0.760982729f,0.367506402f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={30,3,0,131};unsigned char expected[4]={69,53,25,255};H18TintRGBAMode(p,1,1,4,0.999331979f,0.760982729f,0.367506402f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={80,203,3,217};unsigned char expected[4]={113,61,69,255};H18TintRGBAMode(p,1,1,4,0.101479246f,0.0552736966f,0.0616789218f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={80,203,3,217};unsigned char expected[4]={113,61,69,255};H18TintRGBAMode(p,1,1,4,0.101479246f,0.0552736966f,0.0616789218f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={83,80,73,98};unsigned char expected[4]={95,120,99,255};H18TintRGBAMode(p,1,1,4,0.11293256f,0.14310298f,0.117299324f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={83,80,73,98};unsigned char expected[4]={95,120,99,255};H18TintRGBAMode(p,1,1,4,0.11293256f,0.14310298f,0.117299324f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={70,164,90,233};unsigned char expected[4]={67,40,96,255};H18TintRGBAMode(p,1,1,4,0.208898679f,0.124157577f,0.298159868f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={70,164,90,233};unsigned char expected[4]={67,40,96,255};H18TintRGBAMode(p,1,1,4,0.208898679f,0.124157577f,0.298159868f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={9,3,1,9};unsigned char expected[4]={46,53,111,255};H18TintRGBAMode(p,1,1,4,0.311706556f,0.359141388f,0.756424321f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={9,3,1,9};unsigned char expected[4]={46,53,111,255};H18TintRGBAMode(p,1,1,4,0.311706556f,0.359141388f,0.756424321f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={3,9,4,11};unsigned char expected[4]={69,101,104,255};H18TintRGBAMode(p,1,1,4,0.191501188f,0.279049566f,0.288455095f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={3,9,4,11};unsigned char expected[4]={69,101,104,255};H18TintRGBAMode(p,1,1,4,0.191501188f,0.279049566f,0.288455095f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={32,200,50,239};unsigned char expected[4]={101,71,69,255};H18TintRGBAMode(p,1,1,4,0.00401022097f,0.00283188154f,0.00275489012f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={32,200,50,239};unsigned char expected[4]={101,71,69,255};H18TintRGBAMode(p,1,1,4,0.00401022097f,0.00283188154f,0.00275489012f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={15,24,1,32};unsigned char expected[4]={31,101,84,255};H18TintRGBAMode(p,1,1,4,0.0347229143f,0.1144495f,0.0954033659f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={15,24,1,32};unsigned char expected[4]={31,101,84,255};H18TintRGBAMode(p,1,1,4,0.0347229143f,0.1144495f,0.0954033659f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={59,44,44,64};unsigned char expected[4]={128,114,45,255};H18TintRGBAMode(p,1,1,4,0.630374319f,0.560909605f,0.219733318f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={59,44,44,64};unsigned char expected[4]={128,114,45,255};H18TintRGBAMode(p,1,1,4,0.630374319f,0.560909605f,0.219733318f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={16,88,73,94};unsigned char expected[4]={121,136,127,255};H18TintRGBAMode(p,1,1,4,0.581339059f,0.655217435f,0.610235114f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={16,88,73,94};unsigned char expected[4]={121,136,127,255};H18TintRGBAMode(p,1,1,4,0.581339059f,0.655217435f,0.610235114f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={12,10,13,29};unsigned char expected[4]={35,41,71,255};H18TintRGBAMode(p,1,1,4,0.212593361f,0.244174774f,0.42795878f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={12,10,13,29};unsigned char expected[4]={37,42,72,255};H18TintRGBAMode(p,1,1,4,0.212593361f,0.244174774f,0.42795878f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={29,35,4,51};unsigned char expected[4]={98,81,72,255};H18TintRGBAMode(p,1,1,4,0.0383020749f,0.0313604244f,0.028105236f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={29,35,4,51};unsigned char expected[4]={98,81,72,255};H18TintRGBAMode(p,1,1,4,0.0383020749f,0.0313604244f,0.028105236f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={10,2,23,39};unsigned char expected[4]={45,3,4,255};H18TintRGBAMode(p,1,1,4,0.0375279522f,0.00219326439f,0.00330652934f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={10,2,23,39};unsigned char expected[4]={45,3,4,255};H18TintRGBAMode(p,1,1,4,0.0375279522f,0.00219326439f,0.00330652934f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={105,83,107,157};unsigned char expected[4]={83,163,162,255};H18TintRGBAMode(p,1,1,4,0.491148092f,0.963301527f,0.953903728f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={105,83,107,157};unsigned char expected[4]={83,163,162,255};H18TintRGBAMode(p,1,1,4,0.491148092f,0.963301527f,0.953903728f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={22,96,18,166};unsigned char expected[4]={141,103,87,255};H18TintRGBAMode(p,1,1,4,0.968792417f,0.705331612f,0.595561523f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={22,96,18,166};unsigned char expected[4]={141,103,87,255};H18TintRGBAMode(p,1,1,4,0.968792417f,0.705331612f,0.595561523f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={8,61,32,104};unsigned char expected[4]={67,81,30,255};H18TintRGBAMode(p,1,1,4,0.290175151f,0.348635591f,0.131120355f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={8,61,32,104};unsigned char expected[4]={67,81,30,255};H18TintRGBAMode(p,1,1,4,0.290175151f,0.348635591f,0.131120355f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={144,138,4,149};unsigned char expected[4]={126,66,41,255};H18TintRGBAMode(p,1,1,4,0.236938731f,0.124649979f,0.0774872252f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={144,138,4,149};unsigned char expected[4]={126,66,41,255};H18TintRGBAMode(p,1,1,4,0.236938731f,0.124649979f,0.0774872252f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={5,5,3,6};unsigned char expected[4]={89,119,99,255};H18TintRGBAMode(p,1,1,4,0.173435338f,0.233666556f,0.193467475f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={5,5,3,6};unsigned char expected[4]={89,119,99,255};H18TintRGBAMode(p,1,1,4,0.173435338f,0.233666556f,0.193467475f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={63,15,7,247};unsigned char expected[4]={48,48,48,247};H18TintRGBAMode(p,1,1,4,0.656857903f,0.629919827f,0.649300328f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={63,15,7,247};unsigned char expected[4]={48,48,48,247};H18TintRGBAMode(p,1,1,4,0.656857903f,0.629919827f,0.649300328f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={107,115,5,140};unsigned char expected[4]={42,27,113,255};H18TintRGBAMode(p,1,1,4,0.00911766131f,0.00574429892f,0.0245213039f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={107,115,5,140};unsigned char expected[4]={42,27,113,255};H18TintRGBAMode(p,1,1,4,0.00911766131f,0.00574429892f,0.0245213039f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={8,19,41,44};unsigned char expected[4]={60,18,76,255};H18TintRGBAMode(p,1,1,4,0.14458257f,0.0425624494f,0.182888103f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={8,19,41,44};unsigned char expected[4]={60,18,76,255};H18TintRGBAMode(p,1,1,4,0.14458257f,0.0425624494f,0.182888103f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={227,102,70,245};unsigned char expected[4]={87,22,21,255};H18TintRGBAMode(p,1,1,4,0.0933373399f,0.0235464731f,0.022191955f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={227,102,70,245};unsigned char expected[4]={87,22,21,255};H18TintRGBAMode(p,1,1,4,0.0933373399f,0.0235464731f,0.022191955f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={114,101,94,187};unsigned char expected[4]={11,150,104,255};H18TintRGBAMode(p,1,1,4,0.0655620924f,0.905927713f,0.626899236f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={114,101,94,187};unsigned char expected[4]={11,150,104,255};H18TintRGBAMode(p,1,1,4,0.0655620924f,0.905927713f,0.626899236f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={166,176,107,253};unsigned char expected[4]={74,103,104,255};H18TintRGBAMode(p,1,1,4,0.153528511f,0.211789871f,0.214551159f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={166,176,107,253};unsigned char expected[4]={74,103,104,255};H18TintRGBAMode(p,1,1,4,0.153528511f,0.211789871f,0.214551159f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={20,4,29,33};unsigned char expected[4]={43,27,68,255};H18TintRGBAMode(p,1,1,4,0.383032982f,0.23880213f,0.612893746f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={20,4,29,33};unsigned char expected[4]={43,27,68,255};H18TintRGBAMode(p,1,1,4,0.383032982f,0.23880213f,0.612893746f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={22,78,68,138};unsigned char expected[4]={3,83,64,255};H18TintRGBAMode(p,1,1,4,0.00779682401f,0.20288059f,0.15775944f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={22,78,68,138};unsigned char expected[4]={3,83,64,255};H18TintRGBAMode(p,1,1,4,0.00779682401f,0.20288059f,0.15775944f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={123,104,49,131};unsigned char expected[4]={82,118,69,255};H18TintRGBAMode(p,1,1,4,0.366740661f,0.527390252f,0.310903144f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={123,104,49,131};unsigned char expected[4]={82,118,69,255};H18TintRGBAMode(p,1,1,4,0.366740661f,0.527390252f,0.310903144f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={155,98,8,165};unsigned char expected[4]={97,82,100,255};H18TintRGBAMode(p,1,1,4,0.536376083f,0.450609115f,0.548720086f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={155,98,8,165};unsigned char expected[4]={97,82,100,255};H18TintRGBAMode(p,1,1,4,0.536376083f,0.450609115f,0.548720086f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={124,188,46,219};unsigned char expected[4]={65,113,48,255};H18TintRGBAMode(p,1,1,4,0.0205781314f,0.0358360522f,0.0151666191f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={124,188,46,219};unsigned char expected[4]={65,113,48,255};H18TintRGBAMode(p,1,1,4,0.0205781314f,0.0358360522f,0.0151666191f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={14,10,23,56};unsigned char expected[4]={28,35,84,255};H18TintRGBAMode(p,1,1,4,0.288945516f,0.352813469f,0.86007664f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={14,10,23,56};unsigned char expected[4]={28,35,84,255};H18TintRGBAMode(p,1,1,4,0.288945516f,0.352813469f,0.86007664f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={46,158,82,184};unsigned char expected[4]={167,155,168,255};H18TintRGBAMode(p,1,1,4,0.855094837f,0.793410345f,0.85974145f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={46,158,82,184};unsigned char expected[4]={167,155,168,255};H18TintRGBAMode(p,1,1,4,0.855094837f,0.793410345f,0.85974145f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={50,0,44,55};unsigned char expected[4]={24,19,79,255};H18TintRGBAMode(p,1,1,4,0.225364108f,0.181158033f,0.74042747f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={50,0,44,55};unsigned char expected[4]={24,19,79,255};H18TintRGBAMode(p,1,1,4,0.225364108f,0.181158033f,0.74042747f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={41,79,128,234};unsigned char expected[4]={35,92,88,255};H18TintRGBAMode(p,1,1,4,0.296359167f,0.770455846f,0.73826409f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={41,79,128,234};unsigned char expected[4]={35,92,88,255};H18TintRGBAMode(p,1,1,4,0.296359167f,0.770455846f,0.73826409f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={23,34,5,106};unsigned char expected[4]={61,51,7,255};H18TintRGBAMode(p,1,1,4,0.133665488f,0.110872918f,0.0141809396f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={23,34,5,106};unsigned char expected[4]={61,51,7,255};H18TintRGBAMode(p,1,1,4,0.133665488f,0.110872918f,0.0141809396f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={45,12,19,64};unsigned char expected[4]={21,0,64,255};H18TintRGBAMode(p,1,1,4,0.0103450559f,1.80657572e-05f,0.0317571686f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={45,12,19,64};unsigned char expected[4]={21,0,64,255};H18TintRGBAMode(p,1,1,4,0.0103450559f,1.80657572e-05f,0.0317571686f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={133,106,149,154};unsigned char expected[4]={112,27,57,255};H18TintRGBAMode(p,1,1,4,0.290605219f,0.0697933987f,0.146741671f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={133,106,149,154};unsigned char expected[4]={112,27,57,255};H18TintRGBAMode(p,1,1,4,0.290605219f,0.0697933987f,0.146741671f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={169,150,126,210};unsigned char expected[4]={45,168,110,255};H18TintRGBAMode(p,1,1,4,0.224633111f,0.839727192f,0.548045153f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={169,150,126,210};unsigned char expected[4]={45,168,110,255};H18TintRGBAMode(p,1,1,4,0.224633111f,0.839727192f,0.548045153f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={75,71,13,81};unsigned char expected[4]={122,103,114,255};H18TintRGBAMode(p,1,1,4,0.319459014f,0.27001201f,0.298029131f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={75,71,13,81};unsigned char expected[4]={122,103,114,255};H18TintRGBAMode(p,1,1,4,0.319459014f,0.27001201f,0.298029131f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={30,22,7,33};unsigned char expected[4]={106,83,83,255};H18TintRGBAMode(p,1,1,4,0.361551024f,0.284273281f,0.283360401f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={30,22,7,33};unsigned char expected[4]={106,83,83,255};H18TintRGBAMode(p,1,1,4,0.361551024f,0.284273281f,0.283360401f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={69,91,4,116};unsigned char expected[4]={151,147,162,255};H18TintRGBAMode(p,1,1,4,0.779945612f,0.759598825f,0.837844247f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={69,91,4,116};unsigned char expected[4]={151,147,162,255};H18TintRGBAMode(p,1,1,4,0.779945612f,0.759598825f,0.837844247f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={85,86,61,97};unsigned char expected[4]={95,95,136,255};H18TintRGBAMode(p,1,1,4,0.414013072f,0.417528617f,0.597449628f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={85,86,61,97};unsigned char expected[4]={95,95,136,255};H18TintRGBAMode(p,1,1,4,0.414013072f,0.417528617f,0.597449628f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={8,6,12,20};unsigned char expected[4]={34,68,10,255};H18TintRGBAMode(p,1,1,4,0.0123799629f,0.0248871862f,0.00374748007f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={8,6,12,20};unsigned char expected[4]={34,68,10,255};H18TintRGBAMode(p,1,1,4,0.0123799629f,0.0248871862f,0.00374748007f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={105,128,92,188};unsigned char expected[4]={63,57,101,255};H18TintRGBAMode(p,1,1,4,0.231410359f,0.210832697f,0.37337086f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={105,128,92,188};unsigned char expected[4]={63,57,101,255};H18TintRGBAMode(p,1,1,4,0.231410359f,0.210832697f,0.37337086f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={82,147,66,226};unsigned char expected[4]={20,92,77,255};H18TintRGBAMode(p,1,1,4,0.0695090687f,0.321200067f,0.267099735f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={82,147,66,226};unsigned char expected[4]={20,92,77,255};H18TintRGBAMode(p,1,1,4,0.0695090687f,0.321200067f,0.267099735f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={97,84,63,108};unsigned char expected[4]={117,114,107,255};H18TintRGBAMode(p,1,1,4,0.351574492f,0.341095503f,0.32134401f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={97,84,63,108};unsigned char expected[4]={117,114,107,255};H18TintRGBAMode(p,1,1,4,0.351574492f,0.341095503f,0.32134401f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={1,21,12,43};unsigned char expected[4]={12,12,12,43};H18TintRGBAMode(p,1,1,4,0.109933561f,0.107011649f,0.110358082f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={1,21,12,43};unsigned char expected[4]={12,12,12,43};H18TintRGBAMode(p,1,1,4,0.109933561f,0.107011649f,0.110358082f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={117,134,97,218};unsigned char expected[4]={81,81,81,218};H18TintRGBAMode(p,1,1,4,0.0555041948f,0.0577053389f,0.057976133f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={117,134,97,218};unsigned char expected[4]={81,81,81,218};H18TintRGBAMode(p,1,1,4,0.0555041948f,0.0577053389f,0.057976133f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={14,6,9,27};unsigned char expected[4]={7,7,7,27};H18TintRGBAMode(p,1,1,4,0.0365727786f,0.0365734855f,0.0365724914f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={14,6,9,27};unsigned char expected[4]={7,7,7,27};H18TintRGBAMode(p,1,1,4,0.0365727786f,0.0365734855f,0.0365724914f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={225,168,158,225};unsigned char expected[4]={104,104,104,225};H18TintRGBAMode(p,1,1,4,0.187633615f,0.189118243f,0.189802473f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={225,168,158,225};unsigned char expected[4]={104,104,104,225};H18TintRGBAMode(p,1,1,4,0.187633615f,0.189118243f,0.189802473f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={26,81,36,108};unsigned char expected[4]={41,41,41,108};H18TintRGBAMode(p,1,1,4,0.204433096f,0.197211016f,0.194497894f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={26,81,36,108};unsigned char expected[4]={41,41,41,108};H18TintRGBAMode(p,1,1,4,0.204433096f,0.197211016f,0.194497894f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={0,4,5,6};unsigned char expected[4]={67,80,104,255};H18TintRGBAMode(p,1,1,4,0.413446018f,0.48896777f,0.641417886f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={0,4,5,6};unsigned char expected[4]={67,80,104,255};H18TintRGBAMode(p,1,1,4,0.413446018f,0.48896777f,0.641417886f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={33,101,22,147};unsigned char expected[4]={59,91,45,255};H18TintRGBAMode(p,1,1,4,0.331839751f,0.51434442f,0.25270768f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={33,101,22,147};unsigned char expected[4]={59,91,45,255};H18TintRGBAMode(p,1,1,4,0.331839751f,0.51434442f,0.25270768f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={28,38,8,73};unsigned char expected[4]={142,101,60,255};H18TintRGBAMode(p,1,1,4,0.961927888f,0.680621004f,0.406872252f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={28,38,8,73};unsigned char expected[4]={142,101,60,255};H18TintRGBAMode(p,1,1,4,0.961927888f,0.680621004f,0.406872252f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={31,26,24,39};unsigned char expected[4]={46,33,106,255};H18TintRGBAMode(p,1,1,4,0.18889318f,0.137406756f,0.439538683f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={31,26,24,39};unsigned char expected[4]={46,33,106,255};H18TintRGBAMode(p,1,1,4,0.18889318f,0.137406756f,0.439538683f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={133,81,134,147};unsigned char expected[4]={85,65,102,255};H18TintRGBAMode(p,1,1,4,0.333471191f,0.252505107f,0.398739953f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={133,81,134,147};unsigned char expected[4]={85,65,102,255};H18TintRGBAMode(p,1,1,4,0.333471191f,0.252505107f,0.398739953f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={14,61,30,132};unsigned char expected[4]={71,63,56,255};H18TintRGBAMode(p,1,1,4,0.520737024f,0.457363019f,0.407281357f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={14,61,30,132};unsigned char expected[4]={71,63,56,255};H18TintRGBAMode(p,1,1,4,0.520737024f,0.457363019f,0.407281357f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={198,77,131,206};unsigned char expected[4]={66,40,87,255};H18TintRGBAMode(p,1,1,4,0.0101542598f,0.00611713317f,0.0134358871f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={198,77,131,206};unsigned char expected[4]={66,40,87,255};H18TintRGBAMode(p,1,1,4,0.0101542598f,0.00611713317f,0.0134358871f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={3,3,3,5};unsigned char expected[4]={160,146,125,255};H18TintRGBAMode(p,1,1,4,0.909395808f,0.833913329f,0.710996666f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={3,3,3,5};unsigned char expected[4]={160,146,125,255};H18TintRGBAMode(p,1,1,4,0.909395808f,0.833913329f,0.710996666f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={37,6,32,74};unsigned char expected[4]={86,44,36,255};H18TintRGBAMode(p,1,1,4,0.903761086f,0.462397755f,0.382688201f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={37,6,32,74};unsigned char expected[4]={86,44,36,255};H18TintRGBAMode(p,1,1,4,0.903761086f,0.462397755f,0.382688201f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={29,59,57,63};unsigned char expected[4]={80,158,31,255};H18TintRGBAMode(p,1,1,4,0.359715979f,0.711845628f,0.141154418f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={29,59,57,63};unsigned char expected[4]={80,158,31,255};H18TintRGBAMode(p,1,1,4,0.359715979f,0.711845628f,0.141154418f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={171,184,35,240};unsigned char expected[4]={109,102,29,255};H18TintRGBAMode(p,1,1,4,0.267247117f,0.252304302f,0.0703497649f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={171,184,35,240};unsigned char expected[4]={109,102,29,255};H18TintRGBAMode(p,1,1,4,0.267247117f,0.252304302f,0.0703497649f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={2,25,14,25};unsigned char expected[4]={72,115,31,255};H18TintRGBAMode(p,1,1,4,0.326214384f,0.51949781f,0.140469145f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={2,25,14,25};unsigned char expected[4]={72,115,31,255};H18TintRGBAMode(p,1,1,4,0.326214384f,0.51949781f,0.140469145f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={23,106,198,242};unsigned char expected[4]={101,83,77,255};H18TintRGBAMode(p,1,1,4,0.750083962f,0.622024882f,0.572092042f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={23,106,198,242};unsigned char expected[4]={101,83,77,255};H18TintRGBAMode(p,1,1,4,0.750083962f,0.622024882f,0.572092042f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={181,20,105,221};unsigned char expected[4]={50,63,78,255};H18TintRGBAMode(p,1,1,4,0.451624394f,0.568680187f,0.702932228f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={181,20,105,221};unsigned char expected[4]={50,63,78,255};H18TintRGBAMode(p,1,1,4,0.451624394f,0.568680187f,0.702932228f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={69,64,53,106};unsigned char expected[4]={97,27,49,255};H18TintRGBAMode(p,1,1,4,0.306444286f,0.0845173335f,0.153554322f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={69,64,53,106};unsigned char expected[4]={97,27,49,255};H18TintRGBAMode(p,1,1,4,0.306444286f,0.0845173335f,0.153554322f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={20,19,6,25};unsigned char expected[4]={23,129,144,255};H18TintRGBAMode(p,1,1,4,0.113924013f,0.64091334f,0.716061381f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={20,19,6,25};unsigned char expected[4]={23,129,144,255};H18TintRGBAMode(p,1,1,4,0.113924013f,0.64091334f,0.716061381f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={101,119,26,231};unsigned char expected[4]={129,65,75,255};H18TintRGBAMode(p,1,1,4,0.860391491f,0.434850634f,0.499536986f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={101,119,26,231};unsigned char expected[4]={129,65,75,255};H18TintRGBAMode(p,1,1,4,0.860391491f,0.434850634f,0.499536986f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={24,78,24,78};unsigned char expected[4]={151,144,9,255};H18TintRGBAMode(p,1,1,4,0.698801194f,0.666905739f,0.0416856514f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={24,78,24,78};unsigned char expected[4]={151,144,9,255};H18TintRGBAMode(p,1,1,4,0.698801194f,0.666905739f,0.0416856514f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={14,153,11,248};unsigned char expected[4]={81,42,66,255};H18TintRGBAMode(p,1,1,4,0.260442533f,0.134165772f,0.211419406f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={14,153,11,248};unsigned char expected[4]={81,42,66,255};H18TintRGBAMode(p,1,1,4,0.260442533f,0.134165772f,0.211419406f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={70,124,126,181};unsigned char expected[4]={99,61,39,255};H18TintRGBAMode(p,1,1,4,0.284353971f,0.175639687f,0.110817077f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={70,124,126,181};unsigned char expected[4]={99,61,39,255};H18TintRGBAMode(p,1,1,4,0.284353971f,0.175639687f,0.110817077f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={123,38,99,131};unsigned char expected[4]={81,9,65,255};H18TintRGBAMode(p,1,1,4,0.0836864252f,0.00941229343f,0.0664827268f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={123,38,99,131};unsigned char expected[4]={81,9,65,255};H18TintRGBAMode(p,1,1,4,0.0836864252f,0.00941229343f,0.0664827268f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={53,50,61,80};unsigned char expected[4]={62,80,101,255};H18TintRGBAMode(p,1,1,4,0.061268747f,0.0793557568f,0.0998994166f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={53,50,61,80};unsigned char expected[4]={62,80,101,255};H18TintRGBAMode(p,1,1,4,0.061268747f,0.0793557568f,0.0998994166f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={69,104,114,173};unsigned char expected[4]={92,87,74,255};H18TintRGBAMode(p,1,1,4,0.43908998f,0.414127681f,0.353726928f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={69,104,114,173};unsigned char expected[4]={92,87,74,255};H18TintRGBAMode(p,1,1,4,0.43908998f,0.414127681f,0.353726928f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={5,21,8,26};unsigned char expected[4]={10,10,10,26};H18TintRGBAMode(p,1,1,4,0.238614838f,0.231551521f,0.227864557f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={5,21,8,26};unsigned char expected[4]={10,10,10,26};H18TintRGBAMode(p,1,1,4,0.238614838f,0.231551521f,0.227864557f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={145,194,80,216};unsigned char expected[4]={108,162,85,255};H18TintRGBAMode(p,1,1,4,0.495885665f,0.743144133f,0.390594583f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={145,194,80,216};unsigned char expected[4]={108,162,85,255};H18TintRGBAMode(p,1,1,4,0.495885665f,0.743144133f,0.390594583f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={8,47,53,58};unsigned char expected[4]={105,14,104,255};H18TintRGBAMode(p,1,1,4,0.00621105979f,0.000807796584f,0.00615599985f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={8,47,53,58};unsigned char expected[4]={105,14,104,255};H18TintRGBAMode(p,1,1,4,0.00621105979f,0.000807796584f,0.00615599985f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={44,59,36,106};unsigned char expected[4]={100,92,107,255};H18TintRGBAMode(p,1,1,4,0.63704345f,0.585338456f,0.675530486f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={44,59,36,106};unsigned char expected[4]={100,92,107,255};H18TintRGBAMode(p,1,1,4,0.63704345f,0.585338456f,0.675530486f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={11,2,12,14};unsigned char expected[4]={82,104,24,255};H18TintRGBAMode(p,1,1,4,0.673812001f,0.85584673f,0.196406298f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={11,2,12,14};unsigned char expected[4]={82,104,24,255};H18TintRGBAMode(p,1,1,4,0.673812001f,0.85584673f,0.196406298f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={59,5,138,194};unsigned char expected[4]={46,24,22,255};H18TintRGBAMode(p,1,1,4,0.322734399f,0.168612223f,0.158717287f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={59,5,138,194};unsigned char expected[4]={46,24,22,255};H18TintRGBAMode(p,1,1,4,0.322734399f,0.168612223f,0.158717287f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={21,18,6,27};unsigned char expected[4]={87,170,181,255};H18TintRGBAMode(p,1,1,4,0.462885384f,0.908881381f,0.96649283f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={21,18,6,27};unsigned char expected[4]={87,170,181,255};H18TintRGBAMode(p,1,1,4,0.462885384f,0.908881381f,0.96649283f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={4,19,22,22};unsigned char expected[4]={17,41,111,255};H18TintRGBAMode(p,1,1,4,0.0860685854f,0.2053922f,0.550406819f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={4,19,22,22};unsigned char expected[4]={17,41,111,255};H18TintRGBAMode(p,1,1,4,0.0860685854f,0.2053922f,0.550406819f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={104,43,68,160};unsigned char expected[4]={13,58,110,255};H18TintRGBAMode(p,1,1,4,0.102777219f,0.4571899f,0.863182764f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={104,43,68,160};unsigned char expected[4]={13,58,110,255};H18TintRGBAMode(p,1,1,4,0.102777219f,0.4571899f,0.863182764f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={93,185,182,253};unsigned char expected[4]={175,164,87,255};H18TintRGBAMode(p,1,1,4,0.940742437f,0.883591458f,0.470306731f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={93,185,182,253};unsigned char expected[4]={175,164,87,255};H18TintRGBAMode(p,1,1,4,0.940742437f,0.883591458f,0.470306731f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={117,88,35,127};unsigned char expected[4]={109,93,87,255};H18TintRGBAMode(p,1,1,4,0.203738081f,0.175126645f,0.162291015f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={117,88,35,127};unsigned char expected[4]={109,93,87,255};H18TintRGBAMode(p,1,1,4,0.203738081f,0.175126645f,0.162291015f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={7,33,14,43};unsigned char expected[4]={60,97,62,255};H18TintRGBAMode(p,1,1,4,0.219863478f,0.358814372f,0.228956655f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={7,33,14,43};unsigned char expected[4]={60,97,62,255};H18TintRGBAMode(p,1,1,4,0.219863478f,0.358814372f,0.228956655f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={67,118,58,143};unsigned char expected[4]={181,81,83,255};H18TintRGBAMode(p,1,1,4,0.908077562f,0.407347728f,0.417108511f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={67,118,58,143};unsigned char expected[4]={181,81,83,255};H18TintRGBAMode(p,1,1,4,0.908077562f,0.407347728f,0.417108511f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={16,3,24,26};unsigned char expected[4]={66,22,59,255};H18TintRGBAMode(p,1,1,4,0.587783606f,0.193029424f,0.524024144f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={16,3,24,26};unsigned char expected[4]={66,22,59,255};H18TintRGBAMode(p,1,1,4,0.587783606f,0.193029424f,0.524024144f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={102,71,65,146};unsigned char expected[4]={159,102,101,255};H18TintRGBAMode(p,1,1,4,0.988816896f,0.629648964f,0.62876435f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={102,71,65,146};unsigned char expected[4]={159,102,101,255};H18TintRGBAMode(p,1,1,4,0.988816896f,0.629648964f,0.62876435f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={207,194,221,226};unsigned char expected[4]={127,35,97,255};H18TintRGBAMode(p,1,1,4,0.497332026f,0.137699383f,0.381606404f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={207,194,221,226};unsigned char expected[4]={127,35,97,255};H18TintRGBAMode(p,1,1,4,0.497332026f,0.137699383f,0.381606404f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={78,93,78,107};unsigned char expected[4]={205,105,71,255};H18TintRGBAMode(p,1,1,4,0.92566752f,0.472808985f,0.32136415f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={78,93,78,107};unsigned char expected[4]={205,105,71,255};H18TintRGBAMode(p,1,1,4,0.92566752f,0.472808985f,0.32136415f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={21,33,39,60};unsigned char expected[4]={44,102,47,255};H18TintRGBAMode(p,1,1,4,0.279868901f,0.644723023f,0.299266471f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={21,33,39,60};unsigned char expected[4]={44,102,47,255};H18TintRGBAMode(p,1,1,4,0.279868901f,0.644723023f,0.299266471f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={80,50,1,180};unsigned char expected[4]={104,62,26,255};H18TintRGBAMode(p,1,1,4,0.909950431f,0.545726137f,0.23063108f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={80,50,1,180};unsigned char expected[4]={104,62,26,255};H18TintRGBAMode(p,1,1,4,0.909950431f,0.545726137f,0.23063108f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={2,26,3,33};unsigned char expected[4]={95,64,48,255};H18TintRGBAMode(p,1,1,4,0.515994298f,0.34908322f,0.26267198f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={2,26,3,33};unsigned char expected[4]={95,64,48,255};H18TintRGBAMode(p,1,1,4,0.515994298f,0.34908322f,0.26267198f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={201,153,32,223};unsigned char expected[4]={45,65,107,255};H18TintRGBAMode(p,1,1,4,0.0592916976f,0.0859759155f,0.141325241f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={201,153,32,223};unsigned char expected[4]={45,65,107,255};H18TintRGBAMode(p,1,1,4,0.0592916976f,0.0859759155f,0.141325241f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={38,92,99,130};unsigned char expected[4]={91,97,99,255};H18TintRGBAMode(p,1,1,4,0.350778257f,0.371478711f,0.380351392f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={38,92,99,130};unsigned char expected[4]={91,97,99,255};H18TintRGBAMode(p,1,1,4,0.350778257f,0.371478711f,0.380351392f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={0,0,0,0};unsigned char expected[4]={0,0,0,0};H18TintRGBAMode(p,1,1,4,0.214190615f,0.211111671f,0.213970486f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={0,0,0,0};unsigned char expected[4]={0,0,0,0};H18TintRGBAMode(p,1,1,4,0.214190615f,0.211111671f,0.213970486f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={111,174,96,248};unsigned char expected[4]={82,99,73,255};H18TintRGBAMode(p,1,1,4,0.117932662f,0.141943935f,0.103740753f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={111,174,96,248};unsigned char expected[4]={82,99,73,255};H18TintRGBAMode(p,1,1,4,0.117932662f,0.141943935f,0.103740753f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={98,124,105,152};unsigned char expected[4]={19,172,109,255};H18TintRGBAMode(p,1,1,4,0.0883822573f,0.823375779f,0.522066997f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={98,124,105,152};unsigned char expected[4]={19,172,109,255};H18TintRGBAMode(p,1,1,4,0.0883822573f,0.823375779f,0.522066997f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={28,14,0,38};unsigned char expected[4]={73,77,68,255};H18TintRGBAMode(p,1,1,4,0.208629911f,0.220027983f,0.193371781f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={28,14,0,38};unsigned char expected[4]={73,77,68,255};H18TintRGBAMode(p,1,1,4,0.208629911f,0.220027983f,0.193371781f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={42,181,107,183};unsigned char expected[4]={169,77,95,255};H18TintRGBAMode(p,1,1,4,0.788666124f,0.356361536f,0.440723375f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={42,181,107,183};unsigned char expected[4]={169,77,95,255};H18TintRGBAMode(p,1,1,4,0.788666124f,0.356361536f,0.440723375f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={166,69,146,210};unsigned char expected[4]={56,80,55,255};H18TintRGBAMode(p,1,1,4,0.359933031f,0.515692339f,0.355653763f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={166,69,146,210};unsigned char expected[4]={56,80,55,255};H18TintRGBAMode(p,1,1,4,0.359933031f,0.515692339f,0.355653763f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={111,101,35,115};unsigned char expected[4]={104,190,200,255};H18TintRGBAMode(p,1,1,4,0.458027683f,0.841476111f,0.885125726f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={111,101,35,115};unsigned char expected[4]={104,190,200,255};H18TintRGBAMode(p,1,1,4,0.458027683f,0.841476111f,0.885125726f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={93,65,150,181};unsigned char expected[4]={30,52,77,255};H18TintRGBAMode(p,1,1,4,0.137850638f,0.241351284f,0.359420435f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={93,65,150,181};unsigned char expected[4]={30,52,77,255};H18TintRGBAMode(p,1,1,4,0.137850638f,0.241351284f,0.359420435f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={53,11,20,54};unsigned char expected[4]={73,6,57,255};H18TintRGBAMode(p,1,1,4,0.0934978409f,0.0082582302f,0.0736895454f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={53,11,20,54};unsigned char expected[4]={73,6,57,255};H18TintRGBAMode(p,1,1,4,0.0934978409f,0.0082582302f,0.0736895454f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={47,45,49,179};unsigned char expected[4]={67,67,67,179};H18TintRGBAMode(p,1,1,4,0.89904656f,0.879169002f,0.883142788f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={47,45,49,179};unsigned char expected[4]={47,45,49,179};H18TintRGBAMode(p,1,1,4,0.89904656f,0.879169002f,0.883142788f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={103,151,224,233};unsigned char expected[4]={99,60,57,255};H18TintRGBAMode(p,1,1,4,0.0884542564f,0.053472749f,0.0505892285f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={103,151,224,233};unsigned char expected[4]={99,60,57,255};H18TintRGBAMode(p,1,1,4,0.0884542564f,0.053472749f,0.0505892285f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={50,7,27,77};unsigned char expected[4]={27,19,69,255};H18TintRGBAMode(p,1,1,4,0.269634584f,0.191646628f,0.681933122f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={50,7,27,77};unsigned char expected[4]={27,19,69,255};H18TintRGBAMode(p,1,1,4,0.269634584f,0.191646628f,0.681933122f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={26,5,16,36};unsigned char expected[4]={47,62,52,255};H18TintRGBAMode(p,1,1,4,0.301632406f,0.395447835f,0.331133657f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={26,5,16,36};unsigned char expected[4]={47,62,52,255};H18TintRGBAMode(p,1,1,4,0.301632406f,0.395447835f,0.331133657f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={3,105,15,243};unsigned char expected[4]={65,37,11,255};H18TintRGBAMode(p,1,1,4,0.203934083f,0.114331114f,0.0351971885f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={3,105,15,243};unsigned char expected[4]={65,37,11,255};H18TintRGBAMode(p,1,1,4,0.203934083f,0.114331114f,0.0351971885f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={10,7,18,50};unsigned char expected[4]={49,35,9,255};H18TintRGBAMode(p,1,1,4,0.404413364f,0.291148487f,0.070955722f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={10,7,18,50};unsigned char expected[4]={49,35,9,255};H18TintRGBAMode(p,1,1,4,0.404413364f,0.291148487f,0.070955722f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={15,30,70,71};unsigned char expected[4]={76,72,85,255};H18TintRGBAMode(p,1,1,4,0.546952203f,0.515073815f,0.612097124f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={15,30,70,71};unsigned char expected[4]={76,72,85,255};H18TintRGBAMode(p,1,1,4,0.546952203f,0.515073815f,0.612097124f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={76,84,57,106};unsigned char expected[4]={80,114,113,255};H18TintRGBAMode(p,1,1,4,0.218961673f,0.311434026f,0.309836987f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={76,84,57,106};unsigned char expected[4]={80,114,113,255};H18TintRGBAMode(p,1,1,4,0.218961673f,0.311434026f,0.309836987f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={21,8,10,21};unsigned char expected[4]={78,109,85,255};H18TintRGBAMode(p,1,1,4,0.487671004f,0.683087781f,0.533415781f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={21,8,10,21};unsigned char expected[4]={78,109,85,255};H18TintRGBAMode(p,1,1,4,0.487671004f,0.683087781f,0.533415781f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={46,7,50,52};unsigned char expected[4]={54,27,70,255};H18TintRGBAMode(p,1,1,4,0.129690753f,0.0661294424f,0.167537626f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={46,7,50,52};unsigned char expected[4]={54,27,70,255};H18TintRGBAMode(p,1,1,4,0.129690753f,0.0661294424f,0.167537626f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={52,104,110,126};unsigned char expected[4]={58,58,58,126};H18TintRGBAMode(p,1,1,4,0.579935005f,0.568992204f,0.561219878f,0);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++{unsigned char p[4]={52,104,110,126};unsigned char expected[4]={58,58,58,126};H18TintRGBAMode(p,1,1,4,0.579935005f,0.568992204f,0.561219878f,1);for(int k=0;k<4;k++)assert(abs((int)p[k]-expected[k])<=1);}
++puts("PASS: 400 pixel fixtures from reference ARM64 execution (both prepared and generic paths)");}

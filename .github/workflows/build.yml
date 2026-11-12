@@ -1,0 +1,52 @@
+name: Build IconTint15 base on macOS
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - name: Check out adaptation patch
+        uses: actions/checkout@v4
+      - name: Get the attributed upstream source
+        run: |
+          git clone https://github.com/ngkoi/26Home.git project
+          git -C project checkout 3b9378591c1c7d69d79080d130fa0d3dd2b358a1
+          git -C project apply "$GITHUB_WORKSPACE/patches/18style.patch"
+      - name: Set up original build system
+        uses: actions/checkout@v4
+        with:
+          repository: roothide/theos
+          path: theos
+          submodules: recursive
+      - name: Install build dependencies
+        run: brew install ldid make
+      - name: Install the iOS SDK
+        run: |
+          curl -fL --retry 3 https://github.com/theos/sdks/releases/download/master-146e41f/iPhoneOS15.6.sdk.tar.xz -o sdk.tar.xz
+          mkdir -p theos/sdks
+          tar -xJf sdk.tar.xz -C theos/sdks
+      - name: Build native binary base
+        env:
+          THEOS: ${{ github.workspace }}/theos
+        run: |
+          cd project
+          "$(brew --prefix make)/bin/gmake" package ARCHS="arm64 arm64e" TARGET="iphone:clang:15.6:15.0" THEOS_PACKAGE_SCHEME=rootless FINALPACKAGE=1
+      - name: Preserve build provenance
+        run: |
+          xcodebuild -version > BUILD-PROVENANCE.txt
+          xcrun clang --version >> BUILD-PROVENANCE.txt
+          git -C project rev-parse HEAD >> BUILD-PROVENANCE.txt
+          shasum -a 256 patches/18style.patch >> BUILD-PROVENANCE.txt
+          echo 'BINARY BASE ONLY: combine with the private user-provided Home18 artwork before installation.' > DO-NOT-INSTALL-THIS-BASE.txt
+      - name: Upload binary base for final assembly
+        uses: actions/upload-artifact@v4
+        with:
+          name: IconTint15-binary-base-NOT-FOR-INSTALL
+          path: |
+            project/packages/*.deb
+            BUILD-PROVENANCE.txt
+            DO-NOT-INSTALL-THIS-BASE.txt

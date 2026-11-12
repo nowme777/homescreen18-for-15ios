@@ -3263,34 +3263,24 @@
      if ([(id)self respondsToSelector:@selector(applicationBundleID)]) {
 --- a/Hooks/Main.x
 +++ b/Hooks/Main.x
-@@ -8,15 +8,15 @@
+@@ -8,6 +8,7 @@
          return;
      }
  
-+    if(g_home18Everywhere)Home26InitUIKitIconHooks();
++    Home26InitUIKitIconHooks();
      NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
      if ([bundleId isEqualToString:@"com.apple.Preferences"]) {
--        Home26InitPreferencesHooks();
-+        if(g_home18Everywhere)Home26InitPreferencesHooks();
-         return;
+         Home26InitPreferencesHooks();
+@@ -15,8 +16,7 @@
      }
  
      if ([bundleId isEqualToString:@"com.apple.Spotlight"]) {
 -        Home26InitSpotlightHooks();
 -        Home26InitIconImageViewHooks();
-+        if(g_home18Everywhere) {Home26InitSpotlightHooks();Home26InitIconImageViewHooks();}
++        Home26InitSpotlightHooks();Home26InitIconImageViewHooks();
          return;
      }
  
-@@ -24,7 +24,7 @@
-         return;
-     }
- 
--    Home26InitSpotlightHooks();
-+    if(g_home18Everywhere)Home26InitSpotlightHooks();
-     Home26InitIconViewHooks();
-     Home26InitEditingButtonsHooks();
-     Home26InitBadgesAndWidgetsHooks();
 @@ -263,21 +263,21 @@
          }
      };
@@ -3399,6 +3389,15 @@
  }
 --- a/Hooks/Preferences.x
 +++ b/Hooks/Preferences.x
+@@ -6,7 +6,7 @@
+ 
+ + (UIImage *)_applicationIconImageForBundleIdentifier:(NSString *)bundleID format:(int)format scale:(CGFloat)scale {
+     extern BOOL g_bypassingIconHook;
+-    if (g_bypassingIconHook) return %orig;
++    if (g_bypassingIconHook || !g_home18Everywhere) return %orig;
+ 
+     UIImage *orig = %orig;
+     if (!bundleID || !orig) return orig;
 @@ -24,7 +24,7 @@
      });
  
@@ -3408,7 +3407,19 @@
      UIImage *cached = [g_appIconImageCache objectForKey:cacheKey];
      if (cached) return cached;
  
-@@ -148,7 +148,7 @@
+@@ -129,9 +129,10 @@
+ 
+ static NSCache *g_preferencesStyledIconCache = nil;
+ static const char kHome26StyledMarkerKey = 0;
++static char kHome18OriginalSettingsIconKey;
+ 
+ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSize targetSize) {
+-    if (!bundleID || !g_tweakEnabled) return orig;
++    if (!bundleID || !g_tweakEnabled || !g_home18Everywhere) return orig;
+     if (isAppExcluded(bundleID)) return orig;
+ 
+     NSString *style = g_iconStyle ?: @"Default";
+@@ -148,7 +149,7 @@
  
      NSString *cacheKey = [NSString stringWithFormat:@"%@_%@_%@_%@_%.0fx%.0f_%.0f",
                            bundleID,
@@ -3417,7 +3428,44 @@
                            style,
                            g_themeMode ?: @"Auto",
                            targetSize.width,
-@@ -286,7 +286,7 @@
+@@ -189,6 +190,7 @@
+     UIImage *finalImage = Home26ResizeImage(styled, targetSize, targetScale);
+     if (finalImage) {
+         objc_setAssociatedObject(finalImage, &kHome26StyledMarkerKey, @YES, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
++        if(finalImage!=orig) objc_setAssociatedObject(finalImage,&kHome18OriginalSettingsIconKey,objc_getAssociatedObject(orig,&kHome18OriginalSettingsIconKey) ?: orig,OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+         [g_preferencesStyledIconCache setObject:finalImage forKey:cacheKey];
+         return finalImage;
+     }
+@@ -200,7 +202,7 @@
+ 
+ - (UIImage *)getLazyIcon {
+     UIImage *orig = %orig;
+-    if (!g_tweakEnabled) return orig;
++    if (!g_tweakEnabled || !g_home18Everywhere) return objc_getAssociatedObject(orig,&kHome18OriginalSettingsIconKey) ?: orig;
+ 
+     PSSpecifier *spec = nil;
+     if ([self respondsToSelector:@selector(specifier)]) {
+@@ -215,8 +217,8 @@
+ }
+ 
+ - (void)setIcon:(UIImage *)icon {
+-    if (!g_tweakEnabled || !icon) {
+-        %orig(icon);
++    if (!g_tweakEnabled || !g_home18Everywhere || !icon) {
++        %orig(objc_getAssociatedObject(icon,&kHome18OriginalSettingsIconKey) ?: icon);
+         return;
+     }
+ 
+@@ -252,7 +254,7 @@
+ - (void)refreshCellContentsWithSpecifier:(PSSpecifier *)specifier {
+     %orig(specifier);
+ 
+-    if (!g_tweakEnabled || !specifier) return;
++    if (!g_tweakEnabled || !g_home18Everywhere || !specifier) return;
+ 
+     UIImage *currentIcon = nil;
+     if ([self respondsToSelector:@selector(icon)]) {
+@@ -286,7 +288,7 @@
  
  void Home26RegisterPreferencesNotifications(void) {
      int token;
@@ -3426,7 +3474,7 @@
          reload26HomePrefs();
          if (g_preferencesStyledIconCache) {
              [g_preferencesStyledIconCache removeAllObjects];
-@@ -297,14 +297,14 @@
+@@ -297,14 +299,14 @@
          Home26ReloadAllVisibleTables(keyWin);
      });
  
@@ -3443,7 +3491,7 @@
          reload26HomePrefs();
          if (g_preferencesStyledIconCache) {
              [g_preferencesStyledIconCache removeAllObjects];
-@@ -320,6 +320,8 @@
+@@ -320,6 +322,8 @@
  
  void Home26InitPreferencesHooks(void) {
      Home26RegisterPreferencesNotifications();
@@ -3482,6 +3530,46 @@
          reload26HomePrefs();
          Home26ClearGeneratorCache();
          UIWindow *keyWin = Home26GetKeyWindow();
+@@ -34,6 +34,7 @@
+ %hook SearchUIAppIconImage
+ 
+ - (void)loadImageWithScale:(double)scale isDarkStyle:(BOOL)isDark completionHandler:(void (^)(UIImage *))completionHandler {
++    if (!g_home18Everywhere) {%orig;return;}
+     if (!completionHandler) {
+         %orig(scale, isDark, completionHandler);
+         return;
+@@ -76,6 +77,7 @@
+ 
+ - (id)loadImageWithScale:(double)scale isDarkStyle:(BOOL)isDarkStyle {
+     UIImage *orig = %orig;
++    if(!g_home18Everywhere)return orig;
+     if (!orig || ![orig isKindOfClass:[UIImage class]]) return orig;
+ 
+     NSString *bundleID = nil;
+@@ -104,6 +106,7 @@
+ 
+ - (id)generateImageWithFormat:(int)format scale:(double)scale {
+     UIImage *orig = %orig;
++    if(!g_home18Everywhere)return orig;
+     if (!orig || ![orig isKindOfClass:[UIImage class]]) return orig;
+ 
+     NSString *bundleID = nil;
+@@ -136,6 +139,7 @@
+ 
+ - (UIImage *)uiImage {
+     UIImage *orig = %orig;
++    if(!g_home18Everywhere)return orig;
+     if (!orig || ![orig isKindOfClass:[UIImage class]]) return orig;
+ 
+     NSString *bundleID = nil;
+@@ -162,6 +166,7 @@
+ 
+ - (id)loadImageWithScale:(double)scale isDarkStyle:(BOOL)isDarkStyle {
+     UIImage *orig = %orig;
++    if(!g_home18Everywhere)return orig;
+     if (!orig || ![orig isKindOfClass:[UIImage class]]) return orig;
+ 
+     NSString *bundleID = nil;
 --- a/Hooks/SpringBoardCore.x
 +++ b/Hooks/SpringBoardCore.x
 @@ -5,14 +5,14 @@

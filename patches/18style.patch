@@ -4518,7 +4518,7 @@
  }
  
  typedef struct {
-@@ -1863,10 +1393,32 @@
+@@ -1863,10 +1393,33 @@
  
      LGBGInfo bg = [self sampleBackgroundFromRawData:rawData width:width height:height bytesPerRow:bytesPerRow];
  
@@ -4533,7 +4533,8 @@
 +
 +    // Retain the complete source artwork, including gradients, shading and
 +    // multicolor details. Do not replace low-saturation artwork with a flat fill.
-+    UIImage *glyphImage=(bg.isWhite || bg.saturation<0.1) ? [self invertDarkGrayscaleInImage:image] : image;
++    BOOL liftNeutralForeground=!fgIsColorful && (bg.isWhite || (bg.saturation<0.1 && bg.brightness>0.6));
++    UIImage *glyphImage=liftNeutralForeground ? [self invertDarkGrayscaleInImage:image] : image;
 +    if(!mask)return [self applySquircleMaskToImage:image];
 +    UIImage *result = [self compositeWithMask:mask glyphImage:glyphImage darkBg:YES size:targetSize scale:1.0];
 +    CGImageRelease(mask);
@@ -4555,7 +4556,7 @@
  
      BOOL fgIsColorful = NO;
      CGImageRef mask = [self createMaskFromRawData:rawData width:width height:height
-@@ -1884,40 +1436,6 @@
+@@ -1884,40 +1437,6 @@
          glyphImage = [self synthesizeGradientImageWithSize:targetSize topColor:topC bottomColor:botC];
      }
  

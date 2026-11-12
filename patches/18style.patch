@@ -1341,14 +1341,14 @@
          self.menuView.layer.masksToBounds = YES;
 -        self.menuView.layer.borderWidth = 0.5;
 +        self.menuView.layer.borderWidth = 0;
-+        self.menuView.backgroundColor = [UIColor colorWithWhite:0.16 alpha:1];
++        self.menuView.backgroundColor = UIColor.clearColor;
          self.menuView.layer.borderColor = [[UIColor whiteColor] colorWithAlphaComponent:0.15].CGColor;
  
 -        UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemChromeMaterialDark];
-+        UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemMaterialDark];
++        UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemThinMaterial];
          if (!blurEffect) {
 -            blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
-+            blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemMaterialDark];
++            blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemThinMaterial];
          }
          UIVisualEffectView *blurView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
          blurView.frame = self.menuView.bounds;

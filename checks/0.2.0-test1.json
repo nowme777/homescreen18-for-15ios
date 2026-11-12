@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0~test1",
+  "application_artwork_verified": 4165,
+  "payload_file_count": 4211,
+  "native_binaries_identical_to_macOS_build": true,
+  "rootless_paths_and_ownership": "passed",
+  "preferences_entry": "passed",
+  "native_architectures_and_code_signatures": "passed",
+  "license_and_attribution": "included",
+  "package_sha256": "9098fffe1d1cb888c76490b7bc9bf65bb47a40ea609e0f7874002fdfa334aeab",
+  "on_device_runtime": "NOT TESTED",
+  "earlier_hang_cause": "NOT ESTABLISHED"
+}

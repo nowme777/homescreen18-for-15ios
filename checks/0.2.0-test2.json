@@ -1,0 +1,11 @@
+{
+  "version": "0.2.0~test2",
+  "artwork_ids_verified": 4165,
+  "rootless_payload": "passed",
+  "native_binaries_unchanged_from_macOS": "passed",
+  "postinst_nonrecursive_commands": 2,
+  "postinst_completion_marker": true,
+  "postinst_host_harness": "passed",
+  "on_device_installation": "NOT TESTED",
+  "package_sha256": "a18c44c36e31e0c76048679d859042d0ebc7ff8d4a32a4df0e3f074ffdb90b72"
+}

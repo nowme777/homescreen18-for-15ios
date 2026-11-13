@@ -869,7 +869,7 @@
 +			<key>cell</key>
 +			<string>PSTitleValueCell</string>
 +			<key>label</key>
-+			<string>@nowme77</string>
++			<string>nowme</string>
 +			<key>cellClass</key>
 +			<string>Home18CreditCell</string>
 +		</dict>
@@ -938,12 +938,12 @@
  	<string>BNDL</string>
  	<key>CFBundleShortVersionString</key>
 -	<string>1.0.0</string>
-+	<string>0.3.4</string>
++	<string>0.3.5</string>
  	<key>CFBundleSignature</key>
  	<string>????</string>
  	<key>CFBundleVersion</key>
 -	<string>1.0</string>
-+	<string>0.3.4</string>
++	<string>0.3.5</string>
  	<key>NSPrincipalClass</key>
  	<string>Home26PrefsRootListController</string>
 +	<key>CFBundleName</key>
@@ -1272,7 +1272,7 @@
 -			<string>PSTitleValueCell</string>
 -			<key>label</key>
 -			<string>dylv</string>
-+			<string>@nowme77</string>
++			<string>nowme</string>
  			<key>get</key>
  			<string>readSpecifierValue:</string>
 -			<key>sublabel</key>
@@ -2405,11 +2405,38 @@
      });
 --- a/Hooks/BadgesAndWidgets.x
 +++ b/Hooks/BadgesAndWidgets.x
-@@ -1,4 +1,45 @@
+@@ -1,4 +1,68 @@
  #import "HooksCommon.h"
 +#import "../Home18Pixels.h"
 +
 +static char kHome18SavedWidgetFiltersKey;
++
++static BOOL Home18IsWidgetView(UIView *view) {
++    if (!view) return NO;
++    for (NSString *name in @[@"SBHShadowedWidgetView", @"SBHPortaledShadowedWidgetView",
++                             @"SBHWidgetWrapperView", @"SBHWidgetContainerView",
++                             @"SBHWidgetWrapperBackgroundView"]) {
++        Class cls=NSClassFromString(name);
++        if (cls && [view isKindOfClass:cls]) return YES;
++    }
++    return NO;
++}
++
++static UIView *Home18WidgetRenderView(UIView *view) {
++    UIView *current=view;
++    for (NSUInteger depth=0;depth<6;depth++) {
++        UIView *next=nil;
++        for (NSString *key in @[@"_widgetView", @"_contentView", @"_shadowedWidgetView", @"_portalView"]) {
++            @try {
++                id candidate=[current valueForKey:key];
++                if ([candidate isKindOfClass:UIView.class] && candidate!=current) {next=candidate;break;}
++            } @catch (NSException *exception) {}
++        }
++        if (!next) break;
++        current=next;
++    }
++    return current ?: view;
++}
 +
 +static UIColor *Home18AccentColor(void) {
 +    UIColor *chosen=[[LGCustomIconGenerator2 sharedGenerator] adjustedTintColorFromHex:(g_tintColor ?: @"#00FFFF") isDarkTheme:YES];
@@ -2432,26 +2459,22 @@
 +    if (!saved) {
 +        objc_setAssociatedObject(view,&kHome18SavedWidgetFiltersKey,view.layer.filters ?: NSNull.null,OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 +    }
-+    CGFloat r=1.0,g=1.0,b=1.0,a=1.0;[accent getRed:&r green:&g blue:&b alpha:&a];
-+    struct Home18WidgetMatrix { float m[20]; } matrix={{
-+        .2126*r,.7152*r,.0722*r,0,0,
-+        .2126*g,.7152*g,.0722*g,0,0,
-+        .2126*b,.7152*b,.0722*b,0,0,
-+        0,0,0,1,0
-+    }};
 +#pragma clang diagnostic push
 +#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-+    id filter=[NSClassFromString(@"CAFilter") performSelector:NSSelectorFromString(@"filterWithType:") withObject:@"colorMatrix"];
++    id filter=[NSClassFromString(@"CAFilter") performSelector:NSSelectorFromString(@"filterWithType:") withObject:@"colorMonochrome"];
 +#pragma clang diagnostic pop
 +    if (filter) {
-+        [filter setValue:[NSValue valueWithBytes:&matrix objCType:@encode(struct Home18WidgetMatrix)] forKey:@"inputColorMatrix"];
-+        view.layer.filters=@[filter];
++        @try {
++            [filter setValue:(__bridge id)accent.CGColor forKey:@"inputColor"];
++            [filter setValue:@1.0 forKey:@"inputAmount"];
++            view.layer.filters=@[filter];
++        } @catch (NSException *exception) {}
 +    }
 +}
  
  %hook SBDockView
  
-@@ -15,123 +56,65 @@
+@@ -15,129 +79,69 @@
  
  - (void)layoutSubviews {
      %orig;
@@ -2465,8 +2488,26 @@
 -                style = @"Default";
 -            }
 -        }
--    }
--
++    UIView *view=(UIView *)self;
++    BOOL useCustomBadge=g_colorBadges && [g_iconStyle isEqualToString:@"Tinted"];
++    UIColor *badgeColor=Home18AccentColor();
++    CGFloat r=0,g=0,b=0,a=1;[badgeColor getRed:&r green:&g blue:&b alpha:&a];
++    UIColor *textColor=(0.299*r+0.587*g+0.114*b)>0.62 ? [UIColor colorWithWhite:0.10 alpha:1.0] : UIColor.whiteColor;
++
++    UIView *background=nil;
++    UIView *textView=nil;
++    @try { background=[view valueForKey:@"_backgroundView"]; } @catch (NSException *exception) {}
++    @try { textView=[view valueForKey:@"_textView"]; } @catch (NSException *exception) {}
++    UIView *host=background ?: view;
++    UIView *customBackground=[host viewWithTag:2626];
++    UILabel *customLabel=[view viewWithTag:2627];
++
++    if (!useCustomBadge) {
++        customBackground.hidden=YES;customLabel.hidden=YES;
++        if(textView)textView.hidden=NO;
++        return;
+     }
+ 
 -    UIColor *badgeBgColor = nil;
 -    UIColor *badgeTextColor = nil;
 -    BOOL useCustomBadge = NO;
@@ -2499,26 +2540,14 @@
 -        }
 -    } else {
 -        useCustomBadge = NO;
-+    UIView *view=(UIView *)self;
-+    BOOL useCustomBadge=g_colorBadges && [g_iconStyle isEqualToString:@"Tinted"];
-+    UIColor *badgeColor=Home18AccentColor();
-+    CGFloat r=0,g=0,b=0,a=1;[badgeColor getRed:&r green:&g blue:&b alpha:&a];
-+    UIColor *textColor=(0.299*r+0.587*g+0.114*b)>0.62 ? [UIColor colorWithWhite:0.10 alpha:1.0] : UIColor.whiteColor;
-+
-+    UIView *background=nil;
-+    UIView *textView=nil;
-+    @try { background=[view valueForKey:@"_backgroundView"]; } @catch (NSException *exception) {}
-+    @try { textView=[view valueForKey:@"_textView"]; } @catch (NSException *exception) {}
-+    UIView *host=background ?: view;
-+    UIView *customBackground=[host viewWithTag:2626];
-+    UILabel *customLabel=[view viewWithTag:2627];
-+
-+    if (!useCustomBadge) {
-+        customBackground.hidden=YES;customLabel.hidden=YES;
-+        if(textView)textView.hidden=NO;
-+        return;
++    if (!customBackground) {
++        customBackground=[[UIView alloc] initWithFrame:host.bounds];
++        customBackground.tag=2626;customBackground.clipsToBounds=YES;
++        customBackground.autoresizingMask=UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
++        customBackground.userInteractionEnabled=NO;
++        [host addSubview:customBackground];
      }
- 
+-
 -    UIView *bgView = [view valueForKey:@"_backgroundView"];
 -    UIView *textView = [view valueForKey:@"_textView"];
 -    UIView *myBgView = bgView ? [bgView viewWithTag:2626] : [view viewWithTag:2626];
@@ -2584,15 +2613,6 @@
 -        }
 -        if (textView) {
 -            textView.hidden = NO;
--        }
--    }
-+    if (!customBackground) {
-+        customBackground=[[UIView alloc] initWithFrame:host.bounds];
-+        customBackground.tag=2626;customBackground.clipsToBounds=YES;
-+        customBackground.autoresizingMask=UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
-+        customBackground.userInteractionEnabled=NO;
-+        [host addSubview:customBackground];
-+    }
 +    customBackground.frame=host.bounds;
 +    customBackground.layer.cornerRadius=CGRectGetHeight(host.bounds)/2.0;
 +    customBackground.backgroundColor=badgeColor;customBackground.hidden=NO;
@@ -2607,8 +2627,8 @@
 +            id value=[icon performSelector:@selector(badgeNumberOrString)];
 +            if([value isKindOfClass:NSString.class])badgeText=value;
 +            else if([value isKindOfClass:NSNumber.class])badgeText=[value stringValue];
-+        }
-+    }
+         }
+     }
 +    if(!customLabel) {
 +        customLabel=[[UILabel alloc] initWithFrame:view.bounds];
 +        customLabel.tag=2627;customLabel.textAlignment=NSTextAlignmentCenter;
@@ -2628,20 +2648,36 @@
  void _26home_applyWidgetTintToView(UIView *view) {
      if (!view) return;
  
-@@ -156,7 +139,11 @@
+-    BOOL isWidgetClass = [view isKindOfClass:NSClassFromString(@"SBHShadowedWidgetView")] ||
+-                         [view isKindOfClass:NSClassFromString(@"SBHWidgetWrapperView")] ||
+-                         [view isKindOfClass:NSClassFromString(@"SBHWidgetContainerView")];
++    BOOL isWidgetClass = Home18IsWidgetView(view);
+ 
+     UIView *bgView = nil;
+     @try {
+@@ -149,14 +153,19 @@
+         } @catch (NSException *e) {}
+     }
+ 
+-    if (!isWidgetClass && !bgView) {
++    if (!isWidgetClass) {
+         return;
+     }
+ 
      UIView *targetView = bgView ?: view;
  
      UIView *tintOverlay = [targetView viewWithTag:2628];
 -    if ([g_iconStyle isEqualToString:@"Tinted"]) {
 +    BOOL tintWidgets=g_colorWidgets && [g_iconStyle isEqualToString:@"Tinted"];
-+    BOOL filterRoot=[view isKindOfClass:NSClassFromString(@"SBHWidgetWrapperView")];
 +    UIColor *accent=Home18AccentColor();
-+    Home18SetWidgetColorFilter(view,tintWidgets && filterRoot,accent);
++    UIView *renderView=Home18WidgetRenderView(view);
++    if (renderView!=view) Home18SetWidgetColorFilter(view,NO,accent);
++    Home18SetWidgetColorFilter(renderView,tintWidgets,accent);
 +    if (tintWidgets) {
          if (!tintOverlay) {
              tintOverlay = [[UIView alloc] initWithFrame:targetView.bounds];
              tintOverlay.tag = 2628;
-@@ -185,26 +172,6 @@
+@@ -185,26 +194,6 @@
          tintOverlay.layer.cornerCurve = kCACornerCurveContinuous;
          tintOverlay.clipsToBounds = YES;
  
@@ -2668,7 +2704,7 @@
          UIView *smokedLayer = [tintOverlay viewWithTag:2629];
          if (!smokedLayer) {
              smokedLayer = [[UIView alloc] initWithFrame:tintOverlay.bounds];
-@@ -220,7 +187,7 @@
+@@ -220,7 +209,7 @@
          smokedLayer.frame = tintOverlay.bounds;
          smokedLayer.layer.cornerRadius = radius;
  
@@ -2677,6 +2713,49 @@
          tintOverlay.hidden = NO;
      } else {
          if (tintOverlay) {
+@@ -263,6 +252,42 @@
+ }
+ 
+ %end
++
++%hook SBHPortaledShadowedWidgetView
++
++- (void)layoutSubviews {
++    %orig;
++    _26home_applyWidgetTintToView((UIView *)self);
++}
++
++%end
++
++%hook SBHWidgetWrapperViewController
++
++- (void)viewDidLayoutSubviews {
++    %orig;
++    _26home_recursivelyApplyWidgetTint(((UIViewController *)self).view);
++}
++
++%end
++
++%hook SBHWidgetContainerViewController
++
++- (void)viewDidLayoutSubviews {
++    %orig;
++    _26home_recursivelyApplyWidgetTint(((UIViewController *)self).view);
++}
++
++%end
++
++%hook SBHWidgetStackViewController
++
++- (void)viewDidLayoutSubviews {
++    %orig;
++    _26home_recursivelyApplyWidgetTint(((UIViewController *)self).view);
++}
++
++%end
+ 
+ void Home26InitBadgesAndWidgetsHooks(void) {
+     %init();
 --- a/Hooks/EditingButtons.x
 +++ b/Hooks/EditingButtons.x
 @@ -1,184 +1,26 @@
@@ -3697,8 +3776,8 @@
 +    Home26SaveOriginalIcon(original,bundleID);
 +    UIImage *styled=Home26FastCachedIcon(bundleID);
 +    if (styled) return styled;
-+    Home26RequestIconAsync(original,bundleID,nil);
-+    return original;
++    styled=Home26RequestStyledIcon(original,bundleID);
++    return styled ?: original;
 +}
 +
 +%hook SBHIconImageCache
@@ -5204,14 +5283,14 @@
 +SileoDepiction: https://raw.githubusercontent.com/nowme777/homescreen18-for-15ios/codex/ios18-for-ios15/branding/depiction.json
  Depends: mobilesubstrate
 -Version: 1.2.0-test
-+Version: 0.3.4~source1
++Version: 0.3.5~source1
  Architecture: iphoneos-arm64
 -Description: iOS 26 Homescreen customization.
 -Maintainer: ngkhoi
 -Author: ngkhoi
 +Description: iOS 18-style icon customization for iOS 15.
-+Maintainer: @nowme77
-+Author: @nowme77
++Maintainer: nowme
++Author: nowme
  Section: Tweaks
 +Conflicts: com.ngkhoi.26home, local.icontint15
 +Replaces: com.ngkhoi.26home

@@ -1,6 +1,8 @@
+diff --git a/26HomePrefs/Home26AppIconGenDetailController.m b/26HomePrefs/Home26AppIconGenDetailController.m
+index a993d11..8c892bf 100644
 --- a/26HomePrefs/Home26AppIconGenDetailController.m
 +++ b/26HomePrefs/Home26AppIconGenDetailController.m
-@@ -163,8 +163,8 @@
+@@ -163,8 +163,8 @@ static UIImage *ApplySpecularHighlightWithParams(UIImage *image, CGFloat angle,
  }
  
  - (void)loadAppConfig {
@@ -11,7 +13,7 @@
      NSDictionary *cfg = self.bundleID ? allOverrides[self.bundleID] : nil;
  
      self.customEnabled = [cfg[@"enabled"] boolValue];
-@@ -178,8 +178,8 @@
+@@ -178,8 +178,8 @@ static UIImage *ApplySpecularHighlightWithParams(UIImage *image, CGFloat angle,
  }
  
  - (void)saveAppConfig {
@@ -22,7 +24,7 @@
  
      if (self.bundleID) {
          allOverrides[self.bundleID] = @{
-@@ -194,16 +194,16 @@
+@@ -194,16 +194,16 @@ static UIImage *ApplySpecularHighlightWithParams(UIImage *image, CGFloat angle,
          };
      }
  
@@ -44,7 +46,7 @@
  
      if (self.onConfigChanged) self.onConfigChanged();
  }
-@@ -519,8 +519,8 @@
+@@ -519,8 +519,8 @@ static UIImage *ApplySpecularHighlightWithParams(UIImage *image, CGFloat angle,
  }
  
  - (NSString *)activePackDirectory {
@@ -55,7 +57,7 @@
      NSString *baseDir = jbroot(@"/Library/Application Support/26Home/IconPacks");
      return [baseDir stringByAppendingPathComponent:activeId];
  }
-@@ -594,21 +594,21 @@
+@@ -594,21 +594,21 @@ static UIImage *ApplySpecularHighlightWithParams(UIImage *image, CGFloat angle,
      BOOL specOn = self.customEnabled ? self.specularEnabled : YES;
  
      if (!self.customEnabled) {
@@ -86,7 +88,7 @@
          }
          iconGen = [LGCustomIconGenerator2 sharedGenerator];
  
-@@ -694,11 +694,11 @@
+@@ -694,11 +694,11 @@ static UIImage *ApplySpecularHighlightWithParams(UIImage *image, CGFloat angle,
              self.clearIconView.image = clearImg;
              self.tintedIconView.image = tintedImg ?: extractedGlyph;
  
@@ -103,6 +105,8 @@
  
              self.clearBlurView.blurRadius = blurRadius;
              self.clearBlurView.hidden = !keepBlur;
+diff --git a/26HomePrefs/Home26AppIconGenListController.m b/26HomePrefs/Home26AppIconGenListController.m
+index 26c199a..ebaa12d 100644
 --- a/26HomePrefs/Home26AppIconGenListController.m
 +++ b/26HomePrefs/Home26AppIconGenListController.m
 @@ -79,8 +79,8 @@
@@ -137,6 +141,8 @@
  
          [self loadOverrides];
          [self updateCustomStatus];
+diff --git a/26HomePrefs/Home26ExceptionListController.m b/26HomePrefs/Home26ExceptionListController.m
+index 17c76a5..10e1a8b 100644
 --- a/26HomePrefs/Home26ExceptionListController.m
 +++ b/26HomePrefs/Home26ExceptionListController.m
 @@ -44,8 +44,8 @@
@@ -172,9 +178,11 @@
  }
  
  #pragma mark - Search
+diff --git a/26HomePrefs/Home26IconGenConfigController.m b/26HomePrefs/Home26IconGenConfigController.m
+index 6b79a14..7dff0fa 100644
 --- a/26HomePrefs/Home26IconGenConfigController.m
 +++ b/26HomePrefs/Home26IconGenConfigController.m
-@@ -126,21 +126,21 @@
+@@ -126,21 +126,21 @@ static UIImage *ApplySpecularHighlightForStyle(UIImage *image, NSString *style)
  }
  
  - (void)loadGlobalConfig {
@@ -202,7 +210,7 @@
                  if (angle == 90.0) {
                      self.specularStyle = @"27";
                  } else {
-@@ -155,25 +155,25 @@
+@@ -155,25 +155,25 @@ static UIImage *ApplySpecularHighlightForStyle(UIImage *image, NSString *style)
  }
  
  - (void)saveGlobalConfig {
@@ -238,7 +246,7 @@
  }
  
  - (void)setupScrollView {
-@@ -445,8 +445,8 @@
+@@ -445,8 +445,8 @@ static UIImage *ApplySpecularHighlightForStyle(UIImage *image, NSString *style)
  }
  
  - (NSString *)activePackDirectory {
@@ -249,7 +257,7 @@
      NSString *baseDir = jbroot(@"/Library/Application Support/26Home/IconPacks");
      return [baseDir stringByAppendingPathComponent:activeId];
  }
-@@ -579,11 +579,11 @@
+@@ -579,11 +579,11 @@ static UIImage *ApplySpecularHighlightForStyle(UIImage *image, NSString *style)
              self.clearIconView.image = clearImg;
              self.tintedIconView.image = tintedImg ?: extractedGlyph;
  
@@ -266,6 +274,8 @@
  
              self.clearBlurView.blurRadius = blurRadius;
              self.clearBlurView.hidden = !keepBlur;
+diff --git a/26HomePrefs/Home26IconPacksListController.m b/26HomePrefs/Home26IconPacksListController.m
+index f5e4772..80aa2e0 100644
 --- a/26HomePrefs/Home26IconPacksListController.m
 +++ b/26HomePrefs/Home26IconPacksListController.m
 @@ -178,7 +178,7 @@
@@ -454,6 +464,8 @@
      [self.packTableView reloadData];
  }
  
+diff --git a/26HomePrefs/Home26IconPickerViewController.m b/26HomePrefs/Home26IconPickerViewController.m
+index fcec80a..1883933 100644
 --- a/26HomePrefs/Home26IconPickerViewController.m
 +++ b/26HomePrefs/Home26IconPickerViewController.m
 @@ -138,8 +138,8 @@
@@ -467,9 +479,11 @@
          NSString *baseDir = jbroot(@"/Library/Application Support/26Home/IconPacks");
          packDir = [baseDir stringByAppendingPathComponent:activeId];
      }
+diff --git a/26HomePrefs/Home26PackDetailViewController.m b/26HomePrefs/Home26PackDetailViewController.m
+index 9ad4d00..51b1a72 100644
 --- a/26HomePrefs/Home26PackDetailViewController.m
 +++ b/26HomePrefs/Home26PackDetailViewController.m
-@@ -15,7 +15,7 @@
+@@ -15,7 +15,7 @@ BOOL g_exceptionsNoIconProcessing = YES;
  
  BOOL isAppInExceptionList(NSString *bundleID) {
      if (!bundleID) return NO;
@@ -478,7 +492,7 @@
      if (val && [(__bridge id)val isKindOfClass:[NSDictionary class]]) {
          NSDictionary *dict = (__bridge NSDictionary *)val;
          BOOL result = [dict[bundleID] boolValue];
-@@ -120,7 +120,7 @@
+@@ -120,7 +120,7 @@ BOOL isAppExcluded(NSString *bundleID) {
  
      int token;
      __weak typeof(self) weakSelf = self;
@@ -487,7 +501,7 @@
          __strong typeof(weakSelf) self = weakSelf;
          if (self) {
              [self updateWallpaperDisplay];
-@@ -771,11 +771,11 @@
+@@ -771,11 +771,11 @@ BOOL isAppExcluded(NSString *bundleID) {
      }
      self.clearIconView.image = clearImg;
  
@@ -504,7 +518,7 @@
  
      self.clearBlurView.blurRadius = blurRadius;
      self.clearBlurView.hidden = !keepBlur;
-@@ -901,8 +901,8 @@
+@@ -901,8 +901,8 @@ BOOL isAppExcluded(NSString *bundleID) {
  }
  
  - (void)updateActionState {
@@ -515,7 +529,7 @@
  
      BOOL isInstalled = NO;
      if (self.packDirectory && [[NSFileManager defaultManager] fileExistsAtPath:self.packDirectory]) {
-@@ -948,8 +948,8 @@
+@@ -948,8 +948,8 @@ BOOL isAppExcluded(NSString *bundleID) {
  - (void)actionButtonTapped {
      if (self.pack.isDownloading) return;
  
@@ -526,7 +540,7 @@
  
      BOOL isInstalled = NO;
      if (self.packDirectory && [[NSFileManager defaultManager] fileExistsAtPath:self.packDirectory]) {
-@@ -1053,8 +1053,8 @@
+@@ -1053,8 +1053,8 @@ BOOL isAppExcluded(NSString *bundleID) {
          __strong typeof(weakSelf) self = weakSelf;
          if (!self) return;
          self.wallpaperVerticalOffset = offsetY;
@@ -537,7 +551,7 @@
          [prefs synchronize];
          [self layoutWallpaperImage];
      };
-@@ -1091,11 +1091,11 @@
+@@ -1091,11 +1091,11 @@ BOOL isAppExcluded(NSString *bundleID) {
      if (scaledHeight < cardHeight) scaledHeight = cardHeight;
      CGFloat maxScrollY = scaledHeight - cardHeight;
  
@@ -552,7 +566,7 @@
          if (self.wallpaperVerticalOffset < 0) self.wallpaperVerticalOffset = 0;
          if (self.wallpaperVerticalOffset > maxScrollY) self.wallpaperVerticalOffset = maxScrollY;
      }
-@@ -1124,8 +1124,8 @@
+@@ -1124,8 +1124,8 @@ BOOL isAppExcluded(NSString *bundleID) {
          self.wallpaperImageView.frame = CGRectMake(0, -self.wallpaperVerticalOffset, cardWidth, scaledHeight);
      } completion:nil];
  
@@ -563,6 +577,8 @@
      [prefs synchronize];
  }
  
+diff --git a/26HomePrefs/Home26PrefsRootListController.m b/26HomePrefs/Home26PrefsRootListController.m
+index ff30dea..bc65a16 100644
 --- a/26HomePrefs/Home26PrefsRootListController.m
 +++ b/26HomePrefs/Home26PrefsRootListController.m
 @@ -1,90 +1,85 @@
@@ -657,14 +673,10 @@
 -- (void)viewDidLoad {
 -    [super viewDidLoad];
 -    notify_post("ngkhoi.26home.ExportWallpaper");
-+@interface Home26PrefsRootListController ()
-+@property(nonatomic,strong) Home18PreferencesHeader *home18Header;
-+@end
- 
+-
 -    UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 220)];
 -    headerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-+@implementation Home26PrefsRootListController
- 
+-
 -    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
 -    NSString *iconPath = [bundle pathForResource:@"header_icon@3x" ofType:@"png"];
 -    UIImage *icon = [UIImage imageWithContentsOfFile:iconPath];
@@ -693,7 +705,10 @@
 -    titleLabel.textAlignment = NSTextAlignmentCenter;
 -    titleLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 -    [headerView addSubview:titleLabel];
--
++@interface Home26PrefsRootListController ()
++@property(nonatomic,strong) Home18PreferencesHeader *home18Header;
++@end
+ 
 -    UILabel *subtitleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 186, headerView.frame.size.width, 20)];
 -    subtitleLabel.text = @"iOS 26 Home screen customization tweak";
 -    subtitleLabel.font = [UIFont systemFontOfSize:15 weight:UIFontWeightMedium];
@@ -701,7 +716,8 @@
 -    subtitleLabel.textAlignment = NSTextAlignmentCenter;
 -    subtitleLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 -    [headerView addSubview:subtitleLabel];
--
++@implementation Home26PrefsRootListController
+ 
 -    UITableView *tableView = [self valueForKey:@"_table"];
 -    if (!tableView && [self respondsToSelector:@selector(table)]) {
 -        tableView = [self performSelector:@selector(table)];
@@ -744,14 +760,6 @@
 -    NSFileManager *fm = [NSFileManager defaultManager];
 -    for (NSString *path in caches) {
 -        [fm removeItemAtPath:path error:nil];
--    }
--
--    NSArray *userCaches = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
--    if (userCaches.count > 0) {
--        NSString *userIconCache = [userCaches.firstObject stringByAppendingPathComponent:@"ngkhoi.26home.icons"];
--        [fm removeItemAtPath:userIconCache error:nil];
--        NSString *userIconCache3 = [userCaches.firstObject stringByAppendingPathComponent:@"ngkhoi.26home.icons3"];
--        [fm removeItemAtPath:userIconCache3 error:nil];
 +    NSFileManager *fm=NSFileManager.defaultManager;
 +    NSString *root=@"/var/mobile/Library/Caches";
 +    for(NSString *name in [fm contentsOfDirectoryAtPath:root error:nil]) {
@@ -759,6 +767,14 @@
      }
 +    notify_post("icontint15.26base.clearCache");
  
+-    NSArray *userCaches = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+-    if (userCaches.count > 0) {
+-        NSString *userIconCache = [userCaches.firstObject stringByAppendingPathComponent:@"ngkhoi.26home.icons"];
+-        [fm removeItemAtPath:userIconCache error:nil];
+-        NSString *userIconCache3 = [userCaches.firstObject stringByAppendingPathComponent:@"ngkhoi.26home.icons3"];
+-        [fm removeItemAtPath:userIconCache3 error:nil];
+-    }
+-
 -    notify_post("ngkhoi.26home.clearCache");
 -
 -    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Cache Cleared"
@@ -829,6 +845,8 @@
 +- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {return UITableViewAutomaticDimension;}
 +- (CGFloat)tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath {return 88;}
 +@end
+diff --git a/26HomePrefs/Home26WallpaperHelper.m b/26HomePrefs/Home26WallpaperHelper.m
+index d6636c7..cfc683f 100644
 --- a/26HomePrefs/Home26WallpaperHelper.m
 +++ b/26HomePrefs/Home26WallpaperHelper.m
 @@ -38,7 +38,7 @@
@@ -840,6 +858,8 @@
  }
  
  + (UIImage *)rawDeviceWallpaper {
+diff --git a/26HomePrefs/Makefile b/26HomePrefs/Makefile
+index 1c8b6a0..a0a86a9 100644
 --- a/26HomePrefs/Makefile
 +++ b/26HomePrefs/Makefile
 @@ -1,4 +1,4 @@
@@ -848,6 +868,9 @@
  ARCHS = arm64 arm64e
  
  include $(THEOS)/makefiles/common.mk
+diff --git a/26HomePrefs/Resources/Credits.plist b/26HomePrefs/Resources/Credits.plist
+new file mode 100644
+index 0000000..47a60e3
 --- /dev/null
 +++ b/26HomePrefs/Resources/Credits.plist
 @@ -0,0 +1,73 @@
@@ -924,6 +947,8 @@
 +	</array>
 +</dict>
 +</plist>
+diff --git a/26HomePrefs/Resources/Info.plist b/26HomePrefs/Resources/Info.plist
+index 4ba130c..93457e7 100644
 --- a/26HomePrefs/Resources/Info.plist
 +++ b/26HomePrefs/Resources/Info.plist
 @@ -7,18 +7,22 @@
@@ -938,12 +963,12 @@
  	<string>BNDL</string>
  	<key>CFBundleShortVersionString</key>
 -	<string>1.0.0</string>
-+	<string>0.3.6</string>
++	<string>0.3.8</string>
  	<key>CFBundleSignature</key>
  	<string>????</string>
  	<key>CFBundleVersion</key>
 -	<string>1.0</string>
-+	<string>0.3.6</string>
++	<string>0.3.8</string>
  	<key>NSPrincipalClass</key>
  	<string>Home26PrefsRootListController</string>
 +	<key>CFBundleName</key>
@@ -952,6 +977,8 @@
 +	<string>IconTint15</string>
  </dict>
  </plist>
+diff --git a/26HomePrefs/Resources/Root.plist b/26HomePrefs/Resources/Root.plist
+index 8c28858..e02a185 100644
 --- a/26HomePrefs/Resources/Root.plist
 +++ b/26HomePrefs/Resources/Root.plist
 @@ -2,226 +2,118 @@
@@ -1377,6 +1404,9 @@
 -	<string>26Home</string>
  </dict>
  </plist>
+diff --git a/BUILD-NOTES.md b/BUILD-NOTES.md
+new file mode 100644
+index 0000000..0ef7b9d
 --- /dev/null
 +++ b/BUILD-NOTES.md
 @@ -0,0 +1,27 @@
@@ -1407,9 +1437,11 @@
 +Light — исходная иконка приложения при отсутствии отдельного файла, Tint — маска
 +из готового Dark-изображения с генерацией по требованию. Часы и календарь используют
 +живое содержимое и отдельные шаблоны 26Home. Показ результата на iOS ещё не проверен.
+diff --git a/Headers.h b/Headers.h
+index 5c41235..26e636f 100644
 --- a/Headers.h
 +++ b/Headers.h
-@@ -47,9 +47,24 @@
+@@ -47,9 +47,24 @@ static inline NSString *Home26JbRoot(NSString *path) {
      }
      return path;
  }
@@ -1435,7 +1467,35 @@
  #import "LGDebugger.h"
  
  @interface SBHEditingWidgetButton : UIButton
-@@ -325,6 +340,12 @@
+@@ -98,12 +113,27 @@ static inline UIBezierPath *Home26CreateSquirclePath(CGRect rect, CGFloat radius
+ @end
+ 
+ @interface SBFolderIconImageCache : NSObject
+++ (UIImage *)gridCellImageOfSize:(CGSize)size forIconImage:(UIImage *)image;
+++ (UIImage *)gridCellImageOfSize:(CGSize)size forIcon:(id)icon iconImageInfo:(struct SBIconImageInfo)info;
++- (UIImage *)gridCellImageForIcon:(id)icon;
++- (UIImage *)gridCellImageOfSize:(CGSize)size forIcon:(id)icon iconImageInfo:(struct SBIconImageInfo)info;
+ - (void)rebuildImagesForFolderIcon:(id)folderIcon;
+ - (void)informObserversOfUpdateForFolderIcon:(id)folderIcon;
+ - (void)folderIcon:(id)folderIcon containedIconImageDidUpdate:(id)containedIcon;
+ - (void)iconImageCache:(id)cache didUpdateImageForIcon:(id)icon;
+ @end
+ 
++@interface SBFolderIconImageSharedCache : SBFolderIconImageCache
++- (UIImage *)gridCellImageForIcon:(id)icon;
++- (UIImage *)gridCellImageForIcon:(id)icon imageAppearance:(id)appearance;
++- (UIImage *)gridCellImageForIcon:(id)icon imageAppearance:(id)appearance imageAttributes:(id)attributes;
++- (UIImage *)gridCellImageOfSize:(CGSize)size forIcon:(id)icon iconImageInfo:(struct SBIconImageInfo)info;
++- (UIImage *)gridCellImageOfSize:(CGSize)size forIcon:(id)icon iconImageInfo:(struct SBIconImageInfo)info compatibleWithTraitCollection:(UITraitCollection *)traits;
++- (UIImage *)gridCellImageOfSize:(CGSize)size forIcon:(id)icon iconImageInfo:(struct SBIconImageInfo)info compatibleWithTraitCollection:(UITraitCollection *)traits imageAttributes:(id)attributes;
++- (UIImage *)gridCellImageOfSize:(CGSize)size forIcon:(id)icon iconImageInfo:(struct SBIconImageInfo)info imageAppearance:(id)appearance;
++- (UIImage *)gridCellImageOfSize:(CGSize)size forIcon:(id)icon iconImageInfo:(struct SBIconImageInfo)info imageAppearance:(id)appearance imageAttributes:(id)attributes;
++@end
++
+ @interface SBFolderIcon : SBIcon
+ - (id)folder;
+ - (void)iconImageDidUpdate:(id)icon;
+@@ -325,6 +355,12 @@ static inline UIImage *LGImageNamed(NSString *name) {
  
  @interface SBHIconImageCache : NSObject
  - (UIImage *)imageForIcon:(id)icon;
@@ -1448,7 +1508,7 @@
  - (UIImage *)unmaskedImageForIcon:(id)icon;
  - (UIImage *)_iconImageWithInfo:(struct SBIconImageInfo)info forIcon:(id)icon;
  - (UIImage *)_unmaskedIconImageWithInfo:(struct SBIconImageInfo)info forIcon:(id)icon;
-@@ -347,3 +368,11 @@
+@@ -347,3 +383,11 @@ extern BOOL isAppExcludedFromEffects(NSString *bundleID);
  extern BOOL g_exceptionsNoIconProcessing;
  extern BOOL g_exceptionsApplyOnlyToSolid;
  
@@ -1460,6 +1520,9 @@
 + CGFloat p=MIN(1,MAX(0,position));
 + return [UIColor colorWithHue:hue saturation:(p<=.5 ? .75 : 1.5*(1-p)) brightness:(p<=.5 ? .55+.9*p : 1) alpha:1];
 +}
+diff --git a/Home18Pixels.h b/Home18Pixels.h
+new file mode 100644
+index 0000000..42e69b5
 --- /dev/null
 +++ b/Home18Pixels.h
 @@ -0,0 +1,36 @@
@@ -1499,6 +1562,8 @@
 + }
 +}
 +static inline void H18TintRGBA(unsigned char *p,size_t w,size_t h,size_t stride,float r,float g,float b) {H18TintRGBAMode(p,w,h,stride,r,g,b,1);}
+diff --git a/HomeCustomizationMenu.m b/HomeCustomizationMenu.m
+index bf1d930..56f9e49 100644
 --- a/HomeCustomizationMenu.m
 +++ b/HomeCustomizationMenu.m
 @@ -2,26 +2,26 @@
@@ -1535,7 +1600,7 @@
  }
  
  @interface LGSpecularHighlightView : UIView
-@@ -678,8 +678,8 @@
+@@ -678,8 +678,8 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
          [toggleContainer addSubview:toggleLbl];
  
          UISwitch *gradSwitch = [[UISwitch alloc] initWithFrame:CGRectMake(sliderW - 65, 6.5, 51, 31)];
@@ -1546,7 +1611,7 @@
          [gradSwitch addTarget:self action:@selector(toggleGradientSwitched:) forControlEvents:UIControlEventValueChanged];
          [toggleContainer addSubview:gradSwitch];
  
-@@ -804,11 +804,11 @@
+@@ -804,11 +804,11 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
  }
  
  - (void)toggleGradientSwitched:(UISwitch *)sw {
@@ -1562,7 +1627,7 @@
      });
  }
  
-@@ -952,10 +952,10 @@
+@@ -952,10 +952,10 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
  @implementation HomeCustomizationMenuContainer
  
  - (void)toggleWallpaperDimming:(UIButton *)sender {
@@ -1576,7 +1641,7 @@
  
      UIImageSymbolConfiguration *config = [UIImageSymbolConfiguration configurationWithPointSize:20 weight:UIFontWeightMedium];
      if (@available(iOS 15.0, *)) {
-@@ -972,20 +972,20 @@
+@@ -972,20 +972,20 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
  
      } completion:nil];
  
@@ -1602,7 +1667,7 @@
  }
  
  - (void)_playBlackFadeAnimationOnIcon:(UIView *)iconView {
-@@ -1137,9 +1137,9 @@
+@@ -1137,9 +1137,9 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
  
      NSString *currentTheme = nil;
      if ([style isEqualToString:@"Dark"]) {
@@ -1614,7 +1679,7 @@
      }
      [self updateThemeHighlightForMode:currentTheme animated:animated];
  }
-@@ -1147,7 +1147,7 @@
+@@ -1147,7 +1147,7 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
  - (void)updateThemeHighlightForMode:(NSString *)mode animated:(BOOL)animated {
      if (self.isThemeDragging) return;
  
@@ -1623,7 +1688,7 @@
      NSArray *modes = @[];
      if ([currentStyle isEqualToString:@"Dark"]) {
          modes = @[@"Always", @"Auto"];
-@@ -1188,7 +1188,7 @@
+@@ -1188,7 +1188,7 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
  }
  
  - (void)selectTheme:(UIButton *)sender {
@@ -1632,7 +1697,7 @@
      NSArray *modes = @[];
      if ([currentStyle isEqualToString:@"Dark"]) {
          modes = @[@"Always", @"Auto"];
-@@ -1203,9 +1203,9 @@
+@@ -1203,9 +1203,9 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
          NSString *mode = modes[index];
          Home26Log(@"[Menu] selectTheme tapped: mode=%@ (style=%@)", mode, currentStyle);
          if ([currentStyle isEqualToString:@"Dark"]) {
@@ -1644,7 +1709,7 @@
          }
  
          UIImpactFeedbackGenerator *feedback = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight];
-@@ -1220,15 +1220,15 @@
+@@ -1220,15 +1220,15 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
              [self _playBlackFadeAnimationOnIcon:self.styleButtons[styleIdx]];
          }
  
@@ -1663,7 +1728,7 @@
      NSArray *modes = @[];
      if ([currentStyle isEqualToString:@"Dark"]) {
          modes = @[@"Always", @"Auto"];
-@@ -1311,9 +1311,9 @@
+@@ -1311,9 +1311,9 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
  
          NSString *newMode = modes[targetIdx];
          if ([currentStyle isEqualToString:@"Dark"]) {
@@ -1675,7 +1740,7 @@
          }
  
          UIImpactFeedbackGenerator *feedback = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight];
-@@ -1334,9 +1334,9 @@
+@@ -1334,9 +1334,9 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
              }
          } completion:nil];
  
@@ -1687,7 +1752,7 @@
          });
      }
  }
-@@ -1367,7 +1367,7 @@
+@@ -1367,7 +1367,7 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
              self.tintedTapCount = 0;
          }
  
@@ -1696,7 +1761,7 @@
  
          [self updateHighlightForStyle:style animated:YES];
          [self updateThemeSegmentForStyle:style animated:YES];
-@@ -1377,7 +1377,7 @@
+@@ -1377,7 +1377,7 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
          ([[NSFileManager defaultManager] fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/SnowBoard.dylib"] || [[NSFileManager defaultManager] fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/Snowboard.dylib"] || [[NSFileManager defaultManager] fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/AAASnowBoardStub.dylib"])) {
          hasSnowBoard = YES;
      }
@@ -1705,7 +1770,7 @@
  
      if (hasSnowBoard) {
          UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"WAIT!!!"
-@@ -1535,9 +1535,9 @@
+@@ -1535,9 +1535,9 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
          titleLabel.font = [UIFont systemFontOfSize:17 weight:UIFontWeightSemibold];
          [self.menuView addSubview:titleLabel];
  
@@ -1718,7 +1783,7 @@
  
          UIImageSymbolConfiguration *config = [UIImageSymbolConfiguration configurationWithPointSize:20 weight:UIFontWeightMedium];
          if (@available(iOS 15.0, *)) {
-@@ -1565,8 +1565,8 @@
+@@ -1565,8 +1565,8 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
              iconView.layer.cornerRadius = 16;
              iconView.clipsToBounds = YES;
  
@@ -1729,7 +1794,7 @@
              NSString *basePath = jbroot([NSString stringWithFormat:@"/Library/Application Support/26Home/IconPacks/%@", selectedPack]);
              if (![[NSFileManager defaultManager] fileExistsAtPath:basePath]) {
                  basePath = [NSString stringWithFormat:@"/Library/Application Support/26Home/IconPacks/%@", selectedPack];
-@@ -1668,7 +1668,7 @@
+@@ -1668,7 +1668,7 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
  
          [self _setupTintedUI];
  
@@ -1738,7 +1803,7 @@
          [self updateHighlightForStyle:currentStyle animated:NO];
          [self updateThemeSegmentForStyle:currentStyle animated:NO];
  
-@@ -1829,13 +1829,13 @@
+@@ -1829,13 +1829,13 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
          [self.slidersContainer addSubview:btn];
      }
  
@@ -1756,7 +1821,7 @@
      }
  
      [self _updateThumbPositions];
-@@ -1947,34 +1947,34 @@
+@@ -1947,34 +1947,34 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
  }
  
  - (void)_saveTintColor {
@@ -1800,7 +1865,7 @@
  }
  
  - (void)showAdvancedColorModal {
-@@ -1982,8 +1982,8 @@
+@@ -1982,8 +1982,8 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
      [feedback prepare];
      [feedback impactOccurred];
  
@@ -1811,7 +1876,7 @@
  
      LGAdvancedColorModalView *modal = [[LGAdvancedColorModalView alloc] initWithFrame:self.bounds initialHex:currHex];
      __weak typeof(self) weakSelf = self;
-@@ -1995,17 +1995,17 @@
+@@ -1995,17 +1995,17 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
          [weakSelf _updateTintUIExtras];
          [weakSelf _setActivePresetButton:1104 animated:NO];
  
@@ -1835,7 +1900,7 @@
          });
      };
  
-@@ -2105,7 +2105,7 @@
+@@ -2105,7 +2105,7 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
          self.alpha = 0.0;
      }];
  
@@ -1844,7 +1909,7 @@
  
      dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
  #pragma clang diagnostic push
-@@ -2145,7 +2145,7 @@
+@@ -2145,7 +2145,7 @@ static inline __attribute__((unused)) UIImage *LGCreateScaleButtonImage(BOOL isL
              [UIView animateWithDuration:0.3 animations:^{
                  self.alpha = 1.0;
              }];
@@ -1853,13 +1918,22 @@
          };
          [keyWindow addSubview:overlay];
      });
+diff --git a/HomeCustomizationMenu18.m b/HomeCustomizationMenu18.m
+index ec342ba..b453b45 100644
 --- a/HomeCustomizationMenu18.m
 +++ b/HomeCustomizationMenu18.m
-@@ -1,27 +1,51 @@
+@@ -1,27 +1,61 @@
  #import "Headers.h"
  #import <notify.h>
 +#import "LGCustomIconGenerator2.h"
 +#import "Home18Pixels.h"
++extern NSDictionary *Home18LoadPersistentPreferences(void);
++extern void Home18PersistPreferenceValues(NSDictionary *values);
++
++static id Home18MenuPreferenceObject(NSUserDefaults *defaults, NSString *key) {
++    id diskValue = Home18LoadPersistentPreferences()[key];
++    return diskValue ?: [defaults objectForKey:key];
++}
 +static UIColor *H18PanelColor(UIColor *color) {
 + CGFloat r=1,g=1,b=1,a=1;[color getRed:&r green:&g blue:&b alpha:&a];
 + float rr=r,gg=g,bb=b;H18Color(&rr,&gg,&bb);
@@ -1905,9 +1979,11 @@
 +        @"icontint15.26base.largeIcons",
 +        @"icontint15.26base.dimWallpaper"
 +    ];
++    NSMutableDictionary *values = [NSMutableDictionary dictionary];
 +    for (NSString *key in keys) {
 +        id value = [defaults objectForKey:key];
 +        if (value) {
++            values[key] = value;
 +            CFPreferencesSetAppValue((__bridge CFStringRef)key,
 +                                     (__bridge CFPropertyListRef)value,
 +                                     CFSTR("local.icontint15.26base"));
@@ -1915,6 +1991,7 @@
      }
 +    [defaults synchronize];
 +    CFPreferencesAppSynchronize(CFSTR("local.icontint15.26base"));
++    Home18PersistPreferenceValues(values);
 +}
 +
 +static UIImage *LGCreateAutomaticWeatherImage(void) {
@@ -1922,7 +1999,7 @@
      UIImage *lightImg = [UIImage imageWithContentsOfFile:[basePath stringByAppendingPathComponent:@"Light/com.apple.weather-large.png"]];
      UIImage *darkImg = [UIImage imageWithContentsOfFile:[basePath stringByAppendingPathComponent:@"Dark/com.apple.weather-large.png"]];
  
-@@ -59,7 +83,8 @@
+@@ -59,7 +93,8 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
  
  @property (nonatomic, strong) NSMutableArray<UIButton *> *styleButtons;
  @property (nonatomic, strong) NSMutableArray<UILabel *> *styleLabels;
@@ -1932,7 +2009,19 @@
  
  @property (nonatomic, strong) UIView *slidersContainer;
  @property (nonatomic, strong) UIView *hueSlider;
-@@ -120,7 +145,7 @@
+@@ -75,6 +110,11 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
+ @implementation HomeCustomizationMenuContainer18
+ 
+ - (CGFloat)_bottomOffset {
++    // On iPhone the iOS 18 sheet sits against the bottom edge and overlays the
++    // dock.  Third-party floating-dock tweaks must not lift this panel.
++    if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone) {
++        return 0.0;
++    }
+     CGFloat floatDockHeight = 0.0;
+ 
+     NSArray *windows = [[UIApplication sharedApplication] valueForKey:@"windows"];
+@@ -120,7 +160,7 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
          return 96.0 + 14.0;
      }
  
@@ -1941,7 +2030,7 @@
  }
  
  - (CGFloat)_restingYForMenuHeight:(CGFloat)menuHeight {
-@@ -140,32 +165,34 @@
+@@ -140,32 +180,34 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
          [bgButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
          [self addSubview:bgButton];
  
@@ -1981,12 +2070,12 @@
 -        BOOL isDimmed = [defaults boolForKey:@"ngkhoi.26home.dimWallpaper"];
 -        BOOL isLarge = [defaults boolForKey:@"ngkhoi.26home.largeIcons"];
 +        NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"local.icontint15.26base"];
-+        BOOL isDimmed = [defaults boolForKey:@"icontint15.26base.dimWallpaper"];
-+        BOOL isLarge = [defaults boolForKey:@"icontint15.26base.largeIcons"];
++        BOOL isDimmed = [Home18MenuPreferenceObject(defaults, @"icontint15.26base.dimWallpaper") boolValue];
++        BOOL isLarge = [Home18MenuPreferenceObject(defaults, @"icontint15.26base.largeIcons") boolValue];
  
          UIImageSymbolConfiguration *sunConfig = [UIImageSymbolConfiguration configurationWithPointSize:20 weight:UIFontWeightMedium];
          self.sunBtn = [UIButton buttonWithType:UIButtonTypeSystem];
-@@ -175,8 +202,8 @@
+@@ -175,8 +217,8 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
          [self.sunBtn addTarget:self action:@selector(toggleWallpaperDimming:) forControlEvents:UIControlEventTouchUpInside];
          [self.menuView addSubview:self.sunBtn];
  
@@ -1997,7 +2086,7 @@
          self.scaleSegment = [[UIView alloc] initWithFrame:CGRectMake((menuWidth - segWidth) / 2.0, 17, segWidth, segHeight)];
          self.scaleSegment.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.14];
          self.scaleSegment.layer.cornerRadius = segHeight / 2.0;
-@@ -186,24 +213,24 @@
+@@ -186,24 +228,24 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
  
          CGFloat itemWidth = segWidth / 2.0;
          self.scalePill = [[UIView alloc] initWithFrame:CGRectMake(isLarge ? itemWidth : 0, 0, itemWidth, segHeight)];
@@ -2029,7 +2118,7 @@
          [self.largeBtn addTarget:self action:@selector(selectScaleLarge:) forControlEvents:UIControlEventTouchUpInside];
          [self.scaleSegment addSubview:self.largeBtn];
  
-@@ -217,28 +244,16 @@
+@@ -217,28 +259,16 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
          self.eyedropperBtn.userInteractionEnabled = NO;
          [self.menuView addSubview:self.eyedropperBtn];
  
@@ -2063,7 +2152,7 @@
              btn.layer.cornerCurve = kCACornerCurveContinuous;
              btn.clipsToBounds = YES;
              btn.tag = 100 + i;
-@@ -256,22 +271,25 @@
+@@ -256,22 +286,25 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
              }
  
              UIImageView *iv = [[UIImageView alloc] initWithImage:iconImg];
@@ -2095,7 +2184,7 @@
              lbl.text = styleTitles[i];
              lbl.textColor = [UIColor whiteColor];
              lbl.textAlignment = NSTextAlignmentCenter;
-@@ -280,7 +298,7 @@
+@@ -280,7 +313,7 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
              [self.styleLabels addObject:lbl];
          }
  
@@ -2104,7 +2193,7 @@
          self.slidersContainer.alpha = 0.0;
          self.slidersContainer.userInteractionEnabled = NO;
          [self.menuView addSubview:self.slidersContainer];
-@@ -295,9 +313,9 @@
+@@ -295,9 +328,9 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
  }
  
  - (void)setupSliders {
@@ -2116,7 +2205,7 @@
      CGFloat thumbSize = 36.0;
  
      self.hueSlider = [[UIView alloc] initWithFrame:CGRectMake(pad, 8, sliderW, sliderH)];
-@@ -327,7 +345,7 @@
+@@ -327,7 +360,7 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
      self.hueThumb.layer.cornerRadius = thumbSize / 2.0;
      self.hueThumb.layer.borderColor = [UIColor whiteColor].CGColor;
      self.hueThumb.layer.borderWidth = 3.5;
@@ -2125,7 +2214,7 @@
      self.hueThumb.layer.shadowOpacity = 0.35;
      self.hueThumb.layer.shadowRadius = 4;
      self.hueThumb.layer.shadowOffset = CGSizeMake(0, 2);
-@@ -339,7 +357,7 @@
+@@ -339,7 +372,7 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
      UITapGestureRecognizer *hueTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleHuePan:)];
      [self.hueSlider addGestureRecognizer:hueTap];
  
@@ -2134,7 +2223,7 @@
      self.brightnessSlider.clipsToBounds = NO;
      [self.slidersContainer addSubview:self.brightnessSlider];
  
-@@ -359,7 +377,7 @@
+@@ -359,7 +392,7 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
      self.brightnessThumb.layer.cornerRadius = thumbSize / 2.0;
      self.brightnessThumb.layer.borderColor = [UIColor whiteColor].CGColor;
      self.brightnessThumb.layer.borderWidth = 3.5;
@@ -2143,7 +2232,7 @@
      self.brightnessThumb.layer.shadowOpacity = 0.35;
      self.brightnessThumb.layer.shadowRadius = 4;
      self.brightnessThumb.layer.shadowOffset = CGSizeMake(0, 2);
-@@ -371,13 +389,13 @@
+@@ -371,13 +404,15 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
      UITapGestureRecognizer *brTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleBrightnessPan:)];
      [self.brightnessSlider addGestureRecognizer:brTap];
  
@@ -2151,17 +2240,19 @@
 -    self.currentHue = [defaults floatForKey:@"ngkhoi.26home.tintHue"];
 -    if (self.currentHue == 0 && ![defaults objectForKey:@"ngkhoi.26home.tintHue"]) {
 +    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"local.icontint15.26base"];
-+    self.currentHue = [defaults floatForKey:@"icontint15.26base.tintHue"];
-+    if (self.currentHue == 0 && ![defaults objectForKey:@"icontint15.26base.tintHue"]) {
++    NSNumber *storedHue = Home18MenuPreferenceObject(defaults, @"icontint15.26base.tintHue");
++    NSNumber *storedBrightness = Home18MenuPreferenceObject(defaults, @"icontint15.26base.tintBrightness");
++    self.currentHue = storedHue.floatValue;
++    if (!storedHue) {
          self.currentHue = 0.55;
          self.currentBrightness = 0.8;
      } else {
 -        self.currentBrightness = [defaults floatForKey:@"ngkhoi.26home.tintBrightness"];
-+        self.currentBrightness = [defaults floatForKey:@"icontint15.26base.tintBrightness"];
++        self.currentBrightness = storedBrightness ? storedBrightness.floatValue : 0.8;
      }
  
      [self _updateThumbPositions];
-@@ -396,25 +414,27 @@
+@@ -396,25 +431,27 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
      CGFloat bX = self.currentBrightness * maxTravel;
      self.brightnessThumb.frame = CGRectMake(bX, (sliderH - thumbSize) / 2.0, thumbSize, thumbSize);
  
@@ -2193,12 +2284,12 @@
 -    NSString *style = [defaults stringForKey:@"ngkhoi.26home.iconStyle"] ?: @"Default";
 -    NSString *darkIconMode = [defaults stringForKey:@"ngkhoi.26home.darkIconMode"] ?: @"Always";
 +    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"local.icontint15.26base"];
-+    NSString *style = [defaults stringForKey:@"icontint15.26base.iconStyle"] ?: @"Default";
-+    NSString *darkIconMode = [defaults stringForKey:@"icontint15.26base.darkIconMode"] ?: @"Always";
++    NSString *style = Home18MenuPreferenceObject(defaults, @"icontint15.26base.iconStyle") ?: @"Default";
++    NSString *darkIconMode = Home18MenuPreferenceObject(defaults, @"icontint15.26base.darkIconMode") ?: @"Always";
  
      NSUInteger activeIndex = 0;
      if ([style isEqualToString:@"Tinted"]) {
-@@ -430,7 +450,7 @@
+@@ -430,7 +467,7 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
      }
  
      BOOL isTinted = (activeIndex == 3);
@@ -2207,7 +2298,7 @@
  
      void (^updateBlock)(void) = ^{
  
-@@ -438,8 +458,8 @@
+@@ -438,8 +475,8 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
              UIButton *btn = self.styleButtons[i];
              UILabel *lbl = self.styleLabels[i];
              if (i == activeIndex) {
@@ -2218,7 +2309,7 @@
                  lbl.textColor = [UIColor whiteColor];
                  lbl.font = [UIFont systemFontOfSize:13 weight:UIFontWeightSemibold];
              } else {
-@@ -470,60 +490,27 @@
+@@ -470,60 +507,27 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
  
  - (void)selectStyle:(UIButton *)sender {
      NSUInteger index = sender.tag - 100;
@@ -2290,7 +2381,7 @@
      dispatch_async(dispatch_get_main_queue(), ^{
          Home26PostStyleUpdate18();
      });
-@@ -531,29 +518,29 @@
+@@ -531,29 +535,29 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
  
  - (void)selectScaleSmall:(UIButton *)sender {
      Home26Log(@"[User Action] iOS 18 Menu - Selected scale: Small");
@@ -2330,7 +2421,7 @@
  
      CGFloat itemWidth = self.scaleSegment.frame.size.width / 2.0;
      [UIView animateWithDuration:0.25 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-@@ -562,21 +549,21 @@
+@@ -562,21 +566,21 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
          self.scalePill.frame = f;
  
          [self.smallBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
@@ -2350,7 +2441,7 @@
 -    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"com.ngkhoi.26home"];
 -    BOOL current = [defaults boolForKey:@"ngkhoi.26home.dimWallpaper"];
 +    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"local.icontint15.26base"];
-+    BOOL current = [defaults boolForKey:@"icontint15.26base.dimWallpaper"];
++    BOOL current = [Home18MenuPreferenceObject(defaults, @"icontint15.26base.dimWallpaper") boolValue];
      BOOL next = !current;
      Home26Log(@"[User Action] iOS 18 Menu - Toggled wallpaper dimming to: %d", next);
 -    [defaults setBool:next forKey:@"ngkhoi.26home.dimWallpaper"];
@@ -2360,7 +2451,7 @@
  
      UIImageSymbolConfiguration *config = [UIImageSymbolConfiguration configurationWithPointSize:20 weight:UIFontWeightMedium];
      UIImage *newImage = (next ? LGImageNamed(@"sun.lefthalf.filled") : [UIImage systemImageNamed:@"sun.max" withConfiguration:config]);
-@@ -586,42 +573,40 @@
+@@ -586,42 +590,40 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
          sender.tintColor = next ? [UIColor whiteColor] : [UIColor colorWithWhite:1.0 alpha:0.55];
      } completion:nil];
  
@@ -2417,7 +2508,7 @@
  }
  
  - (void)handleHuePan:(UIGestureRecognizer *)gesture {
-@@ -662,7 +647,7 @@
+@@ -662,7 +664,7 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
          self.alpha = 0.0;
      }];
  
@@ -2426,7 +2517,7 @@
  
      dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
  #pragma clang diagnostic push
-@@ -682,14 +667,8 @@
+@@ -682,14 +684,8 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
          overlay.onColorSelected = ^(UIColor *color) {
              CGFloat h, s, b, a;
              if ([color getHue:&h saturation:&s brightness:&b alpha:&a]) {
@@ -2442,7 +2533,7 @@
                  [self _updateThumbPositions];
                  [self _updateBrightnessGradient];
                  [self _saveTintColor];
-@@ -698,7 +677,7 @@
+@@ -698,7 +694,7 @@ static UIImage *LGCreateAutomaticWeatherImage(void) {
              [UIView animateWithDuration:0.3 animations:^{
                  self.alpha = 1.0;
              }];
@@ -2451,13 +2542,16 @@
          };
          [keyWindow addSubview:overlay];
      });
+diff --git a/Hooks/BadgesAndWidgets.x b/Hooks/BadgesAndWidgets.x
+index 5f069cc..6b38ae0 100644
 --- a/Hooks/BadgesAndWidgets.x
 +++ b/Hooks/BadgesAndWidgets.x
-@@ -1,4 +1,68 @@
+@@ -1,4 +1,87 @@
  #import "HooksCommon.h"
 +#import "../Home18Pixels.h"
 +
 +static char kHome18SavedWidgetFiltersKey;
++static char kHome18WidgetRefreshPendingKey;
 +
 +static BOOL Home18IsWidgetView(UIView *view) {
 +    if (!view) return NO;
@@ -2470,20 +2564,13 @@
 +    return NO;
 +}
 +
-+static UIView *Home18WidgetRenderView(UIView *view) {
-+    UIView *current=view;
-+    for (NSUInteger depth=0;depth<6;depth++) {
-+        UIView *next=nil;
-+        for (NSString *key in @[@"_widgetView", @"_contentView", @"_shadowedWidgetView", @"_portalView"]) {
-+            @try {
-+                id candidate=[current valueForKey:key];
-+                if ([candidate isKindOfClass:UIView.class] && candidate!=current) {next=candidate;break;}
-+            } @catch (NSException *exception) {}
-+        }
-+        if (!next) break;
-+        current=next;
++static UIView *Home18OutermostWidgetHost(UIView *view) {
++    UIView *root = view;
++    UIView *cursor = view.superview;
++    for (NSUInteger depth = 0; cursor && depth < 12; depth++, cursor = cursor.superview) {
++        if (Home18IsWidgetView(cursor)) root = cursor;
 +    }
-+    return current ?: view;
++    return root;
 +}
 +
 +static UIColor *Home18AccentColor(void) {
@@ -2519,10 +2606,35 @@
 +        } @catch (NSException *exception) {}
 +    }
 +}
++
++static void Home18ClearManagedWidgetFiltersBelow(UIView *view, UIView *except) {
++    if (!view) return;
++    if (view != except && objc_getAssociatedObject(view, &kHome18SavedWidgetFiltersKey)) {
++        Home18SetWidgetColorFilter(view, NO, nil);
++    }
++    for (UIView *subview in view.subviews) {
++        Home18ClearManagedWidgetFiltersBelow(subview, except);
++    }
++}
++
++static void Home18ScheduleWidgetTintRefresh(UIView *view) {
++    if (!view || objc_getAssociatedObject(view, &kHome18WidgetRefreshPendingKey)) return;
++    objc_setAssociatedObject(view, &kHome18WidgetRefreshPendingKey, @YES, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
++    __weak UIView *weakView = view;
++    dispatch_async(dispatch_get_main_queue(), ^{
++        UIView *strongView = weakView;
++        if (!strongView) return;
++        objc_setAssociatedObject(strongView, &kHome18WidgetRefreshPendingKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
++        _26home_applyWidgetTintToView(strongView);
++        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.12 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
++            if (weakView) _26home_applyWidgetTintToView(weakView);
++        });
++    });
++}
  
  %hook SBDockView
  
-@@ -15,129 +79,69 @@
+@@ -15,148 +98,96 @@
  
  - (void)layoutSubviews {
      %orig;
@@ -2701,9 +2813,17 @@
 -                         [view isKindOfClass:NSClassFromString(@"SBHWidgetContainerView")];
 +    BOOL isWidgetClass = Home18IsWidgetView(view);
  
++    UIView *hostView = Home18OutermostWidgetHost(view);
      UIView *bgView = nil;
      @try {
-@@ -149,14 +153,19 @@
+-        bgView = [view valueForKey:@"_backgroundView"];
++        bgView = [hostView valueForKey:@"_backgroundView"];
+     } @catch (NSException *e) {}
+-    if (!bgView && [view respondsToSelector:@selector(backgroundView)]) {
++    if (!bgView && [hostView respondsToSelector:@selector(backgroundView)]) {
+         @try {
+-            bgView = [view performSelector:@selector(backgroundView)];
++            bgView = [hostView performSelector:@selector(backgroundView)];
          } @catch (NSException *e) {}
      }
  
@@ -2712,20 +2832,41 @@
          return;
      }
  
-     UIView *targetView = bgView ?: view;
+-    UIView *targetView = bgView ?: view;
++    UIView *targetView = bgView ?: hostView;
  
      UIView *tintOverlay = [targetView viewWithTag:2628];
 -    if ([g_iconStyle isEqualToString:@"Tinted"]) {
 +    BOOL tintWidgets=g_colorWidgets && [g_iconStyle isEqualToString:@"Tinted"];
 +    UIColor *accent=Home18AccentColor();
-+    UIView *renderView=Home18WidgetRenderView(view);
-+    if (renderView!=view) Home18SetWidgetColorFilter(view,NO,accent);
-+    Home18SetWidgetColorFilter(renderView,tintWidgets,accent);
++    // Filtering the deepest portal is fragile: SpringBoard replaces that view
++    // while presenting a context menu.  The outer wrapper survives the whole
++    // transition, so keep exactly one managed filter there.
++    Home18ClearManagedWidgetFiltersBelow(hostView, hostView);
++    Home18SetWidgetColorFilter(hostView,tintWidgets,accent);
 +    if (tintWidgets) {
          if (!tintOverlay) {
              tintOverlay = [[UIView alloc] initWithFrame:targetView.bounds];
              tintOverlay.tag = 2628;
-@@ -185,26 +194,6 @@
+@@ -170,14 +201,14 @@ void _26home_applyWidgetTintToView(UIView *view) {
+         }
+ 
+         CGFloat radius = 0.0;
+-        if ([view respondsToSelector:@selector(cornerRadius)]) {
+-            radius = ((CGFloat (*)(id, SEL))[view methodForSelector:@selector(cornerRadius)])(view, @selector(cornerRadius));
++        if ([hostView respondsToSelector:@selector(cornerRadius)]) {
++            radius = ((CGFloat (*)(id, SEL))[hostView methodForSelector:@selector(cornerRadius)])(hostView, @selector(cornerRadius));
+         }
+         if (radius <= 0 && [targetView respondsToSelector:@selector(cornerRadius)]) {
+             radius = ((CGFloat (*)(id, SEL))[targetView methodForSelector:@selector(cornerRadius)])(targetView, @selector(cornerRadius));
+         }
+         if (radius <= 0) {
+-            radius = targetView.layer.cornerRadius > 0 ? targetView.layer.cornerRadius : (view.layer.cornerRadius > 0 ? view.layer.cornerRadius : 22.0);
++            radius = targetView.layer.cornerRadius > 0 ? targetView.layer.cornerRadius : (hostView.layer.cornerRadius > 0 ? hostView.layer.cornerRadius : 22.0);
+         }
+ 
+         tintOverlay.frame = targetView.bounds;
+@@ -185,26 +216,6 @@ void _26home_applyWidgetTintToView(UIView *view) {
          tintOverlay.layer.cornerCurve = kCACornerCurveContinuous;
          tintOverlay.clipsToBounds = YES;
  
@@ -2752,7 +2893,7 @@
          UIView *smokedLayer = [tintOverlay viewWithTag:2629];
          if (!smokedLayer) {
              smokedLayer = [[UIView alloc] initWithFrame:tintOverlay.bounds];
-@@ -220,7 +209,7 @@
+@@ -220,7 +231,7 @@ void _26home_applyWidgetTintToView(UIView *view) {
          smokedLayer.frame = tintOverlay.bounds;
          smokedLayer.layer.cornerRadius = radius;
  
@@ -2761,16 +2902,71 @@
          tintOverlay.hidden = NO;
      } else {
          if (tintOverlay) {
-@@ -263,6 +252,42 @@
+@@ -244,6 +255,16 @@ void _26home_recursivelyApplyWidgetTint(UIView *view) {
+     _26home_applyWidgetTintToView((UIView *)self);
  }
  
++- (void)didMoveToWindow {
++    %orig;
++    Home18ScheduleWidgetTintRefresh((UIView *)self);
++}
++
++- (void)didMoveToSuperview {
++    %orig;
++    Home18ScheduleWidgetTintRefresh((UIView *)self);
++}
++
  %end
+ 
+ %hook SBHWidgetWrapperView
+@@ -253,6 +274,16 @@ void _26home_recursivelyApplyWidgetTint(UIView *view) {
+     _26home_applyWidgetTintToView((UIView *)self);
+ }
+ 
++- (void)didMoveToWindow {
++    %orig;
++    Home18ScheduleWidgetTintRefresh((UIView *)self);
++}
++
++- (void)didMoveToSuperview {
++    %orig;
++    Home18ScheduleWidgetTintRefresh((UIView *)self);
++}
++
+ %end
+ 
+ %hook SBHWidgetContainerView
+@@ -262,6 +293,62 @@ void _26home_recursivelyApplyWidgetTint(UIView *view) {
+     _26home_applyWidgetTintToView((UIView *)self);
+ }
+ 
++- (void)didMoveToWindow {
++    %orig;
++    Home18ScheduleWidgetTintRefresh((UIView *)self);
++}
++
++- (void)didMoveToSuperview {
++    %orig;
++    Home18ScheduleWidgetTintRefresh((UIView *)self);
++}
++
++%end
 +
 +%hook SBHPortaledShadowedWidgetView
 +
 +- (void)layoutSubviews {
 +    %orig;
 +    _26home_applyWidgetTintToView((UIView *)self);
++}
++
++- (void)didMoveToWindow {
++    %orig;
++    Home18ScheduleWidgetTintRefresh((UIView *)self);
++}
++
++- (void)didMoveToSuperview {
++    %orig;
++    Home18ScheduleWidgetTintRefresh((UIView *)self);
 +}
 +
 +%end
@@ -2800,10 +2996,11 @@
 +    _26home_recursivelyApplyWidgetTint(((UIViewController *)self).view);
 +}
 +
-+%end
+ %end
  
  void Home26InitBadgesAndWidgetsHooks(void) {
-     %init();
+diff --git a/Hooks/EditingButtons.x b/Hooks/EditingButtons.x
+index dc1f514..e2f9f79 100644
 --- a/Hooks/EditingButtons.x
 +++ b/Hooks/EditingButtons.x
 @@ -1,184 +1,26 @@
@@ -2995,7 +3192,7 @@
          if (g_editingDoneTarget && g_editingDoneAction) {
  #pragma clang diagnostic push
  #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-@@ -292,13 +134,13 @@
+@@ -292,13 +134,13 @@ static void updateLiquidGlassLayout(UIView *button) {
              }
  
              if (targetView) {
@@ -3011,7 +3208,7 @@
          id iconController = [%c(SBIconController) sharedInstance];
          if ([iconController respondsToSelector:@selector(setIsEditing:)]) {
              void (*setIsEditing)(id, SEL, BOOL) = (void (*)(id, SEL, BOOL))[iconController methodForSelector:@selector(setIsEditing:)];
-@@ -332,7 +174,7 @@
+@@ -332,7 +174,7 @@ static void updateLiquidGlassLayout(UIView *button) {
          });
      }];
  
@@ -3020,7 +3217,7 @@
          SBRootFolderController *rootVC = ResolveRootFolderController(weakSelf);
          if (rootVC) {
              [rootVC _presentPageManagement:nil];
-@@ -340,396 +182,16 @@
+@@ -340,396 +182,16 @@ static void updateLiquidGlassLayout(UIView *button) {
      }];
  
      NSArray *items = @[addWidget, customize, editWallpaper, editPages];
@@ -3065,10 +3262,18 @@
 -    LGButtonView *btnView = (LGButtonView *)[self viewWithTag:999];
 -    if (btnView && [btnView isKindOfClass:[LGButtonView class]]) {
 -        [btnView handleTouchEnded];
--    }
--}
--%end
--
++    NSMutableArray<UIMenuElement *> *actions = [NSMutableArray array];
++    for (Home26LiquidMenuItem *item in items) {
++        UIAction *action = [UIAction actionWithTitle:item.title image:item.icon identifier:nil handler:^(__kindof UIAction *action) {
++            if (item.action) item.action();
++        }];
++        [actions addObject:action];
+     }
++    self.menu = [UIMenu menuWithChildren:actions];
++    self.showsMenuAsPrimaryAction = YES;
+ }
+ %end
+ 
 -%hook SBHEditingDoneButton
 -
 -- (void)layoutSubviews {
@@ -3108,17 +3313,9 @@
 -        CGPoint pt = [touch locationInView:btnView];
 -        [btnView handleTouchMovedToPoint:pt];
 -        return YES;
-+    NSMutableArray<UIMenuElement *> *actions = [NSMutableArray array];
-+    for (Home26LiquidMenuItem *item in items) {
-+        UIAction *action = [UIAction actionWithTitle:item.title image:item.icon identifier:nil handler:^(__kindof UIAction *action) {
-+            if (item.action) item.action();
-+        }];
-+        [actions addObject:action];
-     }
+-    }
 -    return %orig;
-+    self.menu = [UIMenu menuWithChildren:actions];
-+    self.showsMenuAsPrimaryAction = YES;
- }
+-}
 -
 -- (void)endTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event {
 -    %orig;
@@ -3420,15 +3617,17 @@
 -    updateLiquidGlassLayoutForPageCheckbox(view);
 -}
 -
- %end
- 
+-%end
+-
 -void Home26InitEditingButtonsHooks(void) {
 -    %init();
 -}
 +void Home26InitEditingButtonsHooks(void) { %init(); }
+diff --git a/Hooks/HooksCommon.h b/Hooks/HooksCommon.h
+index 2a6e1de..ea147e3 100644
 --- a/Hooks/HooksCommon.h
 +++ b/Hooks/HooksCommon.h
-@@ -13,7 +13,9 @@
+@@ -13,7 +13,9 @@ extern "C" {
  #endif
  
  extern BOOL g_tweakEnabled;
@@ -3439,7 +3638,16 @@
  extern NSString *g_engineVersion;
  extern NSString *g_selectedIconPack;
  extern NSString *g_iconStyle;
-@@ -94,3 +96,9 @@
+@@ -58,6 +60,8 @@ void ForceLayoutAllIconViews(UIView *view);
+ void updateTintViews(UIView *view, UIColor *tintColor);
+ 
+ void reload26HomePrefs(void);
++NSDictionary *Home18LoadPersistentPreferences(void);
++void Home18PersistPreferenceValues(NSDictionary *values);
+ UIWindow *GetWallpaperWindow(void);
+ UIWindow *Home26GetKeyWindow(void);
+ void EnsureWallpaperDimView(void);
+@@ -94,3 +98,9 @@ void Home26RegisterSpotlightNotifications(void);
  #ifdef __cplusplus
  }
  #endif
@@ -3449,9 +3657,11 @@
 +extern BOOL g_home18Everywhere;
 +extern __thread unsigned g_home18RenderDepth;
 +BOOL Home18CanStyleView(UIView *view);
+diff --git a/Hooks/HooksCommon.m b/Hooks/HooksCommon.m
+index 43c7286..e41c999 100644
 --- a/Hooks/HooksCommon.m
 +++ b/Hooks/HooksCommon.m
-@@ -1,23 +1,35 @@
+@@ -1,23 +1,99 @@
  #import "HooksCommon.h"
  
  BOOL g_tweakEnabled = YES;
@@ -3483,8 +3693,72 @@
 -NSString *g_menuAppearance = @"iOS26";
 +NSString *g_menuAppearance = @"iOS18";
 +
++static NSDictionary *g_home18PersistentPreferences = nil;
++
++static NSArray<NSString *> *Home18PreferencePaths(void) {
++    NSMutableArray<NSString *> *paths = [NSMutableArray array];
++    NSString *homePath = [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Preferences/local.icontint15.26base.plist"];
++    for (NSString *path in @[homePath,
++                             @"/var/mobile/Library/Preferences/local.icontint15.26base.plist",
++                             @"/var/jb/var/mobile/Library/Preferences/local.icontint15.26base.plist",
++                             @"/var/jb/Library/Preferences/local.icontint15.26base.plist"]) {
++        if (path.length && ![paths containsObject:path]) [paths addObject:path];
++    }
++    return paths;
++}
++
++NSDictionary *Home18LoadPersistentPreferences(void) {
++    NSFileManager *fm = NSFileManager.defaultManager;
++    NSDictionary *best = nil;
++    NSDate *bestDate = nil;
++    for (NSString *path in Home18PreferencePaths()) {
++        NSDictionary *candidate = [NSDictionary dictionaryWithContentsOfFile:path];
++        if (![candidate isKindOfClass:NSDictionary.class] || candidate.count == 0) continue;
++        NSDate *date = [[fm attributesOfItemAtPath:path error:nil] fileModificationDate] ?: NSDate.distantPast;
++        if (!best || [date compare:bestDate] == NSOrderedDescending) {
++            best = candidate;
++            bestDate = date;
++        }
++    }
++    return best ?: @{};
++}
++
++void Home18PersistPreferenceValues(NSDictionary *values) {
++    if (![values isKindOfClass:NSDictionary.class] || values.count == 0) return;
++
++    NSMutableDictionary *merged = [Home18LoadPersistentPreferences() mutableCopy] ?: [NSMutableDictionary dictionary];
++    [values enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
++        if (key && value) merged[key] = value;
++    }];
++
++    // /var/mobile is the stable preference location shared by SpringBoard,
++    // Preferences and the rootless preference bundle on Dopamine.
++    NSString *primary = @"/var/mobile/Library/Preferences/local.icontint15.26base.plist";
++    NSString *homePath = [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Preferences/local.icontint15.26base.plist"];
++    NSMutableArray<NSString *> *writePaths = [NSMutableArray arrayWithObject:primary];
++    if (homePath.length && ![writePaths containsObject:homePath]) [writePaths addObject:homePath];
++    for (NSString *path in writePaths) {
++        NSString *directory = path.stringByDeletingLastPathComponent;
++        if ([NSFileManager.defaultManager isWritableFileAtPath:directory]) {
++            [merged writeToFile:path atomically:YES];
++        }
++    }
++
++    [values enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
++        if ([key isKindOfClass:NSString.class]) {
++            CFPreferencesSetAppValue((__bridge CFStringRef)key,
++                                     (__bridge CFPropertyListRef)value,
++                                     CFSTR("local.icontint15.26base"));
++        }
++    }];
++    CFPreferencesAppSynchronize(CFSTR("local.icontint15.26base"));
++    g_home18PersistentPreferences = [merged copy];
++}
++
 +static id Home18PreferenceObject(NSString *key, NSUserDefaults *fallback) {
 +    if (!key) return nil;
++    id diskValue = g_home18PersistentPreferences[key];
++    if (diskValue) return diskValue;
 +    CFPropertyListRef value = CFPreferencesCopyAppValue((__bridge CFStringRef)key,
 +                                                        CFSTR("local.icontint15.26base"));
 +    if (value) return CFBridgingRelease(value);
@@ -3493,30 +3767,25 @@
  
  BOOL g_isAppOpening = NO;
  BOOL g_isFolderOpen = NO;
-@@ -206,76 +218,78 @@
+@@ -206,82 +282,64 @@ void UpdateWallpaperDimState(BOOL dimmed, BOOL animated) {
  }
  
  void reload26HomePrefs(void) {
 -    CFPreferencesAppSynchronize(CFSTR("com.ngkhoi.26home"));
-+    CFPreferencesAppSynchronize(CFSTR("local.icontint15.26base"));
- 
-     Boolean enableKeyExists = false;
+-
+-    Boolean enableKeyExists = false;
 -    Boolean enabled = CFPreferencesGetAppBooleanValue(CFSTR("ngkhoi.26home.enabled"), CFSTR("com.ngkhoi.26home"), &enableKeyExists);
-+    Boolean enabled = CFPreferencesGetAppBooleanValue(CFSTR("icontint15.26base.enabled"), CFSTR("local.icontint15.26base"), &enableKeyExists);
-     g_tweakEnabled = enableKeyExists ? enabled : YES;
- 
+-    g_tweakEnabled = enableKeyExists ? enabled : YES;
+-
 -    NSUserDefaults *prefs = [[NSUserDefaults alloc] initWithSuiteName:@"com.ngkhoi.26home"];
 -    CFPropertyListRef engineVal = CFPreferencesCopyAppValue(CFSTR("ngkhoi.26home.icongen.engineVersion"), CFSTR("com.ngkhoi.26home"));
-+    NSUserDefaults *prefs = [[NSUserDefaults alloc] initWithSuiteName:@"local.icontint15.26base"];
-+    CFPropertyListRef engineVal = CFPreferencesCopyAppValue(CFSTR("icontint15.26base.icongen.engineVersion"), CFSTR("local.icontint15.26base"));
-     if (engineVal && [(__bridge id)engineVal isKindOfClass:[NSString class]]) {
-         g_engineVersion = [(__bridge NSString *)engineVal copy];
-         CFRelease(engineVal);
-     } else {
+-    if (engineVal && [(__bridge id)engineVal isKindOfClass:[NSString class]]) {
+-        g_engineVersion = [(__bridge NSString *)engineVal copy];
+-        CFRelease(engineVal);
+-    } else {
 -        g_engineVersion = [prefs stringForKey:@"ngkhoi.26home.icongen.engineVersion"] ?: @"IconGen3";
-+        g_engineVersion = [prefs stringForKey:@"icontint15.26base.icongen.engineVersion"] ?: @"IconGen3";
-     }
- 
+-    }
+-
 -    CFPropertyListRef packVal = CFPreferencesCopyAppValue(CFSTR("ngkhoi.26home.selectedIconPack"), CFSTR("com.ngkhoi.26home"));
 -    if (packVal && [(__bridge id)packVal isKindOfClass:[NSString class]]) {
 -        g_selectedIconPack = [(__bridge NSString *)packVal copy];
@@ -3524,14 +3793,41 @@
 -    } else {
 -        g_selectedIconPack = [prefs stringForKey:@"ngkhoi.26home.selectedIconPack"] ?: [prefs stringForKey:@"ngkhoi.26home.activePackId"] ?: @"SolidGlass";
 -    }
-+    g_selectedIconPack = @"Home18";
- 
+-
 -    g_iconStyle = [prefs stringForKey:@"ngkhoi.26home.iconStyle"] ?: @"Default";
 -    g_themeMode = [prefs stringForKey:@"ngkhoi.26home.themeMode"] ?: @"Auto";
 -    g_darkIconMode = [prefs stringForKey:@"ngkhoi.26home.darkIconMode"] ?: @"Always";
 -    g_tintColor = [prefs stringForKey:@"ngkhoi.26home.tintColor"] ?: @"#00FFFF";
 -    g_largeIconsEnabled = [prefs boolForKey:@"ngkhoi.26home.largeIcons"];
 -    g_disableLiquidGlassIcons = CFPreferencesGetAppBooleanValue(CFSTR("ngkhoi.26home.disableLiquidGlassIcons"), CFSTR("com.ngkhoi.26home"), NULL);
+-
+-    CFPropertyListRef excludedVal = CFPreferencesCopyAppValue(CFSTR("ngkhoi.26home.excludedApps"), CFSTR("com.ngkhoi.26home"));
+-    if (excludedVal && [(__bridge id)excludedVal isKindOfClass:[NSDictionary class]]) {
+-        g_excludedApps = [(__bridge NSDictionary *)excludedVal copy];
+-        CFRelease(excludedVal);
+-    } else {
+-        g_excludedApps = [prefs dictionaryForKey:@"ngkhoi.26home.excludedApps"] ?: @{};
+-    }
+-
+-    Boolean solidKeyExists = false;
+-    Boolean solidVal = CFPreferencesGetAppBooleanValue(CFSTR("ngkhoi.26home.exceptionsApplyOnlyToSolid"), CFSTR("com.ngkhoi.26home"), &solidKeyExists);
+-    g_exceptionsApplyOnlyToSolid = solidKeyExists ? solidVal : YES;
+-
+-    Boolean noProcKeyExists = false;
+-    Boolean noProcVal = CFPreferencesGetAppBooleanValue(CFSTR("ngkhoi.26home.exceptionsNoIconProcessing"), CFSTR("com.ngkhoi.26home"), &noProcKeyExists);
+-    g_exceptionsNoIconProcessing = noProcKeyExists ? noProcVal : YES;
++    CFPreferencesAppSynchronize(CFSTR("local.icontint15.26base"));
++
++    g_home18PersistentPreferences = Home18LoadPersistentPreferences();
++
++    NSNumber *enabledValue = Home18PreferenceObject(@"icontint15.26base.enabled", nil);
++    g_tweakEnabled = enabledValue ? enabledValue.boolValue : YES;
++
++    NSUserDefaults *prefs = [[NSUserDefaults alloc] initWithSuiteName:@"local.icontint15.26base"];
++    g_engineVersion = Home18PreferenceObject(@"icontint15.26base.icongen.engineVersion", prefs) ?: @"IconGen3";
++
++    g_selectedIconPack = @"Home18";
++
 +    NSString *scope = Home18PreferenceObject(@"icontint15.26base.iconScope", prefs);
 +    g_home18Everywhere = ![scope isEqualToString:@"HomeOnly"];
 +    NSNumber *widgets = Home18PreferenceObject(@"icontint15.26base.colorWidgets", prefs);
@@ -3554,37 +3850,26 @@
 +    NSNumber *largeIcons = Home18PreferenceObject(@"icontint15.26base.largeIcons", prefs);
 +    g_largeIconsEnabled = largeIcons.boolValue;
 +    g_disableLiquidGlassIcons = YES; // 18-style fork: no live glass overlays.
- 
--    CFPropertyListRef excludedVal = CFPreferencesCopyAppValue(CFSTR("ngkhoi.26home.excludedApps"), CFSTR("com.ngkhoi.26home"));
-+    CFPropertyListRef excludedVal = CFPreferencesCopyAppValue(CFSTR("icontint15.26base.excludedApps"), CFSTR("local.icontint15.26base"));
-     if (excludedVal && [(__bridge id)excludedVal isKindOfClass:[NSDictionary class]]) {
-         g_excludedApps = [(__bridge NSDictionary *)excludedVal copy];
-         CFRelease(excludedVal);
-     } else {
--        g_excludedApps = [prefs dictionaryForKey:@"ngkhoi.26home.excludedApps"] ?: @{};
-+        g_excludedApps = [prefs dictionaryForKey:@"icontint15.26base.excludedApps"] ?: @{};
-     }
- 
-     Boolean solidKeyExists = false;
--    Boolean solidVal = CFPreferencesGetAppBooleanValue(CFSTR("ngkhoi.26home.exceptionsApplyOnlyToSolid"), CFSTR("com.ngkhoi.26home"), &solidKeyExists);
-+    Boolean solidVal = CFPreferencesGetAppBooleanValue(CFSTR("icontint15.26base.exceptionsApplyOnlyToSolid"), CFSTR("local.icontint15.26base"), &solidKeyExists);
-     g_exceptionsApplyOnlyToSolid = solidKeyExists ? solidVal : YES;
- 
-     Boolean noProcKeyExists = false;
--    Boolean noProcVal = CFPreferencesGetAppBooleanValue(CFSTR("ngkhoi.26home.exceptionsNoIconProcessing"), CFSTR("com.ngkhoi.26home"), &noProcKeyExists);
-+    Boolean noProcVal = CFPreferencesGetAppBooleanValue(CFSTR("icontint15.26base.exceptionsNoIconProcessing"), CFSTR("local.icontint15.26base"), &noProcKeyExists);
-     g_exceptionsNoIconProcessing = noProcKeyExists ? noProcVal : YES;
++
++    NSDictionary *excluded = Home18PreferenceObject(@"icontint15.26base.excludedApps", prefs);
++    g_excludedApps = [excluded isKindOfClass:NSDictionary.class] ? excluded : @{};
++
++    NSNumber *solidValue = Home18PreferenceObject(@"icontint15.26base.exceptionsApplyOnlyToSolid", prefs);
++    g_exceptionsApplyOnlyToSolid = solidValue ? solidValue.boolValue : YES;
++
++    NSNumber *noProcessingValue = Home18PreferenceObject(@"icontint15.26base.exceptionsNoIconProcessing", prefs);
++    g_exceptionsNoIconProcessing = noProcessingValue ? noProcessingValue.boolValue : YES;
  
      Home26Log(@"[Prefs Reload] exceptionsApplyOnlyToSolid: %d, exceptionsNoIconProcessing: %d, excludedApps: %lu",
                g_exceptionsApplyOnlyToSolid, g_exceptionsNoIconProcessing, (unsigned long)g_excludedApps.count);
  
 -    if ([prefs objectForKey:@"ngkhoi.26home.hideGlassWhenUnfocused"]) {
 -        g_hideGlassWhenUnfocused = [prefs boolForKey:@"ngkhoi.26home.hideGlassWhenUnfocused"];
-+    if ([prefs objectForKey:@"icontint15.26base.hideGlassWhenUnfocused"]) {
-+        g_hideGlassWhenUnfocused = [prefs boolForKey:@"icontint15.26base.hideGlassWhenUnfocused"];
-     } else {
-         g_hideGlassWhenUnfocused = YES;
-     }
+-    } else {
+-        g_hideGlassWhenUnfocused = YES;
+-    }
++    NSNumber *hideGlassValue = Home18PreferenceObject(@"icontint15.26base.hideGlassWhenUnfocused", prefs);
++    g_hideGlassWhenUnfocused = hideGlassValue ? hideGlassValue.boolValue : YES;
  
 -    g_menuAppearance = @"iOS26";
 +    g_menuAppearance = @"iOS18";
@@ -3592,7 +3877,8 @@
 -    Boolean keyExists = false;
 -    Boolean keepBlur = CFPreferencesGetAppBooleanValue(CFSTR("ngkhoi.26home.keepAppIconBlur"), CFSTR("com.ngkhoi.26home"), &keyExists);
 -    g_keepAppIconBlur = keyExists ? keepBlur : YES;
--
++    g_keepAppIconBlur = NO; // No app-icon backdrop blur in the 18-style fork.
+ 
 -    CFPropertyListRef blurVal = CFPreferencesCopyAppValue(CFSTR("ngkhoi.26home.appIconBlurRadius"), CFSTR("com.ngkhoi.26home"));
 -    if (blurVal && [(__bridge id)blurVal isKindOfClass:[NSNumber class]]) {
 -        g_appIconBlurRadius = [(__bridge NSNumber *)blurVal floatValue];
@@ -3600,16 +3886,21 @@
 -    } else {
 -        g_appIconBlurRadius = 1.0;
 -    }
-+    g_keepAppIconBlur = NO; // No app-icon backdrop blur in the 18-style fork.
-+
 +    g_appIconBlurRadius = 0.0;
  
 -    CFPropertyListRef qualityVal = CFPreferencesCopyAppValue(CFSTR("ngkhoi.26home.appIconGlassQuality"), CFSTR("com.ngkhoi.26home"));
-+    CFPropertyListRef qualityVal = CFPreferencesCopyAppValue(CFSTR("icontint15.26base.appIconGlassQuality"), CFSTR("local.icontint15.26base"));
-     if (qualityVal && [(__bridge id)qualityVal isKindOfClass:[NSNumber class]]) {
-         g_appIconGlassQuality = [(__bridge NSNumber *)qualityVal floatValue];
-         CFRelease(qualityVal);
-@@ -574,3 +588,21 @@
+-    if (qualityVal && [(__bridge id)qualityVal isKindOfClass:[NSNumber class]]) {
+-        g_appIconGlassQuality = [(__bridge NSNumber *)qualityVal floatValue];
+-        CFRelease(qualityVal);
+-    } else {
+-        g_appIconGlassQuality = 0.35;
+-    }
++    NSNumber *qualityValue = Home18PreferenceObject(@"icontint15.26base.appIconGlassQuality", prefs);
++    g_appIconGlassQuality = qualityValue ? qualityValue.floatValue : 0.35;
+     if (g_appIconGlassQuality < 0.10) g_appIconGlassQuality = 0.10;
+     if (g_appIconGlassQuality > 1.0) g_appIconGlassQuality = 1.0;
+ }
+@@ -574,3 +632,21 @@ SBRootFolderController *ResolveRootFolderController(UIView *view) {
      }
      return nil;
  }
@@ -3631,6 +3922,8 @@
 +    }
 +    return NO;
 +}
+diff --git a/Hooks/IconView.x b/Hooks/IconView.x
+index ff73687..d076e79 100644
 --- a/Hooks/IconView.x
 +++ b/Hooks/IconView.x
 @@ -1,4 +1,6 @@
@@ -3640,7 +3933,7 @@
  
  static void applyClockHandsInversion(CALayer *layer, BOOL apply, CGSize parentBoundsSize, CALayer *secondsLayer) {
      if (!layer) return;
-@@ -41,7 +43,7 @@
+@@ -41,7 +43,7 @@ static void applyClockHandsInversion(CALayer *layer, BOOL apply, CGSize parentBo
  }
  
  static void updateClockHandsInversionForView(UIView *view) {
@@ -3649,7 +3942,7 @@
      id icon = nil;
      if ([view respondsToSelector:@selector(icon)]) {
          icon = [view performSelector:@selector(icon)];
-@@ -78,6 +80,29 @@
+@@ -78,6 +80,29 @@ static void updateClockHandsInversionForView(UIView *view) {
  
          CALayer *secondsLayer = secondsView ? secondsView.layer : nil;
          applyClockHandsInversion(view.layer, needsWhiteHands, view.bounds.size, secondsLayer);
@@ -3679,7 +3972,7 @@
      }
  }
  
-@@ -153,9 +178,11 @@
+@@ -153,9 +178,11 @@ static inline CGFloat GetIconCornerRadius(UIView *iconImageView, UIView *iconVie
      UIView *iconImageView = [self valueForKey:@"_iconImageView"];
      if (iconImageView) {
          CGFloat standardCornerRadius = GetIconCornerRadius(iconImageView, self);
@@ -3694,7 +3987,7 @@
          updateClockHandsInversionForView(iconImageView);
      }
  
-@@ -521,9 +548,9 @@
+@@ -521,9 +548,9 @@ static inline CGFloat GetIconCornerRadius(UIView *iconImageView, UIView *iconVie
  - (instancetype)initWithConfigurationOptions:(NSUInteger)options listLayoutProvider:(id)provider {
      id orig = %orig;
      if (orig) {
@@ -3707,7 +4000,7 @@
      }
      return orig;
  }
-@@ -833,16 +860,16 @@
+@@ -833,16 +860,16 @@ static inline CGFloat GetIconCornerRadius(UIView *iconImageView, UIView *iconVie
  - (void)didMoveToWindow {
      %orig;
      if (self.window) {
@@ -3728,7 +4021,7 @@
      %orig;
  }
  
-@@ -850,8 +877,8 @@
+@@ -850,8 +877,8 @@ static inline CGFloat GetIconCornerRadius(UIView *iconImageView, UIView *iconVie
  - (void)_home26_handleIconDidGenerateNotification:(NSNotification *)note {
      NSString *readyBundleID = note.userInfo[@"bundleID"];
      if (!readyBundleID) return;
@@ -3739,7 +4032,7 @@
          return;
      }
  
-@@ -877,9 +904,11 @@
+@@ -877,9 +904,11 @@ static inline CGFloat GetIconCornerRadius(UIView *iconImageView, UIView *iconVie
  }
  
  - (void)updateImageAnimated:(BOOL)animated {
@@ -3754,7 +4047,7 @@
          return;
      }
      if ([self respondsToSelector:@selector(displayedImage)] && [self respondsToSelector:@selector(icon)]) {
-@@ -913,7 +942,7 @@
+@@ -913,7 +942,7 @@ static inline CGFloat GetIconCornerRadius(UIView *iconImageView, UIView *iconVie
                  if (isInFolder) {
                      UIImage *orig = Home26OriginalIconForBundleID(bundleID);
                      if (!orig) {
@@ -3763,7 +4056,7 @@
                          g_bypassingIconHook = YES;
                          if ([icon respondsToSelector:@selector(unmaskedIconImageWithInfo:)]) {
                              orig = [icon unmaskedIconImageWithInfo:info];
-@@ -942,7 +971,7 @@
+@@ -942,7 +971,7 @@ static inline CGFloat GetIconCornerRadius(UIView *iconImageView, UIView *iconVie
  
                  UIImage *orig = Home26OriginalIconForBundleID(bundleID);
                  if (!orig) {
@@ -3772,7 +4065,7 @@
                      g_bypassingIconHook = YES;
                      if ([icon respondsToSelector:@selector(unmaskedIconImageWithInfo:)]) {
                          orig = [icon unmaskedIconImageWithInfo:info];
-@@ -963,7 +992,7 @@
+@@ -963,7 +992,7 @@ static inline CGFloat GetIconCornerRadius(UIView *iconImageView, UIView *iconVie
                  Home26RequestIconAsync(orig, capturedBundleID, ^(UIImage *styled) {
                      __strong typeof(weakSelf) strongSelf = weakSelf;
                      if (!strongSelf || !styled) return;
@@ -3781,7 +4074,7 @@
  
                      id currentIcon = nil;
                      if ([strongSelf respondsToSelector:@selector(icon)]) {
-@@ -1087,8 +1116,8 @@
+@@ -1087,8 +1116,8 @@ static inline CGFloat GetIconCornerRadius(UIView *iconImageView, UIView *iconVie
  - (instancetype)initWithFrame:(CGRect)frame {
      id orig = %orig;
      if (orig) {
@@ -3792,7 +4085,7 @@
      }
      return orig;
  }
-@@ -1149,11 +1178,15 @@
+@@ -1149,11 +1178,15 @@ static inline CGFloat GetIconCornerRadius(UIView *iconImageView, UIView *iconVie
                            duration:0.3
                             options:UIViewAnimationOptionTransitionCrossDissolve | UIViewAnimationOptionAllowUserInteraction
                          animations:^{
@@ -3810,7 +4103,7 @@
      }
  }
  
-@@ -1164,13 +1197,13 @@
+@@ -1164,13 +1197,13 @@ static inline CGFloat GetIconCornerRadius(UIView *iconImageView, UIView *iconVie
  - (instancetype)initWithFolder:(id)folder {
      id orig = %orig;
      if (orig) {
@@ -3826,7 +4119,7 @@
      %orig;
  }
  
-@@ -1183,10 +1216,86 @@
+@@ -1183,10 +1216,132 @@ static inline CGFloat GetIconCornerRadius(UIView *iconImageView, UIView *iconVie
  
  %end
  
@@ -3841,6 +4134,52 @@
 +    styled=Home26RequestStyledIcon(original,bundleID);
 +    return styled ?: original;
 +}
++
++static UIImage *Home18StyleFolderGridCellImage(UIImage *original, id icon) {
++    if (!original || !icon || !g_tweakEnabled || Home26IsCoverSheetActive()) return original;
++    if (!g_home18Everywhere && !g_home18RenderDepth) return original;
++    if (![icon respondsToSelector:@selector(applicationBundleID)]) return original;
++    NSString *bundleID = [icon performSelector:@selector(applicationBundleID)];
++    if (![bundleID isKindOfClass:NSString.class] || bundleID.length == 0 || isAppExcluded(bundleID)) return original;
++
++    UIImage *source = Home26OriginalIconForBundleID(bundleID) ?: original;
++    if (original.size.width >= 50.0 && original.size.height >= 50.0) {
++        Home26SaveOriginalIcon(original, bundleID);
++        source = original;
++    }
++    UIImage *styled = Home26FastCachedIcon(bundleID);
++    if (!styled) styled = Home26RequestStyledIcon(source, bundleID);
++    if (!styled) return original;
++
++    if (!CGSizeEqualToSize(styled.size, original.size) && original.size.width > 0.0 && original.size.height > 0.0) {
++        UIGraphicsBeginImageContextWithOptions(original.size, NO, original.scale > 0.0 ? original.scale : UIScreen.mainScreen.scale);
++        [styled drawInRect:(CGRect){CGPointZero, original.size}];
++        UIImage *resized = UIGraphicsGetImageFromCurrentImageContext();
++        UIGraphicsEndImageContext();
++        if (resized) styled = resized;
++    }
++    return styled;
++}
++
++// Folder thumbnails and App Library category mini-grids use their own cache on
++// iOS 15; they do not consistently pass through SBIcon's public image methods.
++// The concrete iOS 15 class is SBFolderIconImageCache (there is no
++// SBFolderIconImageSharedCache on this OS).
++%hook SBFolderIconImageCache
++
+++ (UIImage *)gridCellImageOfSize:(CGSize)size forIcon:(id)icon iconImageInfo:(struct SBIconImageInfo)info {
++    return Home18StyleFolderGridCellImage(%orig, icon);
++}
++
++- (UIImage *)gridCellImageForIcon:(id)icon {
++    return Home18StyleFolderGridCellImage(%orig, icon);
++}
++
++- (UIImage *)gridCellImageOfSize:(CGSize)size forIcon:(id)icon iconImageInfo:(struct SBIconImageInfo)info {
++    return Home18StyleFolderGridCellImage(%orig, icon);
++}
++
++%end
 +
 +%hook SBHIconImageCache
 +
@@ -3914,7 +4253,7 @@
      UIImage *orig = %orig;
      if (Home26IsCoverSheetActive()) return orig;
      if ([(id)self respondsToSelector:@selector(applicationBundleID)]) {
-@@ -1224,7 +1333,7 @@
+@@ -1224,7 +1379,7 @@ static inline CGFloat GetIconCornerRadius(UIView *iconImageView, UIView *iconVie
  }
  
  - (UIImage *)unmaskedIconImageWithInfo:(struct SBIconImageInfo)info {
@@ -3923,7 +4262,7 @@
      UIImage *orig = %orig;
      if (Home26IsCoverSheetActive()) return orig;
      if ([(id)self respondsToSelector:@selector(applicationBundleID)]) {
-@@ -1262,7 +1371,7 @@
+@@ -1262,7 +1417,7 @@ static inline CGFloat GetIconCornerRadius(UIView *iconImageView, UIView *iconVie
  }
  
  - (UIImage *)generateIconImageWithInfo:(struct SBIconImageInfo)info {
@@ -3932,6 +4271,8 @@
      UIImage *orig = %orig;
      if (Home26IsCoverSheetActive()) return orig;
      if ([(id)self respondsToSelector:@selector(applicationBundleID)]) {
+diff --git a/Hooks/Main.x b/Hooks/Main.x
+index 8c57fbc..ea0aa74 100644
 --- a/Hooks/Main.x
 +++ b/Hooks/Main.x
 @@ -8,6 +8,7 @@
@@ -4081,7 +4422,7 @@
                      });
                  }
              } @catch (NSException *e) {
-@@ -459,7 +476,26 @@
+@@ -459,7 +476,33 @@
      };
  
      int wpToken;
@@ -4105,13 +4446,22 @@
 +        if (g_notificationIconsCache) [g_notificationIconsCache removeAllObjects];
 +        refreshKnownIcons();
 +        reloadVisibleIconCollections();
++        for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
++            if (![scene isKindOfClass:UIWindowScene.class]) continue;
++            for (UIWindow *window in ((UIWindowScene *)scene).windows) {
++                _26home_recursivelyApplyWidgetTint(window);
++            }
++        }
 +    };
 +    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), applyPersistedStyleAfterLaunch);
 +    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), applyPersistedStyleAfterLaunch);
++    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(6.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), applyPersistedStyleAfterLaunch);
  }
+diff --git a/Hooks/Preferences.x b/Hooks/Preferences.x
+index 2744185..8f9a46b 100644
 --- a/Hooks/Preferences.x
 +++ b/Hooks/Preferences.x
-@@ -5,8 +5,8 @@
+@@ -5,8 +5,14 @@
  %hook UIImage
  
  + (UIImage *)_applicationIconImageForBundleIdentifier:(NSString *)bundleID format:(int)format scale:(CGFloat)scale {
@@ -4119,10 +4469,16 @@
 -    if (g_bypassingIconHook) return %orig;
 +    extern __thread BOOL g_bypassingIconHook;
 +    if (g_bypassingIconHook || !g_home18Everywhere) return %orig;
++
++    // Preferences (especially Screen Time) may briefly return the blue generic
++    // blueprint while its icon cache is warming.  PSTableCell below resolves a
++    // canonical LSApplicationProxy image instead, so never bake that transient
++    // placeholder in this broad UIKit hook.
++    if ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.Preferences"]) return %orig;
  
      UIImage *orig = %orig;
      if (!bundleID || !orig) return orig;
-@@ -24,7 +24,7 @@
+@@ -24,7 +30,7 @@
      });
  
      CGFloat targetScale = orig.scale > 0 ? orig.scale : (scale > 0 ? scale : [UIScreen mainScreen].scale);
@@ -4131,11 +4487,97 @@
      UIImage *cached = [g_appIconImageCache objectForKey:cacheKey];
      if (cached) return cached;
  
-@@ -129,9 +129,10 @@
+@@ -54,11 +60,37 @@
+ static NSString *Home26BundleIDForSpecifier(PSSpecifier *specifier) {
+     if (!specifier) return nil;
+ 
+-    NSString *bundleID = [specifier propertyForKey:@"AppBundleID"]
+-                      ?: [specifier propertyForKey:@"appIDForLazyIcon"]
+-                      ?: [specifier propertyForKey:@"appBundleIdentifier"]
+-                      ?: [specifier propertyForKey:@"containerBundleID"]
+-                      ?: [specifier propertyForKey:@"lazyIconAppID"];
++    NSString *bundleID = nil;
++    for (NSString *key in @[@"AppBundleID", @"appIDForLazyIcon", @"appBundleIdentifier",
++                            @"containerBundleID", @"lazyIconAppID", @"bundleIdentifier",
++                            @"applicationBundleIdentifier", @"applicationIdentifier",
++                            @"usageBundleIdentifier", @"itemIdentifier"]) {
++        id value = [specifier propertyForKey:key];
++        if ([value isKindOfClass:NSString.class] && [value containsString:@"."] && ![value containsString:@" "]) {
++            bundleID = value;
++            break;
++        }
++    }
++
++    // Screen Time stores the application identifier on a nested usage item on
++    // iOS 15 instead of the usual PreferenceLoader keys.
++    if (!bundleID) {
++        for (NSString *outerKey in @[@"usageItem", @"application", @"applicationProxy", @"usageReportItem", @"item"]) {
++            id object = [specifier propertyForKey:outerKey];
++            if (!object) continue;
++            for (NSString *innerKey in @[@"bundleIdentifier", @"applicationBundleIdentifier",
++                                         @"applicationIdentifier", @"identifier", @"trustIdentifier"]) {
++                @try {
++                    id value = [object valueForKey:innerKey];
++                    if ([value isKindOfClass:NSString.class] && [value containsString:@"."] && ![value containsString:@" "]) {
++                        bundleID = value;
++                        break;
++                    }
++                } @catch (NSException *exception) {}
++            }
++            if (bundleID) break;
++        }
++    }
+ 
+     if (bundleID && [bundleID isKindOfClass:[NSString class]] && bundleID.length > 0) {
+         return bundleID;
+@@ -128,10 +160,53 @@ static UIImage *Home26ResizeImage(UIImage *image, CGSize targetSize, CGFloat tar
+ }
  
  static NSCache *g_preferencesStyledIconCache = nil;
++static NSCache *g_preferencesCanonicalIconCache = nil;
  static const char kHome26StyledMarkerKey = 0;
 +static char kHome18OriginalSettingsIconKey;
++
++static UIImage *Home26CanonicalSettingsIcon(NSString *bundleID) {
++    if (!bundleID.length) return nil;
++    if (!g_preferencesCanonicalIconCache) {
++        g_preferencesCanonicalIconCache = [[NSCache alloc] init];
++        g_preferencesCanonicalIconCache.countLimit = 250;
++    }
++    UIImage *cached = [g_preferencesCanonicalIconCache objectForKey:bundleID];
++    if (cached) return cached;
++
++    static dispatch_once_t onceToken;
++    dispatch_once(&onceToken, ^{
++        dlopen("/System/Library/Frameworks/MobileCoreServices.framework/MobileCoreServices", RTLD_LAZY);
++        dlopen("/System/Library/Frameworks/CoreServices.framework/CoreServices", RTLD_LAZY);
++    });
++
++    Class proxyClass = NSClassFromString(@"LSApplicationProxy");
++    SEL proxySelector = NSSelectorFromString(@"applicationProxyForIdentifier:");
++    id proxy = nil;
++    if (proxyClass && [proxyClass respondsToSelector:proxySelector]) {
++        proxy = ((id (*)(id, SEL, id))objc_msgSend)(proxyClass, proxySelector, bundleID);
++    }
++    if (!proxy) return nil;
++    @try {
++        if ([proxy respondsToSelector:@selector(isPlaceholder)] &&
++            ((BOOL (*)(id, SEL))objc_msgSend)(proxy, @selector(isPlaceholder))) return nil;
++    } @catch (NSException *exception) {}
++
++    UIImage *icon = nil;
++    SEL iconSelector = NSSelectorFromString(@"_iconForResourceProxy:format:");
++    if ([UIImage respondsToSelector:iconSelector]) {
++        // Default and square-big preserve the real artwork for ordinary and
++        // sideloaded apps, unlike Screen Time's transient blueprint image.
++        for (NSUInteger format = 2; format <= 6 && !icon; format += 4) {
++            icon = ((id (*)(id, SEL, id, NSUInteger))objc_msgSend)(UIImage.class, iconSelector, proxy, format);
++        }
++    }
++    if (!icon || icon.size.width <= 1.0 || icon.size.height <= 1.0) return nil;
++    [g_preferencesCanonicalIconCache setObject:icon forKey:bundleID];
++    return icon;
++}
  
  static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSize targetSize) {
 -    if (!bundleID || !g_tweakEnabled) return orig;
@@ -4143,7 +4585,7 @@
      if (isAppExcluded(bundleID)) return orig;
  
      NSString *style = g_iconStyle ?: @"Default";
-@@ -148,7 +149,7 @@
+@@ -148,7 +223,7 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
  
      NSString *cacheKey = [NSString stringWithFormat:@"%@_%@_%@_%@_%.0fx%.0f_%.0f",
                            bundleID,
@@ -4152,16 +4594,34 @@
                            style,
                            g_themeMode ?: @"Auto",
                            targetSize.width,
-@@ -166,7 +167,7 @@
-         sourceImage = cachedOrig;
-     } else {
-         if ([UIImage respondsToSelector:@selector(_applicationIconImageForBundleIdentifier:format:scale:)]) {
+@@ -160,22 +235,10 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
+         return cached;
+     }
+ 
+-    UIImage *sourceImage = orig;
+-    UIImage *cachedOrig = Home26OriginalIconForBundleID(bundleID);
+-    if (cachedOrig) {
+-        sourceImage = cachedOrig;
+-    } else {
+-        if ([UIImage respondsToSelector:@selector(_applicationIconImageForBundleIdentifier:format:scale:)]) {
 -            extern BOOL g_bypassingIconHook;
-+            extern __thread BOOL g_bypassingIconHook;
-             g_bypassingIconHook = YES;
-             UIImage *large = [UIImage _applicationIconImageForBundleIdentifier:bundleID format:2 scale:screenScale];
-             g_bypassingIconHook = NO;
-@@ -189,6 +190,7 @@
+-            g_bypassingIconHook = YES;
+-            UIImage *large = [UIImage _applicationIconImageForBundleIdentifier:bundleID format:2 scale:screenScale];
+-            g_bypassingIconHook = NO;
+-            if (large) sourceImage = large;
+-        }
+-        if (sourceImage) {
+-            Home26SaveOriginalIcon(sourceImage, bundleID);
+-        }
+-    }
++    // Never bake Screen Time's blue blueprint placeholder.  Resolve the app's
++    // registered resource proxy and only style that canonical artwork.
++    UIImage *sourceImage = Home26CanonicalSettingsIcon(bundleID);
++    if (sourceImage) Home26SaveOriginalIcon(sourceImage, bundleID);
+ 
+     if (!sourceImage) {
+         return orig;
+@@ -189,6 +252,7 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
      UIImage *finalImage = Home26ResizeImage(styled, targetSize, targetScale);
      if (finalImage) {
          objc_setAssociatedObject(finalImage, &kHome26StyledMarkerKey, @YES, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
@@ -4169,7 +4629,63 @@
          [g_preferencesStyledIconCache setObject:finalImage forKey:cacheKey];
          return finalImage;
      }
-@@ -200,7 +202,7 @@
+@@ -196,11 +260,63 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
+     return orig;
+ }
+ 
++// Screen Time uses STUsageCell and keeps the application identifier on its
++// STUsageItem value, not on the PSSpecifier.  Consequently PSTableCell's usual
++// lazy-icon path cannot identify these rows.
++static NSString *Home18ScreenTimeBundleID(id usageItem) {
++    if (!usageItem) return nil;
++    for (NSString *key in @[@"budgetItemIdentifier", @"identifier"]) {
++        @try {
++            id value = [usageItem valueForKey:key];
++            if ([value isKindOfClass:NSString.class] &&
++                [value containsString:@"."] && ![value containsString:@" "]) {
++                return value;
++            }
++        } @catch (NSException *exception) {}
++    }
++    @try {
++        id trustIdentifier = [usageItem valueForKey:@"trustIdentifier"];
++        for (NSString *key in @[@"bundleIdentifier", @"identifier"]) {
++            id value = [trustIdentifier valueForKey:key];
++            if ([value isKindOfClass:NSString.class] &&
++                [value containsString:@"."] && ![value containsString:@" "]) {
++                return value;
++            }
++        }
++    } @catch (NSException *exception) {}
++    return nil;
++}
++
++static void Home18ApplyScreenTimeIcon(id cell) {
++    if (!cell || !g_tweakEnabled || !g_home18Everywhere) return;
++    id usageItem = nil;
++    if ([cell respondsToSelector:@selector(value)]) {
++        usageItem = ((id (*)(id, SEL))objc_msgSend)(cell, @selector(value));
++    }
++    NSString *bundleID = Home18ScreenTimeBundleID(usageItem);
++    if (!bundleID.length || isAppExcluded(bundleID)) return;
++
++    UIImageView *iconView = nil;
++    if ([cell respondsToSelector:@selector(iconImageView)]) {
++        iconView = ((id (*)(id, SEL))objc_msgSend)(cell, @selector(iconImageView));
++    }
++    CGSize targetSize = (iconView.image && iconView.image.size.width > 1.0) ?
++                        iconView.image.size : CGSizeMake(29.0, 29.0);
++    UIImage *styled = Home26StyledSettingsIcon(iconView.image, bundleID, targetSize);
++    if (!styled) return;
++
++    if ([cell respondsToSelector:@selector(setIcon:)]) {
++        ((void (*)(id, SEL, id))objc_msgSend)(cell, @selector(setIcon:), styled);
++    } else {
++        iconView.image = styled;
++    }
++}
++
+ %hook PSTableCell
  
  - (UIImage *)getLazyIcon {
      UIImage *orig = %orig;
@@ -4178,7 +4694,7 @@
  
      PSSpecifier *spec = nil;
      if ([self respondsToSelector:@selector(specifier)]) {
-@@ -215,8 +217,8 @@
+@@ -215,8 +331,8 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
  }
  
  - (void)setIcon:(UIImage *)icon {
@@ -4189,7 +4705,7 @@
          return;
      }
  
-@@ -252,7 +254,7 @@
+@@ -252,7 +368,7 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
  - (void)refreshCellContentsWithSpecifier:(PSSpecifier *)specifier {
      %orig(specifier);
  
@@ -4198,8 +4714,29 @@
  
      UIImage *currentIcon = nil;
      if ([self respondsToSelector:@selector(icon)]) {
-@@ -286,7 +288,7 @@
+@@ -284,31 +400,53 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
  
+ %end
+ 
++%hook STUsageCell
++
++- (void)refreshCellContentsWithSpecifier:(PSSpecifier *)specifier {
++    %orig;
++    Home18ApplyScreenTimeIcon(self);
++    // The app-info and icon caches complete asynchronously.  A next-run-loop
++    // pass wins over STUsageCell's late assignment without visibly flashing.
++    dispatch_async(dispatch_get_main_queue(), ^{
++        Home18ApplyScreenTimeIcon(self);
++    });
++}
++
++- (void)_didFetchAppInfoOrIcon:(id)notification {
++    %orig;
++    Home18ApplyScreenTimeIcon(self);
++}
++
++%end
++
  void Home26RegisterPreferencesNotifications(void) {
      int token;
 -    notify_register_dispatch("ngkhoi.26home.UpdateIconStyle", &token, dispatch_get_main_queue(), ^(int t) {
@@ -4207,7 +4744,11 @@
          reload26HomePrefs();
          if (g_preferencesStyledIconCache) {
              [g_preferencesStyledIconCache removeAllObjects];
-@@ -297,14 +299,14 @@
+         }
++        if (g_preferencesCanonicalIconCache) [g_preferencesCanonicalIconCache removeAllObjects];
+         Home26ClearGeneratorCache();
+ 
+         UIWindow *keyWin = Home26GetKeyWindow();
          Home26ReloadAllVisibleTables(keyWin);
      });
  
@@ -4217,6 +4758,7 @@
          if (g_preferencesStyledIconCache) {
              [g_preferencesStyledIconCache removeAllObjects];
          }
++        if (g_preferencesCanonicalIconCache) [g_preferencesCanonicalIconCache removeAllObjects];
      });
  
 -    notify_register_dispatch("ngkhoi.26home.clearCache", &token, dispatch_get_main_queue(), ^(int t) {
@@ -4224,7 +4766,12 @@
          reload26HomePrefs();
          if (g_preferencesStyledIconCache) {
              [g_preferencesStyledIconCache removeAllObjects];
-@@ -320,6 +322,8 @@
+         }
++        if (g_preferencesCanonicalIconCache) [g_preferencesCanonicalIconCache removeAllObjects];
+         Home26ClearGeneratorCache();
+ 
+         UIWindow *keyWin = Home26GetKeyWindow();
+@@ -320,6 +458,8 @@ void Home26RegisterPreferencesNotifications(void) {
  
  void Home26InitPreferencesHooks(void) {
      Home26RegisterPreferencesNotifications();
@@ -4234,6 +4781,8 @@
  }
 +
 +void Home26InitUIKitIconHooks(void) { %init(UIKitHooks); }
+diff --git a/Hooks/Spotlight.x b/Hooks/Spotlight.x
+index 3ed6a34..ec0e9bd 100644
 --- a/Hooks/Spotlight.x
 +++ b/Hooks/Spotlight.x
 @@ -2,7 +2,7 @@
@@ -4245,7 +4794,7 @@
          reload26HomePrefs();
          Home26ClearGeneratorCache();
          UIWindow *keyWin = Home26GetKeyWindow();
-@@ -11,7 +11,7 @@
+@@ -11,7 +11,7 @@ void Home26RegisterSpotlightNotifications(void) {
          }
      });
  
@@ -4254,7 +4803,7 @@
          reload26HomePrefs();
          UIWindow *keyWin = Home26GetKeyWindow();
          if (keyWin) {
-@@ -19,7 +19,7 @@
+@@ -19,7 +19,7 @@ void Home26RegisterSpotlightNotifications(void) {
          }
      });
  
@@ -4263,7 +4812,7 @@
          reload26HomePrefs();
          Home26ClearGeneratorCache();
          UIWindow *keyWin = Home26GetKeyWindow();
-@@ -34,6 +34,7 @@
+@@ -34,6 +34,7 @@ void Home26RegisterSpotlightNotifications(void) {
  %hook SearchUIAppIconImage
  
  - (void)loadImageWithScale:(double)scale isDarkStyle:(BOOL)isDark completionHandler:(void (^)(UIImage *))completionHandler {
@@ -4271,7 +4820,7 @@
      if (!completionHandler) {
          %orig(scale, isDark, completionHandler);
          return;
-@@ -76,6 +77,7 @@
+@@ -76,6 +77,7 @@ void Home26RegisterSpotlightNotifications(void) {
  
  - (id)loadImageWithScale:(double)scale isDarkStyle:(BOOL)isDarkStyle {
      UIImage *orig = %orig;
@@ -4279,7 +4828,7 @@
      if (!orig || ![orig isKindOfClass:[UIImage class]]) return orig;
  
      NSString *bundleID = nil;
-@@ -104,6 +106,7 @@
+@@ -104,6 +106,7 @@ void Home26RegisterSpotlightNotifications(void) {
  
  - (id)generateImageWithFormat:(int)format scale:(double)scale {
      UIImage *orig = %orig;
@@ -4287,7 +4836,7 @@
      if (!orig || ![orig isKindOfClass:[UIImage class]]) return orig;
  
      NSString *bundleID = nil;
-@@ -136,6 +139,7 @@
+@@ -136,6 +139,7 @@ void Home26RegisterSpotlightNotifications(void) {
  
  - (UIImage *)uiImage {
      UIImage *orig = %orig;
@@ -4295,7 +4844,7 @@
      if (!orig || ![orig isKindOfClass:[UIImage class]]) return orig;
  
      NSString *bundleID = nil;
-@@ -162,6 +166,7 @@
+@@ -162,6 +166,7 @@ void Home26RegisterSpotlightNotifications(void) {
  
  - (id)loadImageWithScale:(double)scale isDarkStyle:(BOOL)isDarkStyle {
      UIImage *orig = %orig;
@@ -4303,6 +4852,8 @@
      if (!orig || ![orig isKindOfClass:[UIImage class]]) return orig;
  
      NSString *bundleID = nil;
+diff --git a/Hooks/SpringBoardCore.x b/Hooks/SpringBoardCore.x
+index 05f5d18..25eaa0e 100644
 --- a/Hooks/SpringBoardCore.x
 +++ b/Hooks/SpringBoardCore.x
 @@ -5,14 +5,14 @@
@@ -4453,7 +5004,7 @@
          notifyAllIconsVisibilityChanged();
      });
  }
-@@ -234,6 +234,7 @@
+@@ -234,6 +234,7 @@ static UIImage *Home26GenerateNotificationIcon(UIImage *image, NSString *bundleI
  
  - (NSArray *)icons {
      NSArray *orig = %orig;
@@ -4461,7 +5012,7 @@
      NSString *style = g_iconStyle ?: @"Default";
      if ([style isEqualToString:@"Default"]) {
          return orig;
-@@ -329,6 +330,47 @@
+@@ -329,6 +330,47 @@ static UIImage *Home26GenerateNotificationIcon(UIImage *image, NSString *bundleI
  
  %end
  
@@ -4509,6 +5060,8 @@
  void Home26InitSpringBoardCoreHooks(void) {
      %init();
  }
+diff --git a/LGCustomIconGenerator2.h b/LGCustomIconGenerator2.h
+index e39383c..9c7e06c 100644
 --- a/LGCustomIconGenerator2.h
 +++ b/LGCustomIconGenerator2.h
 @@ -42,5 +42,7 @@
@@ -4519,6 +5072,8 @@
  @end
  
 +
+diff --git a/LGCustomIconGenerator2.m b/LGCustomIconGenerator2.m
+index 4bdde87..ca3bfd3 100644
 --- a/LGCustomIconGenerator2.m
 +++ b/LGCustomIconGenerator2.m
 @@ -2,6 +2,7 @@
@@ -4529,7 +5084,7 @@
  
  extern NSString *g_iconStyle;
  extern NSString *g_themeMode;
-@@ -67,7 +68,7 @@
+@@ -67,7 +68,7 @@ extern NSString *g_menuAppearance;
  
          NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
          NSString *basePath = paths.firstObject;
@@ -4538,7 +5093,7 @@
  
          if (![[NSFileManager defaultManager] fileExistsAtPath:self.cacheDirectory]) {
              [[NSFileManager defaultManager] createDirectoryAtPath:self.cacheDirectory
-@@ -77,17 +78,17 @@
+@@ -77,17 +78,17 @@ extern NSString *g_menuAppearance;
          }
  
          dispatch_queue_attr_t qosAttr = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_UTILITY, 0);
@@ -4559,7 +5114,7 @@
              [self clearCache];
          });
      }
-@@ -114,45 +115,12 @@
+@@ -114,45 +115,12 @@ static NSString *ExtractBundleIDFromIconFilename(NSString *filename) {
      return [name lowercaseString];
  }
  
@@ -4577,7 +5132,8 @@
 -    }
 -    return selectedPack ?: @"SolidGlass";
 -}
--
++- (NSString *)activePackId { return @"Home18"; }
+ 
 -- (NSString *)specularStyle {
 -    CFPreferencesAppSynchronize(CFSTR("com.ngkhoi.26home"));
 -    CFPropertyListRef val = CFPreferencesCopyAppValue(CFSTR("ngkhoi.26home.icongen.specularStyle"), CFSTR("com.ngkhoi.26home"));
@@ -4598,19 +5154,17 @@
 -    }
 -    return @"26";
 -}
-+- (NSString *)activePackId { return @"Home18"; }
  
 -- (BOOL)isSpecularEnabled {
 -    return ![[self specularStyle] isEqualToString:@"none"];
 -}
-+
 +- (NSString *)specularStyle { return @"none"; }
 +
 +- (BOOL)isSpecularEnabled { return NO; }
  
  - (void)getSpecularStart:(CGPoint *)outStart end:(CGPoint *)outEnd forSize:(CGSize)size {
      NSString *style = [self specularStyle];
-@@ -165,23 +133,8 @@
+@@ -165,23 +133,8 @@ static NSString *ExtractBundleIDFromIconFilename(NSString *filename) {
      }
  }
  
@@ -4635,7 +5189,7 @@
  
  - (NSString *)activePackDirectory {
      return [self packDirectoryForId:[self activePackId]];
-@@ -189,17 +142,17 @@
+@@ -189,17 +142,17 @@ static NSString *ExtractBundleIDFromIconFilename(NSString *filename) {
  
  - (NSArray<NSString *> *)orderedPacksList {
      NSString *primaryPack = [self activePackId];
@@ -4658,7 +5212,7 @@
                  return @[primaryPack];
              }
          } else {
-@@ -210,15 +163,15 @@
+@@ -210,15 +163,15 @@ static NSString *ExtractBundleIDFromIconFilename(NSString *filename) {
      NSMutableArray<NSString *> *result = [NSMutableArray array];
      [result addObject:primaryPack];
  
@@ -4677,7 +5231,7 @@
      }
      if (userList) {
          for (id item in userList) {
-@@ -241,8 +194,8 @@
+@@ -241,8 +194,8 @@ static NSString *ExtractBundleIDFromIconFilename(NSString *filename) {
          }
      }
  
@@ -4688,7 +5242,7 @@
      }
  
      return [result copy];
-@@ -320,6 +273,8 @@
+@@ -320,6 +273,8 @@ static NSString *ExtractBundleIDFromIconFilename(NSString *filename) {
      @synchronized (self) {
          self.themeIconsCache = buildingCache;
      }
@@ -4697,7 +5251,7 @@
  }
  
  - (void)saveOriginalImage:(UIImage *)image forBundleID:(NSString *)bundleID {
-@@ -523,37 +478,37 @@
+@@ -523,37 +478,37 @@ static NSString *ExtractBundleIDFromIconFilename(NSString *filename) {
      return nil;
  }
  
@@ -4763,7 +5317,7 @@
  - (void)_resolveEffectiveStyle:(NSString **)outEffectiveStyle isDarkTheme:(BOOL *)outIsDarkTheme {
      NSString *style = g_iconStyle ?: @"Default";
      BOOL isSystemDark = NO;
-@@ -593,6 +548,7 @@
+@@ -593,6 +548,7 @@ static NSString *ExtractBundleIDFromIconFilename(NSString *filename) {
  }
  
  - (UIImage *)generateDynamicIconForBundleID:(NSString *)bundleID style:(NSString *)style isDarkTheme:(BOOL)isDarkTheme {
@@ -4771,7 +5325,7 @@
  
      NSString *themeName = @"Light";
      if ([style isEqualToString:@"Dark"]) {
-@@ -690,136 +646,10 @@
+@@ -690,136 +646,10 @@ static NSString *ExtractBundleIDFromIconFilename(NSString *filename) {
  }
  
  - (UIImage *)requestStyledImageForImage:(UIImage *)orig bundleID:(NSString *)bundleID {
@@ -4910,7 +5464,7 @@
  - (UIImage *)compositeGlyph:(UIImage *)glyph withBackgroundStyle:(NSString *)style isDarkTheme:(BOOL)isDarkTheme {
      return [self compositeGlyph:glyph withBackgroundStyle:style isDarkTheme:isDarkTheme tintColor:nil isAutoGenerated:YES drawSpecular:YES];
  }
-@@ -827,190 +657,17 @@
+@@ -827,190 +657,17 @@ static NSString *ExtractBundleIDFromIconFilename(NSString *filename) {
      return [self compositeGlyph:glyph withBackgroundStyle:style isDarkTheme:isDarkTheme tintColor:tintColor isAutoGenerated:isAutoGenerated drawSpecular:drawSpecular isStockArtwork:NO];
  }
  - (UIImage *)skeletonBackgroundForStyle:(NSString *)style isDarkTheme:(BOOL)isDarkTheme tintColor:(UIColor *)tintColor size:(CGSize)size scale:(CGFloat)scale {
@@ -5109,7 +5663,7 @@
  - (UIImage *)skeletonBackgroundForBundleID:(NSString *)bundleID size:(CGSize)size scale:(CGFloat)scale {
      NSString *effectiveStyle = @"Default";
      BOOL isDarkTheme = NO;
-@@ -1165,16 +822,9 @@
+@@ -1165,16 +822,9 @@ static NSString *ExtractBundleIDFromIconFilename(NSString *filename) {
      return [self applySquircleMaskToImage:result];
  }
  
@@ -5129,7 +5683,7 @@
  }
  
  - (UIImage *)fastCachedIconForBundleID:(NSString *)bundleID {
-@@ -1186,7 +836,9 @@
+@@ -1186,7 +836,9 @@ static NSString *ExtractBundleIDFromIconFilename(NSString *filename) {
  
      BOOL isDynamicIcon = ([bundleID isEqualToString:@"com.apple.mobiletimer"] || [bundleID isEqualToString:@"com.apple.mobilecal"]);
      if (isDynamicIcon) {
@@ -5140,7 +5694,7 @@
      }
  
      if ([effectiveStyle isEqualToString:@"Clear"]) {
-@@ -1280,7 +932,7 @@
+@@ -1280,7 +932,7 @@ static NSString *ExtractBundleIDFromIconFilename(NSString *filename) {
              }
  
              if (styled) {
@@ -5149,7 +5703,7 @@
                                                                      object:nil
                                                                    userInfo:@{@"bundleID": bundleID, @"image": styled}];
              }
-@@ -1290,159 +942,37 @@
+@@ -1290,159 +942,37 @@ static NSString *ExtractBundleIDFromIconFilename(NSString *filename) {
  
  - (UIImage *)requestIconImageWithBackgroundForImage:(UIImage *)orig bundleID:(NSString *)bundleID {
      if (!orig || !bundleID) return nil;
@@ -5337,7 +5891,7 @@
  }
  
  typedef struct {
-@@ -1863,27 +1393,16 @@
+@@ -1863,27 +1393,16 @@ typedef struct {
  
      LGBGInfo bg = [self sampleBackgroundFromRawData:rawData width:width height:height bytesPerRow:bytesPerRow];
  
@@ -5370,9 +5924,11 @@
      UIImage *result = [self compositeWithMask:mask glyphImage:glyphImage darkBg:YES size:targetSize scale:1.0];
      CGImageRelease(mask);
      return [self applySquircleMaskToImage:result];
+diff --git a/LGDebugger.h b/LGDebugger.h
+index b71c040..aa3d527 100644
 --- a/LGDebugger.h
 +++ b/LGDebugger.h
-@@ -97,7 +97,7 @@
+@@ -97,7 +97,7 @@ static inline void Home26GenerateDiagnosticsReport(void) {
      [report appendFormat:@"iOS Version: %@\n", [[UIDevice currentDevice] systemVersion]];
  
      [report appendString:@"\n--- Current Tweak Preferences ---\n"];
@@ -5381,6 +5937,8 @@
      [report appendFormat:@"%@\n", [[defaults dictionaryRepresentation] description]];
  
      [report appendString:@"\n--- Loaded Tweak Dylibs ---\n"];
+diff --git a/Makefile b/Makefile
+index b51b733..a04ce12 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1,4 +1,4 @@
@@ -5389,6 +5947,8 @@
  INSTALL_TARGET_PROCESSES = SpringBoard Preferences Spotlight
  ARCHS = arm64 arm64e
  THEOS_PACKAGE_SCHEME = rootless
+diff --git a/control b/control
+index e3551e9..1da136c 100644
 --- a/control
 +++ b/control
 @@ -1,9 +1,13 @@
@@ -5400,7 +5960,7 @@
 +SileoDepiction: https://raw.githubusercontent.com/nowme777/homescreen18-for-15ios/codex/ios18-for-ios15/branding/depiction.json
  Depends: mobilesubstrate
 -Version: 1.2.0-test
-+Version: 0.3.6~source1
++Version: 0.3.8~source1
  Architecture: iphoneos-arm64
 -Description: iOS 26 Homescreen customization.
 -Maintainer: ngkhoi
@@ -5411,6 +5971,8 @@
  Section: Tweaks
 +Conflicts: com.ngkhoi.26home, local.icontint15
 +Replaces: com.ngkhoi.26home
+diff --git a/layout/DEBIAN/postinst b/layout/DEBIAN/postinst
+index cb2138d..76b7465 100755
 --- a/layout/DEBIAN/postinst
 +++ b/layout/DEBIAN/postinst
 @@ -1,11 +1,18 @@
@@ -5441,6 +6003,9 @@
 +        ;;
 +esac
  exit 0
+diff --git a/tests/test_pixels.c b/tests/test_pixels.c
+new file mode 100644
+index 0000000..fb0ece9
 --- /dev/null
 +++ b/tests/test_pixels.c
 @@ -0,0 +1,406 @@

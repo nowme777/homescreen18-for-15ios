@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-14-intel
     steps:
       - name: Check out adaptation patch
         uses: actions/checkout@v4

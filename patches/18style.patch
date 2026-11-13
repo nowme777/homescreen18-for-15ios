@@ -3283,52 +3283,6 @@ index 0000000..db407fe
 +	</array>
 +</dict>
 +</plist>
-diff --git a/26HomePrefs/Resources/Icon.png b/26HomePrefs/Resources/Icon.png
-new file mode 100644
-index 0000000000000000000000000000000000000000..71fc1b9154578ca57eed615e6220252c41da979d
-GIT binary patch
-literal 1877
-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
-P00000NkvXXu0mjf*jJuE
-
-literal 0
-HcmV?d00001
-
 diff --git a/26HomePrefs/Resources/Info.plist b/26HomePrefs/Resources/Info.plist
 index 4ba130c..527099b 100644
 --- a/26HomePrefs/Resources/Info.plist
@@ -11091,17 +11045,16 @@ index 05f5d18..25eaa0e 100644
      %init();
  }
 diff --git a/LGCustomIconGenerator2.h b/LGCustomIconGenerator2.h
-index e39383c..9c7e06c 100644
+index e39383c..0c2b178 100644
 --- a/LGCustomIconGenerator2.h
 +++ b/LGCustomIconGenerator2.h
-@@ -42,5 +42,7 @@
+@@ -42,5 +42,6 @@
  - (void)requestIconAsyncForImage:(UIImage *)orig bundleID:(NSString *)bundleID completion:(void (^)(UIImage *styled))completion;
  - (UIImage *)_upscaleImageIfNeeded:(UIImage *)image toSize:(CGSize)targetSize;
  
 +- (UIImage *)home18TintedImage:(UIImage *)image color:(UIColor *)color;
  @end
  
-+
 diff --git a/LGCustomIconGenerator2.m b/LGCustomIconGenerator2.m
 index 4bdde87..ca3bfd3 100644
 --- a/LGCustomIconGenerator2.m

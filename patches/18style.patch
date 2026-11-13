@@ -948,7 +948,7 @@ index 0000000..47a60e3
 +</dict>
 +</plist>
 diff --git a/26HomePrefs/Resources/Info.plist b/26HomePrefs/Resources/Info.plist
-index 4ba130c..93457e7 100644
+index 4ba130c..b84bb47 100644
 --- a/26HomePrefs/Resources/Info.plist
 +++ b/26HomePrefs/Resources/Info.plist
 @@ -7,18 +7,22 @@
@@ -963,12 +963,12 @@ index 4ba130c..93457e7 100644
  	<string>BNDL</string>
  	<key>CFBundleShortVersionString</key>
 -	<string>1.0.0</string>
-+	<string>0.3.8</string>
++	<string>0.3.9</string>
  	<key>CFBundleSignature</key>
  	<string>????</string>
  	<key>CFBundleVersion</key>
 -	<string>1.0</string>
-+	<string>0.3.8</string>
++	<string>0.3.9</string>
  	<key>NSPrincipalClass</key>
  	<string>Home26PrefsRootListController</string>
 +	<key>CFBundleName</key>
@@ -978,10 +978,10 @@ index 4ba130c..93457e7 100644
  </dict>
  </plist>
 diff --git a/26HomePrefs/Resources/Root.plist b/26HomePrefs/Resources/Root.plist
-index 8c28858..e02a185 100644
+index 8c28858..a0575b5 100644
 --- a/26HomePrefs/Resources/Root.plist
 +++ b/26HomePrefs/Resources/Root.plist
-@@ -2,226 +2,118 @@
+@@ -2,226 +2,132 @@
  <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
  <plist version="1.0">
  <dict>
@@ -1077,28 +1077,36 @@ index 8c28858..e02a185 100644
 -			<true/>
 -			<key>label</key>
 -			<string>Exception List</string>
-+			<string>Эти параметры применяются при выборе режима «Цвет» в меню настройки экрана Домой.</string>
++			<string>Дополнительные элементы повторяют выбранный режим и цвет иконок.</string>
  		</dict>
  		<dict>
  			<key>cell</key>
  			<string>PSSwitchCell</string>
--			<key>default</key>
--			<true/>
++			<key>label</key>
++			<string>Окрашивать виджеты</string>
++			<key>key</key>
++			<string>icontint15.26base.colorWidgets</string>
++			<key>defaults</key>
++			<string>local.icontint15.26base</string>
+ 			<key>default</key>
+ 			<true/>
 -			<key>defaults</key>
 -			<string>com.ngkhoi.26home</string>
 -			<key>key</key>
 -			<string>ngkhoi.26home.exceptionsApplyOnlyToSolid</string>
- 			<key>label</key>
+-			<key>label</key>
 -			<string>Keep Clear &amp; Tinted icons</string>
--			<key>PostNotification</key>
+ 			<key>PostNotification</key>
 -			<string>ngkhoi.26home.clearCache</string>
--		</dict>
--		<dict>
--			<key>cell</key>
--			<string>PSSwitchCell</string>
-+			<string>Окрашивать виджеты</string>
++			<string>icontint15.26base.UpdateIconStyle</string>
+ 		</dict>
+ 		<dict>
+ 			<key>cell</key>
+ 			<string>PSSwitchCell</string>
++			<key>label</key>
++			<string>Окрашивать бейджи</string>
 +			<key>key</key>
-+			<string>icontint15.26base.colorWidgets</string>
++			<string>icontint15.26base.colorBadges</string>
 +			<key>defaults</key>
 +			<string>local.icontint15.26base</string>
  			<key>default</key>
@@ -1131,10 +1139,10 @@ index 8c28858..e02a185 100644
 -			<real>20.0</real>
 -			<key>showValue</key>
 -			<true/>
-+			<string>Окрашивать бейджи</string>
++			<string>Окрашивать значки Настроек</string>
  			<key>key</key>
 -			<string>ngkhoi.26home.appIconBlurRadius</string>
-+			<string>icontint15.26base.colorBadges</string>
++			<string>icontint15.26base.colorSettingsIcons</string>
  			<key>defaults</key>
 -			<string>com.ngkhoi.26home</string>
 -			<key>PostNotification</key>
@@ -1260,7 +1268,7 @@ index 8c28858..e02a185 100644
  			<key>action</key>
  			<string>clearCache:</string>
  		</dict>
-@@ -229,133 +121,42 @@
+@@ -229,133 +135,42 @@
  			<key>cell</key>
  			<string>PSButtonCell</string>
  			<key>label</key>
@@ -3624,10 +3632,10 @@ index dc1f514..e2f9f79 100644
 -}
 +void Home26InitEditingButtonsHooks(void) { %init(); }
 diff --git a/Hooks/HooksCommon.h b/Hooks/HooksCommon.h
-index 2a6e1de..ea147e3 100644
+index 2a6e1de..f0d501c 100644
 --- a/Hooks/HooksCommon.h
 +++ b/Hooks/HooksCommon.h
-@@ -13,7 +13,9 @@ extern "C" {
+@@ -13,7 +13,10 @@ extern "C" {
  #endif
  
  extern BOOL g_tweakEnabled;
@@ -3635,10 +3643,11 @@ index 2a6e1de..ea147e3 100644
 +extern __thread BOOL g_bypassingIconHook;
 +extern BOOL g_colorWidgets;
 +extern BOOL g_colorBadges;
++extern BOOL g_colorSettingsIcons;
  extern NSString *g_engineVersion;
  extern NSString *g_selectedIconPack;
  extern NSString *g_iconStyle;
-@@ -58,6 +60,8 @@ void ForceLayoutAllIconViews(UIView *view);
+@@ -58,6 +61,8 @@ void ForceLayoutAllIconViews(UIView *view);
  void updateTintViews(UIView *view, UIColor *tintColor);
  
  void reload26HomePrefs(void);
@@ -3647,7 +3656,7 @@ index 2a6e1de..ea147e3 100644
  UIWindow *GetWallpaperWindow(void);
  UIWindow *Home26GetKeyWindow(void);
  void EnsureWallpaperDimView(void);
-@@ -94,3 +98,9 @@ void Home26RegisterSpotlightNotifications(void);
+@@ -94,3 +99,9 @@ void Home26RegisterSpotlightNotifications(void);
  #ifdef __cplusplus
  }
  #endif
@@ -3658,10 +3667,10 @@ index 2a6e1de..ea147e3 100644
 +extern __thread unsigned g_home18RenderDepth;
 +BOOL Home18CanStyleView(UIView *view);
 diff --git a/Hooks/HooksCommon.m b/Hooks/HooksCommon.m
-index 43c7286..e41c999 100644
+index 43c7286..a3b4ae3 100644
 --- a/Hooks/HooksCommon.m
 +++ b/Hooks/HooksCommon.m
-@@ -1,23 +1,99 @@
+@@ -1,23 +1,100 @@
  #import "HooksCommon.h"
  
  BOOL g_tweakEnabled = YES;
@@ -3671,6 +3680,7 @@ index 43c7286..e41c999 100644
 +__thread BOOL g_bypassingIconHook = NO;
 +BOOL g_colorWidgets = YES;
 +BOOL g_colorBadges = YES;
++BOOL g_colorSettingsIcons = YES;
  NSString *g_engineVersion = @"IconGen2";
 -NSString *g_selectedIconPack = @"SolidGlass";
 +NSString *g_selectedIconPack = @"Home18";
@@ -3767,7 +3777,7 @@ index 43c7286..e41c999 100644
  
  BOOL g_isAppOpening = NO;
  BOOL g_isFolderOpen = NO;
-@@ -206,82 +282,64 @@ void UpdateWallpaperDimState(BOOL dimmed, BOOL animated) {
+@@ -206,82 +283,66 @@ void UpdateWallpaperDimState(BOOL dimmed, BOOL animated) {
  }
  
  void reload26HomePrefs(void) {
@@ -3832,8 +3842,10 @@ index 43c7286..e41c999 100644
 +    g_home18Everywhere = ![scope isEqualToString:@"HomeOnly"];
 +    NSNumber *widgets = Home18PreferenceObject(@"icontint15.26base.colorWidgets", prefs);
 +    NSNumber *badges = Home18PreferenceObject(@"icontint15.26base.colorBadges", prefs);
++    NSNumber *settingsIcons = Home18PreferenceObject(@"icontint15.26base.colorSettingsIcons", prefs);
 +    g_colorWidgets = widgets ? widgets.boolValue : YES;
 +    g_colorBadges = badges ? badges.boolValue : YES;
++    g_colorSettingsIcons = settingsIcons ? settingsIcons.boolValue : YES;
 +    g_iconStyle = Home18PreferenceObject(@"icontint15.26base.iconStyle", prefs) ?: @"Default";
 +    if ([g_iconStyle isEqualToString:@"Clear"]) g_iconStyle = @"Default";
 +    g_themeMode = Home18PreferenceObject(@"icontint15.26base.themeMode", prefs) ?: @"Auto";
@@ -3900,7 +3912,7 @@ index 43c7286..e41c999 100644
      if (g_appIconGlassQuality < 0.10) g_appIconGlassQuality = 0.10;
      if (g_appIconGlassQuality > 1.0) g_appIconGlassQuality = 1.0;
  }
-@@ -574,3 +632,21 @@ SBRootFolderController *ResolveRootFolderController(UIView *view) {
+@@ -574,3 +635,21 @@ SBRootFolderController *ResolveRootFolderController(UIView *view) {
      }
      return nil;
  }
@@ -4458,12 +4470,61 @@ index 8c57fbc..ea0aa74 100644
 +    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(6.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), applyPersistedStyleAfterLaunch);
  }
 diff --git a/Hooks/Preferences.x b/Hooks/Preferences.x
-index 2744185..8f9a46b 100644
+index 2744185..766266c 100644
 --- a/Hooks/Preferences.x
 +++ b/Hooks/Preferences.x
-@@ -5,8 +5,14 @@
+@@ -1,12 +1,63 @@
+ #import "HooksCommon.h"
+ 
++static char kHome18SettingsAssetNameKey;
++static char kHome18SettingsAssetBundleKey;
++static char kHome18SettingsAssetPathKey;
++static const char kHome26StyledMarkerKey = 0;
++static char kHome18OriginalSettingsIconKey;
++
++static BOOL Home18IsPreferencesProcess(void) {
++    return [NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.Preferences"];
++}
++
++static void Home18BindSettingsAssetMetadata(UIImage *image, NSString *name, NSBundle *bundle, NSString *path) {
++    if (!image || !Home18IsPreferencesProcess()) return;
++    if (name.length) objc_setAssociatedObject(image, &kHome18SettingsAssetNameKey, name, OBJC_ASSOCIATION_COPY_NONATOMIC);
++    NSString *bundleID = bundle.bundleIdentifier;
++    if (!bundleID.length) bundleID = bundle.bundlePath.lastPathComponent.stringByDeletingPathExtension;
++    if (bundleID.length) objc_setAssociatedObject(image, &kHome18SettingsAssetBundleKey, bundleID, OBJC_ASSOCIATION_COPY_NONATOMIC);
++    if (path.length) objc_setAssociatedObject(image, &kHome18SettingsAssetPathKey, path, OBJC_ASSOCIATION_COPY_NONATOMIC);
++}
++
+ %group UIKitHooks
+ 
  %hook UIImage
  
+++ (UIImage *)imageNamed:(NSString *)name {
++    UIImage *image = %orig;
++    Home18BindSettingsAssetMetadata(image, name, NSBundle.mainBundle, nil);
++    return image;
++}
++
+++ (UIImage *)imageNamed:(NSString *)name inBundle:(NSBundle *)bundle {
++    UIImage *image = %orig;
++    Home18BindSettingsAssetMetadata(image, name, bundle, nil);
++    return image;
++}
++
+++ (UIImage *)imageNamed:(NSString *)name inBundle:(NSBundle *)bundle compatibleWithTraitCollection:(UITraitCollection *)traits {
++    UIImage *image = %orig;
++    Home18BindSettingsAssetMetadata(image, name, bundle, nil);
++    return image;
++}
++
+++ (UIImage *)imageWithContentsOfFile:(NSString *)path {
++    UIImage *image = %orig;
++    if ([path containsString:@"/SettingsIcons/"]) {
++        Home18BindSettingsAssetMetadata(image, path.lastPathComponent, nil, path);
++    }
++    return image;
++}
++
  + (UIImage *)_applicationIconImageForBundleIdentifier:(NSString *)bundleID format:(int)format scale:(CGFloat)scale {
 -    extern BOOL g_bypassingIconHook;
 -    if (g_bypassingIconHook) return %orig;
@@ -4478,7 +4539,7 @@ index 2744185..8f9a46b 100644
  
      UIImage *orig = %orig;
      if (!bundleID || !orig) return orig;
-@@ -24,7 +30,7 @@
+@@ -24,7 +75,7 @@
      });
  
      CGFloat targetScale = orig.scale > 0 ? orig.scale : (scale > 0 ? scale : [UIScreen mainScreen].scale);
@@ -4487,7 +4548,7 @@ index 2744185..8f9a46b 100644
      UIImage *cached = [g_appIconImageCache objectForKey:cacheKey];
      if (cached) return cached;
  
-@@ -54,11 +60,37 @@
+@@ -54,11 +105,37 @@
  static NSString *Home26BundleIDForSpecifier(PSSpecifier *specifier) {
      if (!specifier) return nil;
  
@@ -4530,13 +4591,201 @@ index 2744185..8f9a46b 100644
  
      if (bundleID && [bundleID isKindOfClass:[NSString class]] && bundleID.length > 0) {
          return bundleID;
-@@ -128,10 +160,53 @@ static UIImage *Home26ResizeImage(UIImage *image, CGSize targetSize, CGFloat tar
+@@ -127,11 +204,240 @@ static UIImage *Home26ResizeImage(UIImage *image, CGSize targetSize, CGFloat tar
+     return resized ?: image;
  }
  
++static NSString *Home18NormalizeSettingsAssetToken(NSString *value) {
++    if (![value isKindOfClass:NSString.class] || !value.length) return nil;
++    NSString *base = value.lastPathComponent.stringByDeletingPathExtension;
++    NSRange suffix = [base rangeOfString:@"@[23]x$" options:NSRegularExpressionSearch];
++    if (suffix.location != NSNotFound) base = [base substringToIndex:suffix.location];
++    NSMutableString *normalized = [NSMutableString string];
++    NSCharacterSet *allowed = NSCharacterSet.alphanumericCharacterSet;
++    NSString *lower = base.lowercaseString;
++    for (NSUInteger index = 0; index < lower.length; index++) {
++        unichar character = [lower characterAtIndex:index];
++        if ([allowed characterIsMember:character]) [normalized appendFormat:@"%C", character];
++    }
++    return normalized.length ? normalized : nil;
++}
++
++static NSArray<NSString *> *Home18SettingsIconRoots(void) {
++    static NSArray<NSString *> *roots = nil;
++    static dispatch_once_t onceToken;
++    dispatch_once(&onceToken, ^{
++        NSString *relative = @"/Library/Application Support/26Home/SettingsIcons";
++        NSMutableArray<NSString *> *values = [NSMutableArray arrayWithObject:@"/var/jb/Library/Application Support/26Home/SettingsIcons"];
++        NSString *mapped = jbroot(relative);
++        if (mapped.length && ![values containsObject:mapped]) [values addObject:mapped];
++        if (![values containsObject:relative]) [values addObject:relative];
++        roots = [values copy];
++    });
++    return roots;
++}
++
++static NSDictionary<NSString *, NSString *> *Home18SettingsAssetIndex(void) {
++    static NSDictionary<NSString *, NSString *> *index = nil;
++    static dispatch_once_t onceToken;
++    dispatch_once(&onceToken, ^{
++        NSMutableDictionary<NSString *, NSString *> *result = [NSMutableDictionary dictionary];
++        NSFileManager *files = NSFileManager.defaultManager;
++        NSString *root = nil;
++        for (NSString *candidate in Home18SettingsIconRoots()) {
++            BOOL isDirectory = NO;
++            if ([files fileExistsAtPath:candidate isDirectory:&isDirectory] && isDirectory) {
++                root = candidate;
++                break;
++            }
++        }
++        if (!root.length) {
++            index = @{};
++            return;
++        }
++
++        NSDirectoryEnumerator *enumerator = [files enumeratorAtPath:root];
++        for (NSString *relativePath in enumerator) {
++            if (![relativePath.pathExtension.lowercaseString isEqualToString:@"png"]) continue;
++            NSArray<NSString *> *components = relativePath.pathComponents;
++            NSUInteger bundlesIndex = [components indexOfObject:@"Bundles"];
++            if (bundlesIndex == NSNotFound || bundlesIndex + 2 >= components.count) continue;
++            NSString *bundleID = components[bundlesIndex + 1].lowercaseString;
++            NSString *filename = relativePath.lastPathComponent;
++            NSString *token = Home18NormalizeSettingsAssetToken(filename);
++            if (!token.length) continue;
++            NSInteger scale = [filename.lowercaseString containsString:@"@3x"] ? 3 : 2;
++            NSString *fullPath = [root stringByAppendingPathComponent:relativePath];
++            result[[NSString stringWithFormat:@"%@|%@|%ld", bundleID, token, (long)scale]] = fullPath;
++
++            NSString *genericKey = [NSString stringWithFormat:@"*|%@|%ld", token, (long)scale];
++            BOOL preferredBundle = [bundleID isEqualToString:@"com.apple.preferences-framework"] ||
++                                   [bundleID isEqualToString:@"com.apple.preferences"];
++            if (!result[genericKey] || preferredBundle) result[genericKey] = fullPath;
++        }
++        index = [result copy];
++    });
++    return index;
++}
++
++static NSString *Home18StringProperty(PSSpecifier *specifier, NSString *key) {
++    if (!specifier || !key.length) return nil;
++    id value = nil;
++    @try { value = [specifier propertyForKey:key]; } @catch (NSException *exception) {}
++    if ([value isKindOfClass:NSString.class]) return value;
++    if ([value isKindOfClass:NSURL.class]) return [(NSURL *)value path];
++    if ([value isKindOfClass:NSBundle.class]) {
++        NSBundle *bundle = value;
++        return bundle.bundleIdentifier ?: bundle.bundlePath.lastPathComponent.stringByDeletingPathExtension;
++    }
++    if ([value isKindOfClass:UIImage.class]) {
++        NSString *name = objc_getAssociatedObject(value, &kHome18SettingsAssetNameKey);
++        if (name.length) return name;
++    }
++    return nil;
++}
++
++static NSString *Home18SettingsAssetNameForGraphicIdentifier(NSString *identifier) {
++    if (![identifier isKindOfClass:NSString.class] || !identifier.length) return nil;
++    NSString *suffix = identifier.lowercaseString;
++    NSRange marker = [suffix rangeOfString:@"com.apple.graphic-icon."];
++    if (marker.location != NSNotFound) suffix = [suffix substringFromIndex:NSMaxRange(marker)];
++    static NSDictionary<NSString *, NSString *> *names = nil;
++    static dispatch_once_t onceToken;
++    dispatch_once(&onceToken, ^{
++        names = @{
++            @"notifications": @"NotificationCenter", @"sound": @"Sounds", @"focus": @"DND",
++            @"gear": @"General", @"screen-time": @"ScreenTime", @"cellular-settings": @"CellularData",
++            @"carrier-settings": @"CellularData", @"passcode": @"FaceID", @"face-id": @"FaceID",
++            @"touch-id": @"TouchID", @"emergency-sos": @"SOS", @"exposure-notifications": @"ExposureNotification",
++            @"battery": @"BatteryUsage", @"motion-and-fitness": @"Fitness", @"tv-provider": @"VideoSubscriber",
++            @"waveform": @"Music Recognition", @"developer-tools": @"DeveloperSettings"
++        };
++    });
++    return names[suffix] ?: suffix;
++}
++
++static UIImage *Home18LoadSettingsAsset(PSSpecifier *specifier, UIImage *incoming, NSString **assetIdentity) {
++    UIImage *original = objc_getAssociatedObject(incoming, &kHome18OriginalSettingsIconKey) ?: incoming;
++    NSMutableArray<NSString *> *names = [NSMutableArray array];
++    NSMutableArray<NSString *> *bundles = [NSMutableArray array];
++
++    NSString *graphicIdentifier = Home18StringProperty(specifier, @"graphicIconIdentifier");
++    if (!graphicIdentifier.length) graphicIdentifier = Home18StringProperty(specifier, @"iconUTTypeIdentifier");
++    if ([graphicIdentifier containsString:@"graphic-icon"]) {
++        NSString *mappedName = Home18SettingsAssetNameForGraphicIdentifier(graphicIdentifier);
++        if (mappedName.length) [names addObject:mappedName];
++        [bundles addObject:@"com.apple.preferences-framework"];
++    }
++
++    NSString *associatedName = objc_getAssociatedObject(original, &kHome18SettingsAssetNameKey);
++    NSString *associatedBundle = objc_getAssociatedObject(original, &kHome18SettingsAssetBundleKey);
++    NSString *associatedPath = objc_getAssociatedObject(original, &kHome18SettingsAssetPathKey);
++    for (NSString *candidate in @[associatedName ?: @"", associatedPath ?: @""]) {
++        if (candidate.length && ![names containsObject:candidate]) [names addObject:candidate];
++    }
++    if (associatedBundle.length) [bundles addObject:associatedBundle];
++
++    for (NSString *key in @[@"iconName", @"icon", @"iconImage", @"iconPath", @"iconURL", @"imageName"]) {
++        NSString *candidate = Home18StringProperty(specifier, key);
++        if (candidate.length && ![names containsObject:candidate]) [names addObject:candidate];
++    }
++    for (NSString *key in @[@"iconBundleIdentifier", @"bundleIdentifier", @"bundleID", @"bundle", @"iconBundle"]) {
++        NSString *candidate = Home18StringProperty(specifier, key);
++        if (candidate.length && ![bundles containsObject:candidate]) [bundles addObject:candidate];
++    }
++
++    NSString *identifier = specifier.identifier;
++    if (identifier.length && ![identifier containsString:@"."]) [names addObject:identifier];
++    if (specifier.name.length) [names addObject:specifier.name];
++
++    NSInteger requestedScale = UIScreen.mainScreen.scale >= 2.5 ? 3 : 2;
++    NSDictionary<NSString *, NSString *> *index = Home18SettingsAssetIndex();
++    for (NSString *name in names) {
++        NSString *token = Home18NormalizeSettingsAssetToken(name);
++        if (!token.length) continue;
++        NSMutableArray<NSString *> *lookupBundles = [NSMutableArray arrayWithArray:bundles];
++        [lookupBundles addObject:@"com.apple.preferences-framework"];
++        [lookupBundles addObject:@"com.apple.preferences"];
++        for (NSString *bundle in lookupBundles) {
++            NSString *bundleToken = bundle.lowercaseString.lastPathComponent.stringByDeletingPathExtension;
++            for (NSNumber *scale in @[@(requestedScale), @(requestedScale == 3 ? 2 : 3)]) {
++                NSString *key = [NSString stringWithFormat:@"%@|%@|%@", bundleToken, token, scale];
++                NSString *path = index[key];
++                if (!path.length) continue;
++                UIImage *loaded = [UIImage imageWithContentsOfFile:path];
++                if (loaded.CGImage && loaded.scale != scale.doubleValue) {
++                    loaded = [UIImage imageWithCGImage:loaded.CGImage scale:scale.doubleValue orientation:loaded.imageOrientation];
++                }
++                if (loaded) {
++                    if (assetIdentity) *assetIdentity = [NSString stringWithFormat:@"%@/%@", bundleToken, token];
++                    return loaded;
++                }
++            }
++        }
++
++        // A global fallback handles third-party preference bundles whose image
++        // name is known but whose NSBundle metadata was lost by a cache layer.
++        if (token.length <= 3 || [@[@"icon", @"appicon", @"iconsmall"] containsObject:token]) continue;
++        for (NSNumber *scale in @[@(requestedScale), @(requestedScale == 3 ? 2 : 3)]) {
++            NSString *path = index[[NSString stringWithFormat:@"*|%@|%@", token, scale]];
++            if (!path.length) continue;
++            UIImage *loaded = [UIImage imageWithContentsOfFile:path];
++            if (loaded.CGImage && loaded.scale != scale.doubleValue) {
++                loaded = [UIImage imageWithCGImage:loaded.CGImage scale:scale.doubleValue orientation:loaded.imageOrientation];
++            }
++            if (loaded) {
++                if (assetIdentity) *assetIdentity = token;
++                return loaded;
++            }
++        }
++    }
++    return nil;
++}
++
  static NSCache *g_preferencesStyledIconCache = nil;
+-static const char kHome26StyledMarkerKey = 0;
++static NSCache *g_preferencesSystemIconCache = nil;
 +static NSCache *g_preferencesCanonicalIconCache = nil;
- static const char kHome26StyledMarkerKey = 0;
-+static char kHome18OriginalSettingsIconKey;
 +
 +static UIImage *Home26CanonicalSettingsIcon(NSString *bundleID) {
 +    if (!bundleID.length) return nil;
@@ -4585,7 +4834,7 @@ index 2744185..8f9a46b 100644
      if (isAppExcluded(bundleID)) return orig;
  
      NSString *style = g_iconStyle ?: @"Default";
-@@ -148,7 +223,7 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
+@@ -148,7 +454,7 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
  
      NSString *cacheKey = [NSString stringWithFormat:@"%@_%@_%@_%@_%.0fx%.0f_%.0f",
                            bundleID,
@@ -4594,7 +4843,7 @@ index 2744185..8f9a46b 100644
                            style,
                            g_themeMode ?: @"Auto",
                            targetSize.width,
-@@ -160,22 +235,10 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
+@@ -160,22 +466,10 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
          return cached;
      }
  
@@ -4621,7 +4870,7 @@ index 2744185..8f9a46b 100644
  
      if (!sourceImage) {
          return orig;
-@@ -189,6 +252,7 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
+@@ -189,6 +483,7 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
      UIImage *finalImage = Home26ResizeImage(styled, targetSize, targetScale);
      if (finalImage) {
          objc_setAssociatedObject(finalImage, &kHome26StyledMarkerKey, @YES, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
@@ -4629,10 +4878,54 @@ index 2744185..8f9a46b 100644
          [g_preferencesStyledIconCache setObject:finalImage forKey:cacheKey];
          return finalImage;
      }
-@@ -196,11 +260,63 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
+@@ -196,27 +491,131 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
      return orig;
  }
  
++static UIImage *Home18StyledSystemSettingsIcon(UIImage *orig, PSSpecifier *specifier, CGSize targetSize) {
++    if (!orig || !specifier || !g_tweakEnabled || !g_colorSettingsIcons) {
++        return objc_getAssociatedObject(orig, &kHome18OriginalSettingsIconKey) ?: orig;
++    }
++
++    UIImage *original = objc_getAssociatedObject(orig, &kHome18OriginalSettingsIconKey) ?: orig;
++    NSString *assetIdentity = nil;
++    UIImage *source = Home18LoadSettingsAsset(specifier, original, &assetIdentity);
++    if (!source || !assetIdentity.length) return original;
++
++    if (CGSizeEqualToSize(targetSize, CGSizeZero)) {
++        targetSize = original.size.width > 1.0 ? original.size : CGSizeMake(29.0, 29.0);
++    }
++    CGFloat targetScale = original.scale > 0 ? original.scale : UIScreen.mainScreen.scale;
++    if (!g_preferencesSystemIconCache) {
++        g_preferencesSystemIconCache = [[NSCache alloc] init];
++        g_preferencesSystemIconCache.countLimit = 240;
++    }
++
++    NSString *cacheKey = [NSString stringWithFormat:@"%@_%@_%@_%@_%@_%.0fx%.0f_%.0f",
++                          assetIdentity,
++                          g_iconStyle ?: @"Default",
++                          g_themeMode ?: @"Auto",
++                          g_darkIconMode ?: @"Always",
++                          g_tintColor ?: @"#00FFFF",
++                          targetSize.width,
++                          targetSize.height,
++                          targetScale];
++    UIImage *cached = [g_preferencesSystemIconCache objectForKey:cacheKey];
++    if (cached) return cached;
++
++    NSString *syntheticBundleID = [@"local.icontint15.settings." stringByAppendingString:
++                                   Home18NormalizeSettingsAssetToken(assetIdentity) ?: @"glyph"];
++    Home26SaveOriginalIcon(source, syntheticBundleID);
++    UIImage *styled = Home26RequestStyledIcon(source, syntheticBundleID) ?: source;
++    UIImage *finalImage = Home26ResizeImage(styled, targetSize, targetScale);
++    if (!finalImage) return original;
++
++    objc_setAssociatedObject(finalImage, &kHome26StyledMarkerKey, @YES, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
++    objc_setAssociatedObject(finalImage, &kHome18OriginalSettingsIconKey, original, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
++    [g_preferencesSystemIconCache setObject:finalImage forKey:cacheKey];
++    return finalImage;
++}
++
 +// Screen Time uses STUsageCell and keeps the application identifier on its
 +// STUsageItem value, not on the PSSpecifier.  Consequently PSTableCell's usual
 +// lazy-icon path cannot identify these rows.
@@ -4690,31 +4983,92 @@ index 2744185..8f9a46b 100644
  - (UIImage *)getLazyIcon {
      UIImage *orig = %orig;
 -    if (!g_tweakEnabled) return orig;
-+    if (!g_tweakEnabled || !g_home18Everywhere) return objc_getAssociatedObject(orig,&kHome18OriginalSettingsIconKey) ?: orig;
++    UIImage *original = objc_getAssociatedObject(orig,&kHome18OriginalSettingsIconKey) ?: orig;
++    if (!g_tweakEnabled) return original;
  
      PSSpecifier *spec = nil;
      if ([self respondsToSelector:@selector(specifier)]) {
-@@ -215,8 +331,8 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
+         spec = [self specifier];
+     }
+     NSString *bundleID = Home26BundleIDForSpecifier(spec);
+-    if (!bundleID) return orig;
++    if (bundleID && g_home18Everywhere) {
++        CGSize targetSize = (original && original.size.width > 0) ? original.size : CGSizeMake(29.0, 29.0);
++        UIImage *styled = Home26StyledSettingsIcon(original, bundleID, targetSize);
++        return styled ?: original;
++    }
+ 
+-    CGSize targetSize = (orig && orig.size.width > 0) ? orig.size : CGSizeMake(29.0, 29.0);
+-    UIImage *styled = Home26StyledSettingsIcon(orig, bundleID, targetSize);
+-    return styled ?: orig;
++    if (!bundleID && g_colorSettingsIcons) {
++        CGSize targetSize = (original && original.size.width > 0) ? original.size : CGSizeMake(29.0, 29.0);
++        UIImage *styled = Home18StyledSystemSettingsIcon(original, spec, targetSize);
++        return styled ?: original;
++    }
++    return original;
  }
  
  - (void)setIcon:(UIImage *)icon {
--    if (!g_tweakEnabled || !icon) {
+     if (!g_tweakEnabled || !icon) {
 -        %orig(icon);
-+    if (!g_tweakEnabled || !g_home18Everywhere || !icon) {
 +        %orig(objc_getAssociatedObject(icon,&kHome18OriginalSettingsIconKey) ?: icon);
          return;
      }
  
-@@ -252,7 +368,7 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
+@@ -239,14 +638,25 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
+         spec = [self specifier];
+     }
+     NSString *bundleID = Home26BundleIDForSpecifier(spec);
+-    if (!bundleID || isAppExcluded(bundleID)) {
+-        %orig(icon);
++    UIImage *original = objc_getAssociatedObject(icon, &kHome18OriginalSettingsIconKey) ?: icon;
++    if (bundleID) {
++        if (!g_home18Everywhere || isAppExcluded(bundleID)) {
++            %orig(original);
++            return;
++        }
++        CGSize targetSize = original.size.width > 0 ? original.size : CGSizeMake(29.0, 29.0);
++        UIImage *styled = Home26StyledSettingsIcon(original, bundleID, targetSize);
++        %orig(styled ?: original);
+         return;
+     }
+ 
+-    CGSize targetSize = icon.size.width > 0 ? icon.size : CGSizeMake(29.0, 29.0);
+-    UIImage *styled = Home26StyledSettingsIcon(icon, bundleID, targetSize);
+-    %orig(styled ?: icon);
++    if (g_colorSettingsIcons) {
++        CGSize targetSize = original.size.width > 0 ? original.size : CGSizeMake(29.0, 29.0);
++        UIImage *styled = Home18StyledSystemSettingsIcon(original, spec, targetSize);
++        %orig(styled ?: original);
++        return;
++    }
++    %orig(original);
+ }
+ 
  - (void)refreshCellContentsWithSpecifier:(PSSpecifier *)specifier {
-     %orig(specifier);
+@@ -272,43 +682,71 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
+         }
  
--    if (!g_tweakEnabled || !specifier) return;
-+    if (!g_tweakEnabled || !g_home18Everywhere || !specifier) return;
- 
-     UIImage *currentIcon = nil;
-     if ([self respondsToSelector:@selector(icon)]) {
-@@ -284,31 +400,53 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
+         NSString *bundleID = Home26BundleIDForSpecifier(specifier);
+-        if (bundleID && !isAppExcluded(bundleID)) {
+-            CGSize targetSize = currentIcon.size.width > 0 ? currentIcon.size : CGSizeMake(29.0, 29.0);
+-            UIImage *styled = Home26StyledSettingsIcon(currentIcon, bundleID, targetSize);
+-            if (styled && styled != currentIcon) {
+-                [self setIcon:styled];
+-            }
++        CGSize targetSize = currentIcon.size.width > 0 ? currentIcon.size : CGSizeMake(29.0, 29.0);
++        UIImage *styled = nil;
++        if (bundleID && g_home18Everywhere && !isAppExcluded(bundleID)) {
++            styled = Home26StyledSettingsIcon(currentIcon, bundleID, targetSize);
++        } else if (!bundleID && g_colorSettingsIcons) {
++            styled = Home18StyledSystemSettingsIcon(currentIcon, specifier, targetSize);
++        }
++        if (styled && styled != currentIcon) {
++            [self setIcon:styled];
+         }
+     }
+ }
  
  %end
  
@@ -4745,6 +5099,7 @@ index 2744185..8f9a46b 100644
          if (g_preferencesStyledIconCache) {
              [g_preferencesStyledIconCache removeAllObjects];
          }
++        if (g_preferencesSystemIconCache) [g_preferencesSystemIconCache removeAllObjects];
 +        if (g_preferencesCanonicalIconCache) [g_preferencesCanonicalIconCache removeAllObjects];
          Home26ClearGeneratorCache();
  
@@ -4758,6 +5113,7 @@ index 2744185..8f9a46b 100644
          if (g_preferencesStyledIconCache) {
              [g_preferencesStyledIconCache removeAllObjects];
          }
++        if (g_preferencesSystemIconCache) [g_preferencesSystemIconCache removeAllObjects];
 +        if (g_preferencesCanonicalIconCache) [g_preferencesCanonicalIconCache removeAllObjects];
      });
  
@@ -4767,11 +5123,12 @@ index 2744185..8f9a46b 100644
          if (g_preferencesStyledIconCache) {
              [g_preferencesStyledIconCache removeAllObjects];
          }
++        if (g_preferencesSystemIconCache) [g_preferencesSystemIconCache removeAllObjects];
 +        if (g_preferencesCanonicalIconCache) [g_preferencesCanonicalIconCache removeAllObjects];
          Home26ClearGeneratorCache();
  
          UIWindow *keyWin = Home26GetKeyWindow();
-@@ -320,6 +458,8 @@ void Home26RegisterPreferencesNotifications(void) {
+@@ -320,6 +758,8 @@ void Home26RegisterPreferencesNotifications(void) {
  
  void Home26InitPreferencesHooks(void) {
      Home26RegisterPreferencesNotifications();
@@ -5948,19 +6305,20 @@ index b51b733..a04ce12 100644
  ARCHS = arm64 arm64e
  THEOS_PACKAGE_SCHEME = rootless
 diff --git a/control b/control
-index e3551e9..1da136c 100644
+index e3551e9..63b88fc 100644
 --- a/control
 +++ b/control
 @@ -1,9 +1,13 @@
 -Package: com.ngkhoi.26home
 -Name: 26Home
+-Depends: mobilesubstrate
+-Version: 1.2.0-test
 +Package: local.icontint15.26base
 +Name: IconTint15
 +Icon: https://raw.githubusercontent.com/nowme777/homescreen18-for-15ios/codex/ios18-for-ios15/branding/icon.png
 +SileoDepiction: https://raw.githubusercontent.com/nowme777/homescreen18-for-15ios/codex/ios18-for-ios15/branding/depiction.json
- Depends: mobilesubstrate
--Version: 1.2.0-test
-+Version: 0.3.8~source1
++Depends: firmware (>= 15.0), firmware (<< 16.0), mobilesubstrate, preferenceloader
++Version: 0.3.9~source1
  Architecture: iphoneos-arm64
 -Description: iOS 26 Homescreen customization.
 -Maintainer: ngkhoi

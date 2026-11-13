@@ -938,12 +938,12 @@
  	<string>BNDL</string>
  	<key>CFBundleShortVersionString</key>
 -	<string>1.0.0</string>
-+	<string>0.3.5</string>
++	<string>0.3.6</string>
  	<key>CFBundleSignature</key>
  	<string>????</string>
  	<key>CFBundleVersion</key>
 -	<string>1.0</string>
-+	<string>0.3.5</string>
++	<string>0.3.6</string>
  	<key>NSPrincipalClass</key>
  	<string>Home26PrefsRootListController</string>
 +	<key>CFBundleName</key>
@@ -1435,7 +1435,20 @@
  #import "LGDebugger.h"
  
  @interface SBHEditingWidgetButton : UIButton
-@@ -347,3 +362,11 @@
+@@ -325,6 +340,12 @@
+ 
+ @interface SBHIconImageCache : NSObject
+ - (UIImage *)imageForIcon:(id)icon;
++- (UIImage *)imageForIcon:(id)icon options:(NSUInteger)options;
++- (UIImage *)cachedImageForIcon:(id)icon;
++- (UIImage *)imageForIcon:(id)icon compatibleWithTraitCollection:(UITraitCollection *)traits options:(NSUInteger)options;
++- (UIImage *)cachedImageForIcon:(id)icon compatibleWithTraitCollection:(UITraitCollection *)traits options:(NSUInteger)options;
++- (UIImage *)imageForIcon:(id)icon imageAppearance:(id)appearance options:(NSUInteger)options;
++- (UIImage *)cachedImageForIcon:(id)icon imageAppearance:(id)appearance options:(NSUInteger)options;
+ - (UIImage *)unmaskedImageForIcon:(id)icon;
+ - (UIImage *)_iconImageWithInfo:(struct SBIconImageInfo)info forIcon:(id)icon;
+ - (UIImage *)_unmaskedIconImageWithInfo:(struct SBIconImageInfo)info forIcon:(id)icon;
+@@ -347,3 +368,11 @@
  extern BOOL g_exceptionsNoIconProcessing;
  extern BOOL g_exceptionsApplyOnlyToSolid;
  
@@ -1842,7 +1855,7 @@
      });
 --- a/HomeCustomizationMenu18.m
 +++ b/HomeCustomizationMenu18.m
-@@ -1,27 +1,23 @@
+@@ -1,27 +1,51 @@
  #import "Headers.h"
  #import <notify.h>
 +#import "LGCustomIconGenerator2.h"
@@ -1864,7 +1877,7 @@
      });
  }
  
- static UIImage *LGCreateAutomaticWeatherImage(void) {
+-static UIImage *LGCreateAutomaticWeatherImage(void) {
 -    NSUserDefaults *prefs = [[NSUserDefaults alloc] initWithSuiteName:@"com.ngkhoi.26home"];
 -    NSString *selectedPack = [prefs stringForKey:@"ngkhoi.26home.selectedIconPack"] ?: [prefs stringForKey:@"ngkhoi.26home.activePackId"] ?: @"SolidGlass";
 -    NSString *basePath = jbroot([NSString stringWithFormat:@"/Library/Application Support/26Home/IconPacks/%@", selectedPack]);
@@ -1876,12 +1889,40 @@
 -    }
 -    if (![[NSFileManager defaultManager] fileExistsAtPath:basePath]) {
 -        basePath = @"/Library/Application Support/26Home/SolidGlass";
--    }
++static void Home18SynchronizePreferences(NSUserDefaults *defaults) {
++    if (!defaults) return;
++
++    // On iOS 15 SpringBoard can start before the NSUserDefaults suite has
++    // invalidated its in-process cache.  Mirror the values through
++    // CFPreferences as well, so a respring always sees the last selection.
++    NSArray<NSString *> *keys = @[
++        @"icontint15.26base.iconStyle",
++        @"icontint15.26base.themeMode",
++        @"icontint15.26base.darkIconMode",
++        @"icontint15.26base.tintColor",
++        @"icontint15.26base.tintHue",
++        @"icontint15.26base.tintBrightness",
++        @"icontint15.26base.largeIcons",
++        @"icontint15.26base.dimWallpaper"
++    ];
++    for (NSString *key in keys) {
++        id value = [defaults objectForKey:key];
++        if (value) {
++            CFPreferencesSetAppValue((__bridge CFStringRef)key,
++                                     (__bridge CFPropertyListRef)value,
++                                     CFSTR("local.icontint15.26base"));
++        }
+     }
++    [defaults synchronize];
++    CFPreferencesAppSynchronize(CFSTR("local.icontint15.26base"));
++}
++
++static UIImage *LGCreateAutomaticWeatherImage(void) {
 +    NSString *basePath=Home18PackDirectory();
      UIImage *lightImg = [UIImage imageWithContentsOfFile:[basePath stringByAppendingPathComponent:@"Light/com.apple.weather-large.png"]];
      UIImage *darkImg = [UIImage imageWithContentsOfFile:[basePath stringByAppendingPathComponent:@"Dark/com.apple.weather-large.png"]];
  
-@@ -59,7 +55,8 @@
+@@ -59,7 +83,8 @@
  
  @property (nonatomic, strong) NSMutableArray<UIButton *> *styleButtons;
  @property (nonatomic, strong) NSMutableArray<UILabel *> *styleLabels;
@@ -1891,7 +1932,7 @@
  
  @property (nonatomic, strong) UIView *slidersContainer;
  @property (nonatomic, strong) UIView *hueSlider;
-@@ -120,7 +117,7 @@
+@@ -120,7 +145,7 @@
          return 96.0 + 14.0;
      }
  
@@ -1900,7 +1941,7 @@
  }
  
  - (CGFloat)_restingYForMenuHeight:(CGFloat)menuHeight {
-@@ -140,32 +137,34 @@
+@@ -140,32 +165,34 @@
          [bgButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
          [self addSubview:bgButton];
  
@@ -1945,7 +1986,7 @@
  
          UIImageSymbolConfiguration *sunConfig = [UIImageSymbolConfiguration configurationWithPointSize:20 weight:UIFontWeightMedium];
          self.sunBtn = [UIButton buttonWithType:UIButtonTypeSystem];
-@@ -175,8 +174,8 @@
+@@ -175,8 +202,8 @@
          [self.sunBtn addTarget:self action:@selector(toggleWallpaperDimming:) forControlEvents:UIControlEventTouchUpInside];
          [self.menuView addSubview:self.sunBtn];
  
@@ -1956,7 +1997,7 @@
          self.scaleSegment = [[UIView alloc] initWithFrame:CGRectMake((menuWidth - segWidth) / 2.0, 17, segWidth, segHeight)];
          self.scaleSegment.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.14];
          self.scaleSegment.layer.cornerRadius = segHeight / 2.0;
-@@ -186,24 +185,24 @@
+@@ -186,24 +213,24 @@
  
          CGFloat itemWidth = segWidth / 2.0;
          self.scalePill = [[UIView alloc] initWithFrame:CGRectMake(isLarge ? itemWidth : 0, 0, itemWidth, segHeight)];
@@ -1988,7 +2029,7 @@
          [self.largeBtn addTarget:self action:@selector(selectScaleLarge:) forControlEvents:UIControlEventTouchUpInside];
          [self.scaleSegment addSubview:self.largeBtn];
  
-@@ -217,28 +216,16 @@
+@@ -217,28 +244,16 @@
          self.eyedropperBtn.userInteractionEnabled = NO;
          [self.menuView addSubview:self.eyedropperBtn];
  
@@ -2022,7 +2063,7 @@
              btn.layer.cornerCurve = kCACornerCurveContinuous;
              btn.clipsToBounds = YES;
              btn.tag = 100 + i;
-@@ -256,22 +243,25 @@
+@@ -256,22 +271,25 @@
              }
  
              UIImageView *iv = [[UIImageView alloc] initWithImage:iconImg];
@@ -2054,7 +2095,7 @@
              lbl.text = styleTitles[i];
              lbl.textColor = [UIColor whiteColor];
              lbl.textAlignment = NSTextAlignmentCenter;
-@@ -280,7 +270,7 @@
+@@ -280,7 +298,7 @@
              [self.styleLabels addObject:lbl];
          }
  
@@ -2063,7 +2104,7 @@
          self.slidersContainer.alpha = 0.0;
          self.slidersContainer.userInteractionEnabled = NO;
          [self.menuView addSubview:self.slidersContainer];
-@@ -295,9 +285,9 @@
+@@ -295,9 +313,9 @@
  }
  
  - (void)setupSliders {
@@ -2075,7 +2116,7 @@
      CGFloat thumbSize = 36.0;
  
      self.hueSlider = [[UIView alloc] initWithFrame:CGRectMake(pad, 8, sliderW, sliderH)];
-@@ -327,7 +317,7 @@
+@@ -327,7 +345,7 @@
      self.hueThumb.layer.cornerRadius = thumbSize / 2.0;
      self.hueThumb.layer.borderColor = [UIColor whiteColor].CGColor;
      self.hueThumb.layer.borderWidth = 3.5;
@@ -2084,7 +2125,7 @@
      self.hueThumb.layer.shadowOpacity = 0.35;
      self.hueThumb.layer.shadowRadius = 4;
      self.hueThumb.layer.shadowOffset = CGSizeMake(0, 2);
-@@ -339,7 +329,7 @@
+@@ -339,7 +357,7 @@
      UITapGestureRecognizer *hueTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleHuePan:)];
      [self.hueSlider addGestureRecognizer:hueTap];
  
@@ -2093,7 +2134,7 @@
      self.brightnessSlider.clipsToBounds = NO;
      [self.slidersContainer addSubview:self.brightnessSlider];
  
-@@ -359,7 +349,7 @@
+@@ -359,7 +377,7 @@
      self.brightnessThumb.layer.cornerRadius = thumbSize / 2.0;
      self.brightnessThumb.layer.borderColor = [UIColor whiteColor].CGColor;
      self.brightnessThumb.layer.borderWidth = 3.5;
@@ -2102,7 +2143,7 @@
      self.brightnessThumb.layer.shadowOpacity = 0.35;
      self.brightnessThumb.layer.shadowRadius = 4;
      self.brightnessThumb.layer.shadowOffset = CGSizeMake(0, 2);
-@@ -371,13 +361,13 @@
+@@ -371,13 +389,13 @@
      UITapGestureRecognizer *brTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleBrightnessPan:)];
      [self.brightnessSlider addGestureRecognizer:brTap];
  
@@ -2120,7 +2161,7 @@
      }
  
      [self _updateThumbPositions];
-@@ -396,25 +386,27 @@
+@@ -396,25 +414,27 @@
      CGFloat bX = self.currentBrightness * maxTravel;
      self.brightnessThumb.frame = CGRectMake(bX, (sliderH - thumbSize) / 2.0, thumbSize, thumbSize);
  
@@ -2157,7 +2198,7 @@
  
      NSUInteger activeIndex = 0;
      if ([style isEqualToString:@"Tinted"]) {
-@@ -430,7 +422,7 @@
+@@ -430,7 +450,7 @@
      }
  
      BOOL isTinted = (activeIndex == 3);
@@ -2166,7 +2207,7 @@
  
      void (^updateBlock)(void) = ^{
  
-@@ -438,8 +430,8 @@
+@@ -438,8 +458,8 @@
              UIButton *btn = self.styleButtons[i];
              UILabel *lbl = self.styleLabels[i];
              if (i == activeIndex) {
@@ -2177,7 +2218,7 @@
                  lbl.textColor = [UIColor whiteColor];
                  lbl.font = [UIFont systemFontOfSize:13 weight:UIFontWeightSemibold];
              } else {
-@@ -470,60 +462,27 @@
+@@ -470,60 +490,27 @@
  
  - (void)selectStyle:(UIButton *)sender {
      NSUInteger index = sender.tag - 100;
@@ -2205,7 +2246,8 @@
 +        [defaults setObject:@"Tinted" forKey:@"icontint15.26base.iconStyle"];
 +        [self _saveTintColor];
      }
-     [defaults synchronize];
+-    [defaults synchronize];
++    Home18SynchronizePreferences(defaults);
  
      [self updateStyleSelection:YES];
  
@@ -2248,18 +2290,19 @@
      dispatch_async(dispatch_get_main_queue(), ^{
          Home26PostStyleUpdate18();
      });
-@@ -531,8 +490,8 @@
+@@ -531,29 +518,29 @@
  
  - (void)selectScaleSmall:(UIButton *)sender {
      Home26Log(@"[User Action] iOS 18 Menu - Selected scale: Small");
 -    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"com.ngkhoi.26home"];
 -    [defaults setBool:NO forKey:@"ngkhoi.26home.largeIcons"];
+-    [defaults synchronize];
 +    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"local.icontint15.26base"];
 +    [defaults setBool:NO forKey:@"icontint15.26base.largeIcons"];
-     [defaults synchronize];
++    Home18SynchronizePreferences(defaults);
  
      [UIView animateWithDuration:0.25 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-@@ -540,19 +499,19 @@
+         CGRect f = self.scalePill.frame;
          f.origin.x = 0;
          self.scalePill.frame = f;
  
@@ -2280,12 +2323,14 @@
      Home26Log(@"[User Action] iOS 18 Menu - Selected scale: Large");
 -    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"com.ngkhoi.26home"];
 -    [defaults setBool:YES forKey:@"ngkhoi.26home.largeIcons"];
+-    [defaults synchronize];
 +    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"local.icontint15.26base"];
 +    [defaults setBool:YES forKey:@"icontint15.26base.largeIcons"];
-     [defaults synchronize];
++    Home18SynchronizePreferences(defaults);
  
      CGFloat itemWidth = self.scaleSegment.frame.size.width / 2.0;
-@@ -562,20 +521,20 @@
+     [UIView animateWithDuration:0.25 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+@@ -562,21 +549,21 @@
          self.scalePill.frame = f;
  
          [self.smallBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
@@ -2309,11 +2354,13 @@
      BOOL next = !current;
      Home26Log(@"[User Action] iOS 18 Menu - Toggled wallpaper dimming to: %d", next);
 -    [defaults setBool:next forKey:@"ngkhoi.26home.dimWallpaper"];
+-    [defaults synchronize];
 +    [defaults setBool:next forKey:@"icontint15.26base.dimWallpaper"];
-     [defaults synchronize];
++    Home18SynchronizePreferences(defaults);
  
      UIImageSymbolConfiguration *config = [UIImageSymbolConfiguration configurationWithPointSize:20 weight:UIFontWeightMedium];
-@@ -586,42 +545,40 @@
+     UIImage *newImage = (next ? LGImageNamed(@"sun.lefthalf.filled") : [UIImage systemImageNamed:@"sun.max" withConfiguration:config]);
+@@ -586,42 +573,40 @@
          sender.tintColor = next ? [UIColor whiteColor] : [UIColor colorWithWhite:1.0 alpha:0.55];
      } completion:nil];
  
@@ -2337,8 +2384,9 @@
      NSString *hex = [NSString stringWithFormat:@"#%02lX%02lX%02lX", lroundf(r * 255), lroundf(g * 255), lroundf(b * 255)];
      Home26Log(@"[User Action] iOS 18 Menu - Updated tint color to: %@", hex);
 -    [defaults setObject:hex forKey:@"ngkhoi.26home.tintColor"];
+-    [defaults synchronize];
 +    [defaults setObject:hex forKey:@"icontint15.26base.tintColor"];
-     [defaults synchronize];
++    Home18SynchronizePreferences(defaults);
  
 -    [[NSNotificationCenter defaultCenter] postNotificationName:@"ngkhoi.26home.PurgeCaches" object:nil];
 +    [[NSNotificationCenter defaultCenter] postNotificationName:@"icontint15.26base.PurgeCaches" object:nil];
@@ -2369,7 +2417,7 @@
  }
  
  - (void)handleHuePan:(UIGestureRecognizer *)gesture {
-@@ -662,7 +619,7 @@
+@@ -662,7 +647,7 @@
          self.alpha = 0.0;
      }];
  
@@ -2378,7 +2426,7 @@
  
      dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
  #pragma clang diagnostic push
-@@ -682,14 +639,8 @@
+@@ -682,14 +667,8 @@
          overlay.onColorSelected = ^(UIColor *color) {
              CGFloat h, s, b, a;
              if ([color getHue:&h saturation:&s brightness:&b alpha:&a]) {
@@ -2394,7 +2442,7 @@
                  [self _updateThumbPositions];
                  [self _updateBrightnessGradient];
                  [self _saveTintColor];
-@@ -698,7 +649,7 @@
+@@ -698,7 +677,7 @@
              [UIView animateWithDuration:0.3 animations:^{
                  self.alpha = 1.0;
              }];
@@ -3403,7 +3451,7 @@
 +BOOL Home18CanStyleView(UIView *view);
 --- a/Hooks/HooksCommon.m
 +++ b/Hooks/HooksCommon.m
-@@ -1,23 +1,27 @@
+@@ -1,23 +1,35 @@
  #import "HooksCommon.h"
  
  BOOL g_tweakEnabled = YES;
@@ -3434,10 +3482,18 @@
  BOOL g_hideGlassWhenUnfocused = YES;
 -NSString *g_menuAppearance = @"iOS26";
 +NSString *g_menuAppearance = @"iOS18";
++
++static id Home18PreferenceObject(NSString *key, NSUserDefaults *fallback) {
++    if (!key) return nil;
++    CFPropertyListRef value = CFPreferencesCopyAppValue((__bridge CFStringRef)key,
++                                                        CFSTR("local.icontint15.26base"));
++    if (value) return CFBridgingRelease(value);
++    return [fallback objectForKey:key];
++}
  
  BOOL g_isAppOpening = NO;
  BOOL g_isFolderOpen = NO;
-@@ -206,76 +210,72 @@
+@@ -206,76 +218,78 @@
  }
  
  void reload26HomePrefs(void) {
@@ -3476,21 +3532,27 @@
 -    g_tintColor = [prefs stringForKey:@"ngkhoi.26home.tintColor"] ?: @"#00FFFF";
 -    g_largeIconsEnabled = [prefs boolForKey:@"ngkhoi.26home.largeIcons"];
 -    g_disableLiquidGlassIcons = CFPreferencesGetAppBooleanValue(CFSTR("ngkhoi.26home.disableLiquidGlassIcons"), CFSTR("com.ngkhoi.26home"), NULL);
-+    g_home18Everywhere = ![[prefs stringForKey:@"icontint15.26base.iconScope"] isEqualToString:@"HomeOnly"];
-+    g_colorWidgets = [prefs objectForKey:@"icontint15.26base.colorWidgets"] ? [prefs boolForKey:@"icontint15.26base.colorWidgets"] : YES;
-+    g_colorBadges = [prefs objectForKey:@"icontint15.26base.colorBadges"] ? [prefs boolForKey:@"icontint15.26base.colorBadges"] : YES;
-+    g_iconStyle = [prefs stringForKey:@"icontint15.26base.iconStyle"] ?: @"Default";
++    NSString *scope = Home18PreferenceObject(@"icontint15.26base.iconScope", prefs);
++    g_home18Everywhere = ![scope isEqualToString:@"HomeOnly"];
++    NSNumber *widgets = Home18PreferenceObject(@"icontint15.26base.colorWidgets", prefs);
++    NSNumber *badges = Home18PreferenceObject(@"icontint15.26base.colorBadges", prefs);
++    g_colorWidgets = widgets ? widgets.boolValue : YES;
++    g_colorBadges = badges ? badges.boolValue : YES;
++    g_iconStyle = Home18PreferenceObject(@"icontint15.26base.iconStyle", prefs) ?: @"Default";
 +    if ([g_iconStyle isEqualToString:@"Clear"]) g_iconStyle = @"Default";
-+    g_themeMode = [prefs stringForKey:@"icontint15.26base.themeMode"] ?: @"Auto";
++    g_themeMode = Home18PreferenceObject(@"icontint15.26base.themeMode", prefs) ?: @"Auto";
 +    if ([g_iconStyle isEqualToString:@"Tinted"]) g_themeMode = @"Dark";
-+    g_darkIconMode = [prefs stringForKey:@"icontint15.26base.darkIconMode"] ?: @"Always";
-+    g_tintColor = [prefs stringForKey:@"icontint15.26base.tintColor"] ?: @"#00FFFF";
-+    if ([prefs objectForKey:@"icontint15.26base.tintHue"] && [prefs objectForKey:@"icontint15.26base.tintBrightness"]) {
-+        UIColor *resolved=Home18ResolvedPanelColor([prefs floatForKey:@"icontint15.26base.tintHue"],[prefs floatForKey:@"icontint15.26base.tintBrightness"]);
++    g_darkIconMode = Home18PreferenceObject(@"icontint15.26base.darkIconMode", prefs) ?: @"Always";
++    g_tintColor = Home18PreferenceObject(@"icontint15.26base.tintColor", prefs) ?: @"#00FFFF";
++    NSNumber *tintHue = Home18PreferenceObject(@"icontint15.26base.tintHue", prefs);
++    NSNumber *tintBrightness = Home18PreferenceObject(@"icontint15.26base.tintBrightness", prefs);
++    if (tintHue && tintBrightness) {
++        UIColor *resolved=Home18ResolvedPanelColor(tintHue.floatValue,tintBrightness.floatValue);
 +        CGFloat r,g,b,a;[resolved getRed:&r green:&g blue:&b alpha:&a];
 +        g_tintColor=[NSString stringWithFormat:@"#%02lX%02lX%02lX",lround(r*255),lround(g*255),lround(b*255)];
 +    }
-+    g_largeIconsEnabled = [prefs boolForKey:@"icontint15.26base.largeIcons"];
++    NSNumber *largeIcons = Home18PreferenceObject(@"icontint15.26base.largeIcons", prefs);
++    g_largeIconsEnabled = largeIcons.boolValue;
 +    g_disableLiquidGlassIcons = YES; // 18-style fork: no live glass overlays.
  
 -    CFPropertyListRef excludedVal = CFPreferencesCopyAppValue(CFSTR("ngkhoi.26home.excludedApps"), CFSTR("com.ngkhoi.26home"));
@@ -3547,7 +3609,7 @@
      if (qualityVal && [(__bridge id)qualityVal isKindOfClass:[NSNumber class]]) {
          g_appIconGlassQuality = [(__bridge NSNumber *)qualityVal floatValue];
          CFRelease(qualityVal);
-@@ -574,3 +574,21 @@
+@@ -574,3 +588,21 @@
      }
      return nil;
  }
@@ -3764,7 +3826,7 @@
      %orig;
  }
  
-@@ -1183,10 +1216,50 @@
+@@ -1183,10 +1216,86 @@
  
  %end
  
@@ -3783,6 +3845,42 @@
 +%hook SBHIconImageCache
 +
 +- (UIImage *)imageForIcon:(id)icon {
++    BOOL previous=g_bypassingIconHook;g_bypassingIconHook=YES;
++    UIImage *original=nil;@try {original=%orig;} @finally {g_bypassingIconHook=previous;}
++    return Home18StyleLibraryCacheImage(original,icon);
++}
++
++- (UIImage *)imageForIcon:(id)icon options:(NSUInteger)options {
++    BOOL previous=g_bypassingIconHook;g_bypassingIconHook=YES;
++    UIImage *original=nil;@try {original=%orig;} @finally {g_bypassingIconHook=previous;}
++    return Home18StyleLibraryCacheImage(original,icon);
++}
++
++- (UIImage *)cachedImageForIcon:(id)icon {
++    BOOL previous=g_bypassingIconHook;g_bypassingIconHook=YES;
++    UIImage *original=nil;@try {original=%orig;} @finally {g_bypassingIconHook=previous;}
++    return Home18StyleLibraryCacheImage(original,icon);
++}
++
++- (UIImage *)imageForIcon:(id)icon compatibleWithTraitCollection:(UITraitCollection *)traits options:(NSUInteger)options {
++    BOOL previous=g_bypassingIconHook;g_bypassingIconHook=YES;
++    UIImage *original=nil;@try {original=%orig;} @finally {g_bypassingIconHook=previous;}
++    return Home18StyleLibraryCacheImage(original,icon);
++}
++
++- (UIImage *)cachedImageForIcon:(id)icon compatibleWithTraitCollection:(UITraitCollection *)traits options:(NSUInteger)options {
++    BOOL previous=g_bypassingIconHook;g_bypassingIconHook=YES;
++    UIImage *original=nil;@try {original=%orig;} @finally {g_bypassingIconHook=previous;}
++    return Home18StyleLibraryCacheImage(original,icon);
++}
++
++- (UIImage *)imageForIcon:(id)icon imageAppearance:(id)appearance options:(NSUInteger)options {
++    BOOL previous=g_bypassingIconHook;g_bypassingIconHook=YES;
++    UIImage *original=nil;@try {original=%orig;} @finally {g_bypassingIconHook=previous;}
++    return Home18StyleLibraryCacheImage(original,icon);
++}
++
++- (UIImage *)cachedImageForIcon:(id)icon imageAppearance:(id)appearance options:(NSUInteger)options {
 +    BOOL previous=g_bypassingIconHook;g_bypassingIconHook=YES;
 +    UIImage *original=nil;@try {original=%orig;} @finally {g_bypassingIconHook=previous;}
 +    return Home18StyleLibraryCacheImage(original,icon);
@@ -3816,7 +3914,7 @@
      UIImage *orig = %orig;
      if (Home26IsCoverSheetActive()) return orig;
      if ([(id)self respondsToSelector:@selector(applicationBundleID)]) {
-@@ -1224,7 +1297,7 @@
+@@ -1224,7 +1333,7 @@
  }
  
  - (UIImage *)unmaskedIconImageWithInfo:(struct SBIconImageInfo)info {
@@ -3825,7 +3923,7 @@
      UIImage *orig = %orig;
      if (Home26IsCoverSheetActive()) return orig;
      if ([(id)self respondsToSelector:@selector(applicationBundleID)]) {
-@@ -1262,7 +1335,7 @@
+@@ -1262,7 +1371,7 @@
  }
  
  - (UIImage *)generateIconImageWithInfo:(struct SBIconImageInfo)info {
@@ -3983,7 +4081,7 @@
                      });
                  }
              } @catch (NSException *e) {
-@@ -459,7 +476,7 @@
+@@ -459,7 +476,26 @@
      };
  
      int wpToken;
@@ -3991,6 +4089,25 @@
 +    notify_register_dispatch("icontint15.26base.ExportWallpaper", &wpToken, dispatch_get_main_queue(), ^(int token) {
          exportWallpaperBlock(YES);
      });
++
++    // SpringBoard creates its first icon views while several caches are still
++    // warming up. Re-read the persisted style and refresh after the home tree
++    // exists; a second pass catches the dock/folder/library views created just
++    // after the first visible frame.
++    __block BOOL launchStyleCacheCleared = NO;
++    void (^applyPersistedStyleAfterLaunch)(void) = ^{
++        reload26HomePrefs();
++        if (!g_tweakEnabled) return;
++        if (!launchStyleCacheCleared) {
++            Home26ClearGeneratorCache();
++            launchStyleCacheCleared = YES;
++        }
++        if (g_notificationIconsCache) [g_notificationIconsCache removeAllObjects];
++        refreshKnownIcons();
++        reloadVisibleIconCollections();
++    };
++    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), applyPersistedStyleAfterLaunch);
++    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), applyPersistedStyleAfterLaunch);
  }
 --- a/Hooks/Preferences.x
 +++ b/Hooks/Preferences.x
@@ -5283,7 +5400,7 @@
 +SileoDepiction: https://raw.githubusercontent.com/nowme777/homescreen18-for-15ios/codex/ios18-for-ios15/branding/depiction.json
  Depends: mobilesubstrate
 -Version: 1.2.0-test
-+Version: 0.3.5~source1
++Version: 0.3.6~source1
  Architecture: iphoneos-arm64
 -Description: iOS 26 Homescreen customization.
 -Maintainer: ngkhoi

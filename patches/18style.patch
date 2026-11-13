@@ -8072,19 +8072,25 @@ index ec342ba..b453b45 100644
          [keyWindow addSubview:overlay];
      });
 diff --git a/Hooks/BadgesAndWidgets.x b/Hooks/BadgesAndWidgets.x
-index 5f069cc..3d08590 100644
+index 5f069cc..b624211 100644
 --- a/Hooks/BadgesAndWidgets.x
 +++ b/Hooks/BadgesAndWidgets.x
-@@ -1,4 +1,102 @@
+@@ -1,4 +1,108 @@
  #import "HooksCommon.h"
 +#import "../Home18Pixels.h"
 +
 +static char kHome18SavedWidgetFiltersKey;
 +static char kHome18WidgetRefreshPendingKey;
 +
-+struct Home18WidgetColorMatrix {
-+    float values[20];
-+};
++// QuartzCore validates both the 20-float layout and the encoded struct name.
++// A differently named wrapper has the same bytes but is rejected by
++// CAFilter's inputColorMatrix KVC path on iOS 15.
++typedef struct CAColorMatrix {
++    float m11, m12, m13, m14, m15;
++    float m21, m22, m23, m24, m25;
++    float m31, m32, m33, m34, m35;
++    float m41, m42, m43, m44, m45;
++} CAColorMatrix;
 +
 +static BOOL Home18IsWidgetView(UIView *view) {
 +    if (!view) return NO;
@@ -8132,19 +8138,19 @@ index 5f069cc..3d08590 100644
 +    // A colorMatrix keeps the source alpha untouched.  colorMonochrome can
 +    // turn the transparent IOSurface padding used by Battery widgets into an
 +    // opaque square on iOS 15.
-+    struct Home18WidgetColorMatrix matrix = {{
++    CAColorMatrix matrix = {
 +        0.2126f * red,   0.7152f * red,   0.0722f * red,   0.0f, 0.0f,
 +        0.2126f * green, 0.7152f * green, 0.0722f * green, 0.0f, 0.0f,
 +        0.2126f * blue,  0.7152f * blue,  0.0722f * blue,  0.0f, 0.0f,
 +        0.0f,            0.0f,            0.0f,            1.0f, 0.0f
-+    }};
++    };
 +#pragma clang diagnostic push
 +#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 +    id filter=[NSClassFromString(@"CAFilter") performSelector:NSSelectorFromString(@"filterWithType:") withObject:@"colorMatrix"];
 +#pragma clang diagnostic pop
 +    if (filter) {
 +        @try {
-+            [filter setValue:[NSValue valueWithBytes:&matrix objCType:@encode(struct Home18WidgetColorMatrix)]
++            [filter setValue:[NSValue valueWithBytes:&matrix objCType:@encode(CAColorMatrix)]
 +                         forKey:@"inputColorMatrix"];
 +            view.layer.filters=@[filter];
 +        } @catch (NSException *exception) {}
@@ -8178,7 +8184,7 @@ index 5f069cc..3d08590 100644
  
  %hook SBDockView
  
-@@ -15,148 +113,96 @@
+@@ -15,148 +119,96 @@
  
  - (void)layoutSubviews {
      %orig;
@@ -8392,7 +8398,7 @@ index 5f069cc..3d08590 100644
          if (!tintOverlay) {
              tintOverlay = [[UIView alloc] initWithFrame:targetView.bounds];
              tintOverlay.tag = 2628;
-@@ -170,14 +216,14 @@ void _26home_applyWidgetTintToView(UIView *view) {
+@@ -170,14 +222,14 @@ void _26home_applyWidgetTintToView(UIView *view) {
          }
  
          CGFloat radius = 0.0;
@@ -8410,7 +8416,7 @@ index 5f069cc..3d08590 100644
          }
  
          tintOverlay.frame = targetView.bounds;
-@@ -185,26 +231,6 @@ void _26home_applyWidgetTintToView(UIView *view) {
+@@ -185,26 +237,6 @@ void _26home_applyWidgetTintToView(UIView *view) {
          tintOverlay.layer.cornerCurve = kCACornerCurveContinuous;
          tintOverlay.clipsToBounds = YES;
  
@@ -8437,7 +8443,7 @@ index 5f069cc..3d08590 100644
          UIView *smokedLayer = [tintOverlay viewWithTag:2629];
          if (!smokedLayer) {
              smokedLayer = [[UIView alloc] initWithFrame:tintOverlay.bounds];
-@@ -220,7 +246,7 @@ void _26home_applyWidgetTintToView(UIView *view) {
+@@ -220,7 +252,7 @@ void _26home_applyWidgetTintToView(UIView *view) {
          smokedLayer.frame = tintOverlay.bounds;
          smokedLayer.layer.cornerRadius = radius;
  
@@ -8446,7 +8452,7 @@ index 5f069cc..3d08590 100644
          tintOverlay.hidden = NO;
      } else {
          if (tintOverlay) {
-@@ -244,6 +270,16 @@ void _26home_recursivelyApplyWidgetTint(UIView *view) {
+@@ -244,6 +276,16 @@ void _26home_recursivelyApplyWidgetTint(UIView *view) {
      _26home_applyWidgetTintToView((UIView *)self);
  }
  
@@ -8463,7 +8469,7 @@ index 5f069cc..3d08590 100644
  %end
  
  %hook SBHWidgetWrapperView
-@@ -253,6 +289,16 @@ void _26home_recursivelyApplyWidgetTint(UIView *view) {
+@@ -253,6 +295,16 @@ void _26home_recursivelyApplyWidgetTint(UIView *view) {
      _26home_applyWidgetTintToView((UIView *)self);
  }
  
@@ -8480,7 +8486,7 @@ index 5f069cc..3d08590 100644
  %end
  
  %hook SBHWidgetContainerView
-@@ -262,6 +308,62 @@ void _26home_recursivelyApplyWidgetTint(UIView *view) {
+@@ -262,6 +314,62 @@ void _26home_recursivelyApplyWidgetTint(UIView *view) {
      _26home_applyWidgetTintToView((UIView *)self);
  }
  
@@ -10006,7 +10012,7 @@ index 8c57fbc..ea0aa74 100644
 +    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(6.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), applyPersistedStyleAfterLaunch);
  }
 diff --git a/Hooks/Preferences.x b/Hooks/Preferences.x
-index 2744185..a031bf8 100644
+index 2744185..789239a 100644
 --- a/Hooks/Preferences.x
 +++ b/Hooks/Preferences.x
 @@ -1,12 +1,63 @@
@@ -10127,7 +10133,7 @@ index 2744185..a031bf8 100644
  
      if (bundleID && [bundleID isKindOfClass:[NSString class]] && bundleID.length > 0) {
          return bundleID;
-@@ -127,11 +204,324 @@ static UIImage *Home26ResizeImage(UIImage *image, CGSize targetSize, CGFloat tar
+@@ -127,11 +204,346 @@ static UIImage *Home26ResizeImage(UIImage *image, CGSize targetSize, CGFloat tar
      return resized ?: image;
  }
  
@@ -10407,6 +10413,28 @@ index 2744185..a031bf8 100644
 +static NSCache *g_preferencesSystemIconCache = nil;
 +static NSCache *g_preferencesCanonicalIconCache = nil;
 +
++static BOOL Home18IsPersonalSettingsArtwork(PSSpecifier *specifier, UIImage *image) {
++    // The Apple Account row is personal artwork, not a Settings glyph.  Its
++    // exact specifier identifier changes between iOS 15 point releases, while
++    // its avatar remains substantially larger than the regular 29pt glyphs.
++    if (image.size.width > 44.0 || image.size.height > 44.0) return YES;
++
++    NSMutableArray<NSString *> *candidates = [NSMutableArray array];
++    for (NSString *key in @[@"id", @"identifier", @"accountIdentifier",
++                            @"appleID", @"appleIDIdentifier", @"iCloudAccount"]) {
++        NSString *value = [key isEqualToString:@"identifier"] ? specifier.identifier : Home18StringProperty(specifier, key);
++        if (value.length) [candidates addObject:value.lowercaseString];
++    }
++    for (NSString *value in candidates) {
++        NSString *token = Home18NormalizeSettingsAssetToken(value);
++        if ([token containsString:@"appleaccount"] ||
++            [token containsString:@"appleid"] ||
++            [token containsString:@"icloudaccount"] ||
++            [token isEqualToString:@"accountcell"]) return YES;
++    }
++    return NO;
++}
++
 +static UIImage *Home26CanonicalSettingsIcon(NSString *bundleID) {
 +    if (!bundleID.length) return nil;
 +    if (!g_preferencesCanonicalIconCache) {
@@ -10454,7 +10482,7 @@ index 2744185..a031bf8 100644
      if (isAppExcluded(bundleID)) return orig;
  
      NSString *style = g_iconStyle ?: @"Default";
-@@ -148,7 +538,7 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
+@@ -148,7 +560,7 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
  
      NSString *cacheKey = [NSString stringWithFormat:@"%@_%@_%@_%@_%.0fx%.0f_%.0f",
                            bundleID,
@@ -10463,7 +10491,7 @@ index 2744185..a031bf8 100644
                            style,
                            g_themeMode ?: @"Auto",
                            targetSize.width,
-@@ -160,22 +550,10 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
+@@ -160,22 +572,10 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
          return cached;
      }
  
@@ -10490,7 +10518,7 @@ index 2744185..a031bf8 100644
  
      if (!sourceImage) {
          return orig;
-@@ -189,6 +567,7 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
+@@ -189,6 +589,7 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
      UIImage *finalImage = Home26ResizeImage(styled, targetSize, targetScale);
      if (finalImage) {
          objc_setAssociatedObject(finalImage, &kHome26StyledMarkerKey, @YES, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
@@ -10498,7 +10526,7 @@ index 2744185..a031bf8 100644
          [g_preferencesStyledIconCache setObject:finalImage forKey:cacheKey];
          return finalImage;
      }
-@@ -196,27 +575,138 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
+@@ -196,27 +597,139 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
      return orig;
  }
  
@@ -10508,6 +10536,7 @@ index 2744185..a031bf8 100644
 +    }
 +
 +    UIImage *original = objc_getAssociatedObject(orig, &kHome18OriginalSettingsIconKey) ?: orig;
++    if (Home18IsPersonalSettingsArtwork(specifier, original)) return original;
 +    NSString *assetIdentity = nil;
 +    UIImage *source = Home18LoadSettingsAsset(specifier, original, &assetIdentity);
 +    // Apple changes several root-specifier identifiers between iOS releases.
@@ -10643,7 +10672,7 @@ index 2744185..a031bf8 100644
          return;
      }
  
-@@ -239,14 +729,25 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
+@@ -239,14 +752,25 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
          spec = [self specifier];
      }
      NSString *bundleID = Home26BundleIDForSpecifier(spec);
@@ -10674,7 +10703,7 @@ index 2744185..a031bf8 100644
  }
  
  - (void)refreshCellContentsWithSpecifier:(PSSpecifier *)specifier {
-@@ -272,43 +773,71 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
+@@ -272,43 +796,71 @@ static UIImage *Home26StyledSettingsIcon(UIImage *orig, NSString *bundleID, CGSi
          }
  
          NSString *bundleID = Home26BundleIDForSpecifier(specifier);
@@ -10755,7 +10784,7 @@ index 2744185..a031bf8 100644
          Home26ClearGeneratorCache();
  
          UIWindow *keyWin = Home26GetKeyWindow();
-@@ -320,6 +849,8 @@ void Home26RegisterPreferencesNotifications(void) {
+@@ -320,6 +872,8 @@ void Home26RegisterPreferencesNotifications(void) {
  
  void Home26InitPreferencesHooks(void) {
      Home26RegisterPreferencesNotifications();
@@ -12097,7 +12126,7 @@ index 0000000..1387c25
 +}
 \ No newline at end of file
 diff --git a/control b/control
-index e3551e9..6638d7f 100644
+index e3551e9..132f89d 100644
 --- a/control
 +++ b/control
 @@ -1,9 +1,13 @@
@@ -12110,7 +12139,7 @@ index e3551e9..6638d7f 100644
 +Icon: https://raw.githubusercontent.com/nowme777/homescreen18-for-15ios/codex/ios18-for-ios15/branding/icon.png
 +SileoDepiction: https://raw.githubusercontent.com/nowme777/homescreen18-for-15ios/codex/ios18-for-ios15/branding/depiction.json
 +Depends: firmware (>= 15.0), firmware (<< 16.0), mobilesubstrate, preferenceloader
-+Version: 1.0.0~rc1-source1
++Version: 1.0.0~rc2-source1
  Architecture: iphoneos-arm64
 -Description: iOS 26 Homescreen customization.
 -Maintainer: ngkhoi

@@ -4,7 +4,7 @@ on:
     branches: [main, codex/ios18-for-ios15]
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   build:
     runs-on: macos-26-intel
@@ -54,3 +54,13 @@ jobs:
             project/packages/*.deb
             BUILD-PROVENANCE.txt
             DO-NOT-INSTALL-THIS-BASE.txt
+      - name: Publish temporary binary-base transport
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "icontint15-103-base-${GITHUB_RUN_ID}" \
+            project/packages/*.deb BUILD-PROVENANCE.txt DO-NOT-INSTALL-THIS-BASE.txt \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Temporary IconTint15 1.0.3 binary base" \
+            --notes "Automated macOS binary-base transport. This is not an installable package and contains no private artwork." \
+            --prerelease

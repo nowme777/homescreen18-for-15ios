@@ -480,7 +480,7 @@ index 9ad4d00..51b1a72 100644
 +    NSUserDefaults *prefs = [[NSUserDefaults alloc] initWithSuiteName:@"local.icontint15.26base"];
 +    [prefs setFloat:self.wallpaperVerticalOffset forKey:@"icontint15.26base.previewWallpaperOffsetY"];
 diff --git a/26HomePrefs/Home26PrefsRootListController.m b/26HomePrefs/Home26PrefsRootListController.m
-index ff30dea..d9feb24 100644
+index ff30dea..89eabb7 100644
 --- a/26HomePrefs/Home26PrefsRootListController.m
 +++ b/26HomePrefs/Home26PrefsRootListController.m
 @@ -3,0 +4 @@
@@ -755,7 +755,82 @@ index ff30dea..d9feb24 100644
 @@ -141 +209 @@
 -    [alert addAction:[UIAlertAction actionWithTitle:@"Later" style:UIAlertActionStyleCancel handler:nil]];
 +    [alert addAction:[UIAlertAction actionWithTitle:@"Позже" style:UIAlertActionStyleCancel handler:nil]];
-@@ -157,0 +226,69 @@
+@@ -157,0 +226,144 @@
++
++@interface Home18WalletCell : PSTableCell
++@property(nonatomic,strong) UILabel *walletName;
++@property(nonatomic,strong) UILabel *walletAddress;
++@end
++@implementation Home18WalletCell
++- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)identifier specifier:(PSSpecifier *)specifier {
++    if((self=[super initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier specifier:specifier])) {
++        self.selectionStyle=UITableViewCellSelectionStyleDefault;
++        self.walletName=[UILabel new];self.walletAddress=[UILabel new];
++        self.walletName.font=[UIFont preferredFontForTextStyle:UIFontTextStyleBody];
++        self.walletName.textColor=Home18PreferencesAccentColor();
++        self.walletAddress.font=[UIFont monospacedSystemFontOfSize:13 weight:UIFontWeightRegular];
++        self.walletAddress.textColor=UIColor.secondaryLabelColor;
++        for(UILabel *label in @[self.walletName,self.walletAddress]) {
++            label.numberOfLines=0;label.lineBreakMode=NSLineBreakByCharWrapping;
++            label.adjustsFontForContentSizeCategory=YES;
++        }
++        UIStackView *stack=[[UIStackView alloc] initWithArrangedSubviews:@[self.walletName,self.walletAddress]];
++        stack.axis=UILayoutConstraintAxisVertical;stack.spacing=7;stack.translatesAutoresizingMaskIntoConstraints=NO;
++        [self.contentView addSubview:stack];
++        UIImageView *copyIcon=[[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"doc.on.doc"]];
++        copyIcon.tintColor=Home18PreferencesAccentColor();
++        self.accessoryView=copyIcon;
++        [NSLayoutConstraint activateConstraints:@[
++            [stack.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:16],
++            [stack.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-12],
++            [stack.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:13],
++            [stack.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor constant:-13]]];
++        [self home18UpdateWallet:specifier];
++    }
++    return self;
++}
++- (void)home18UpdateWallet:(PSSpecifier *)specifier {
++    self.walletName.text=specifier.name;
++    self.walletAddress.text=[specifier propertyForKey:@"copyValue"] ?: @"";
++}
++- (void)refreshCellContentsWithSpecifier:(PSSpecifier *)specifier {
++    [super refreshCellContentsWithSpecifier:specifier];[self home18UpdateWallet:specifier];
++}
++- (void)layoutSubviews {
++    [super layoutSubviews];self.textLabel.hidden=YES;self.detailTextLabel.hidden=YES;
++}
++@end
++
++@interface Home18SupportController : PSListController
++@end
++@implementation Home18SupportController
++- (void)viewDidLoad {[super viewDidLoad];self.title=@"Поддержать меня";Home18ApplyPurpleAppearance(self);}
++- (void)viewWillAppear:(BOOL)animated {[super viewWillAppear:animated];Home18ApplyPurpleAppearance(self);}
++- (NSArray *)specifiers {if(!_specifiers)_specifiers=[self loadSpecifiersFromPlistName:@"Support" target:self];return _specifiers;}
++- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {return UITableViewAutomaticDimension;}
++- (CGFloat)tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath {return 92.0;}
++- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
++    PSSpecifier *specifier=[cell respondsToSelector:@selector(specifier)] ? [(PSTableCell *)cell specifier] : nil;
++    Home18StylePreferenceCell(cell,specifier);
++}
++- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
++    PSSpecifier *specifier=[self specifierAtIndexPath:indexPath];
++    NSString *address=[specifier propertyForKey:@"copyValue"];
++    if(address.length) {
++        UIPasteboard.generalPasteboard.string=address;
++        UINotificationFeedbackGenerator *feedback=[UINotificationFeedbackGenerator new];
++        [feedback notificationOccurred:UINotificationFeedbackTypeSuccess];
++        UIAlertController *alert=[UIAlertController alertControllerWithTitle:@"Скопировано"
++                                                                     message:specifier.name
++                                                              preferredStyle:UIAlertControllerStyleAlert];
++        [self presentViewController:alert animated:YES completion:nil];
++        dispatch_after(dispatch_time(DISPATCH_TIME_NOW,(int64_t)(0.75*NSEC_PER_SEC)),dispatch_get_main_queue(),^{
++            [alert dismissViewControllerAnimated:YES completion:nil];
++        });
++    }
++    [tableView deselectRowAtIndexPath:indexPath animated:YES];
++}
++@end
 +
 +@interface Home18CreditCell : PSTableCell
 +@property(nonatomic,strong) UILabel *creditName;
@@ -833,12 +908,17 @@ index d6636c7..cfc683f 100644
 -    notify_post("ngkhoi.26home.ExportWallpaper");
 +    notify_post("icontint15.26base.ExportWallpaper");
 diff --git a/26HomePrefs/Makefile b/26HomePrefs/Makefile
-index 1c8b6a0..a0a86a9 100644
+index 1c8b6a0..a315c32 100644
 --- a/26HomePrefs/Makefile
 +++ b/26HomePrefs/Makefile
 @@ -1 +1 @@
 -TARGET := iphone:clang:latest:16.0
 +TARGET := iphone:clang:15.6:15.0
+@@ -11,2 +11,2 @@ BUNDLE_NAME = 26HomePrefs
+-26HomePrefs_CFLAGS = -fobjc-arc -I../
+-26HomePrefs_LDFLAGS = -undefined dynamic_lookup
++26HomePrefs_CFLAGS = -fobjc-arc -fvisibility=hidden -O3 -I../
++26HomePrefs_LDFLAGS = -undefined dynamic_lookup -Wl,-dead_strip -Wl,-x
 diff --git a/26HomePrefs/Resources/Banner.jpg b/26HomePrefs/Resources/Banner.jpg
 new file mode 100644
 index 0000000000000000000000000000000000000000..e1a164138ec61a328d9e9ff9363cd5fe8dfc661d
@@ -3143,7 +3223,7 @@ index 0000000..eb2551b
 +</dict>
 +</plist>
 diff --git a/26HomePrefs/Resources/Info.plist b/26HomePrefs/Resources/Info.plist
-index 4ba130c..73d1367 100644
+index 4ba130c..9136223 100644
 --- a/26HomePrefs/Resources/Info.plist
 +++ b/26HomePrefs/Resources/Info.plist
 @@ -10 +10 @@
@@ -3151,17 +3231,17 @@ index 4ba130c..73d1367 100644
 +	<string>local.icontint15.26baseprefs</string>
 @@ -16 +16 @@
 -	<string>1.0.0</string>
-+	<string>1.0.2</string>
++	<string>1.0.3</string>
 @@ -20 +20 @@
 -	<string>1.0</string>
-+	<string>1.0.2</string>
++	<string>1.0.3</string>
 @@ -22,0 +23,4 @@
 +	<key>CFBundleName</key>
 +	<string>IconTint15</string>
 +	<key>CFBundleDisplayName</key>
 +	<string>IconTint15</string>
 diff --git a/26HomePrefs/Resources/Root.plist b/26HomePrefs/Resources/Root.plist
-index 8c28858..44f06e9 100644
+index 8c28858..f40962f 100644
 --- a/26HomePrefs/Resources/Root.plist
 +++ b/26HomePrefs/Resources/Root.plist
 @@ -4,0 +5,2 @@
@@ -3462,7 +3542,7 @@ index 8c28858..44f06e9 100644
 -			<key>sublabel</key>
 -			<string></string>
 +			<string>О твике</string>
-@@ -287,19 +154 @@
+@@ -287,9 +154 @@
 -			<string>PSGroupCell</string>
 -			<key>label</key>
 -			<string>HUGE THANKS TO</string>
@@ -3472,69 +3552,73 @@ index 8c28858..44f06e9 100644
 -		<dict>
 -			<key>cell</key>
 -			<string>PSTitleValueCell</string>
--			<key>label</key>
++			<string>PSLinkCell</string>
+@@ -297,5 +156,3 @@
 -			<string>Abraham</string>
 -			<key>get</key>
 -			<string>readSpecifierValue:</string>
 -			<key>sublabel</key>
 -			<string>@abraham_licnoln</string>
--		</dict>
--		<dict>
--			<key>cell</key>
++			<string>Автор — @nowme77</string>
++			<key>url</key>
++			<string>https://t.me/nowme77</string>
+@@ -305 +162 @@
 -			<string>PSTitleValueCell</string>
 +			<string>PSLinkCell</string>
-@@ -307,5 +156,3 @@
+@@ -307,5 +164,3 @@
 -			<string>Meka</string>
 -			<key>get</key>
 -			<string>readSpecifierValue:</string>
 -			<key>sublabel</key>
 -			<string>@mekabrine</string>
-+			<string>Автор — @nowme77</string>
++			<string>Канал — @klirkies_jail</string>
 +			<key>url</key>
-+			<string>https://t.me/nowme77</string>
-@@ -315 +162 @@
++			<string>https://t.me/klirkies_jail</string>
+@@ -315 +170 @@
 -			<string>PSTitleValueCell</string>
 +			<string>PSLinkCell</string>
-@@ -317,5 +164,3 @@
+@@ -317,5 +172,3 @@
 -			<string>Minh</string>
 -			<key>get</key>
 -			<string>readSpecifierValue:</string>
 -			<key>sublabel</key>
 -			<string>@zaminhh</string>
-+			<string>Канал — @klirkies_jail</string>
++			<string>Купить VPN — @nowmevpnbot</string>
 +			<key>url</key>
-+			<string>https://t.me/klirkies_jail</string>
-@@ -325 +170 @@
++			<string>https://t.me/nowmevpnbot</string>
+@@ -325 +178 @@
 -			<string>PSTitleValueCell</string>
 +			<string>PSLinkCell</string>
-@@ -327,5 +172,3 @@
+@@ -327,5 +180,3 @@
 -			<string>notsoseagatey</string>
 -			<key>get</key>
 -			<string>readSpecifierValue:</string>
 -			<key>sublabel</key>
 -			<string>@notsoseagatey</string>
-+			<string>Купить VPN — @nowmevpnbot</string>
++			<string>Обо мне — @nnowmes</string>
 +			<key>url</key>
-+			<string>https://t.me/nowmevpnbot</string>
-@@ -335 +178 @@
++			<string>https://t.me/nnowmes</string>
+@@ -335 +186 @@
 -			<string>PSTitleValueCell</string>
 +			<string>PSLinkCell</string>
-@@ -337,5 +180,3 @@
+@@ -337,5 +188,5 @@
 -			<string>galaxy note 7</string>
 -			<key>get</key>
 -			<string>readSpecifierValue:</string>
 -			<key>sublabel</key>
 -			<string>@unknownuser_47</string>
-+			<string>Обо мне — @nnowmes</string>
-+			<key>url</key>
-+			<string>https://t.me/nnowmes</string>
-@@ -347 +188 @@
++			<string>Поддержать автора</string>
++			<key>detail</key>
++			<string>Home18SupportController</string>
++			<key>isController</key>
++			<true/>
+@@ -347 +198 @@
 -			<string>Community</string>
 +			<string></string>
-@@ -351 +192 @@
+@@ -351 +202 @@
 -			<string>PSButtonCell</string>
 +			<string>PSLinkCell</string>
-@@ -353,3 +194,5 @@
+@@ -353,3 +204,5 @@
 -			<string>Discord Server</string>
 -			<key>action</key>
 -			<string>openDiscord:</string>
@@ -3543,9 +3627,82 @@ index 8c28858..44f06e9 100644
 +			<string>Home18CreditsController</string>
 +			<key>isController</key>
 +			<true/>
-@@ -358,2 +200,0 @@
+@@ -358,2 +210,0 @@
 -	<key>title</key>
 -	<string>26Home</string>
+diff --git a/26HomePrefs/Resources/Support.plist b/26HomePrefs/Resources/Support.plist
+new file mode 100644
+index 0000000..37d425b
+--- /dev/null
++++ b/26HomePrefs/Resources/Support.plist
+@@ -0,0 +1,67 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0">
++<dict>
++	<key>title</key>
++	<string>Поддержать меня</string>
++	<key>items</key>
++	<array>
++		<dict>
++			<key>cell</key>
++			<string>PSGroupCell</string>
++			<key>label</key>
++			<string>Пока что только криптовалюта</string>
++			<key>footerText</key>
++			<string>Нажмите на нужный адрес, чтобы скопировать его. Перед отправкой обязательно проверьте выбранную сеть.</string>
++		</dict>
++		<dict>
++			<key>cell</key><string>PSTitleValueCell</string>
++			<key>cellClass</key><string>Home18WalletCell</string>
++			<key>label</key><string>USDT (SOL)</string>
++			<key>copyValue</key><string>FL8sMT1JVPgmHRkLHTrEx2rRXsAuR5pvjaD2ZYnFpmb1</string>
++		</dict>
++		<dict>
++			<key>cell</key><string>PSTitleValueCell</string>
++			<key>cellClass</key><string>Home18WalletCell</string>
++			<key>label</key><string>USDT (ERC20)</string>
++			<key>copyValue</key><string>0xc1549b3C1C2D1a2B4d0F4E962045e7aA928669D8</string>
++		</dict>
++		<dict>
++			<key>cell</key><string>PSTitleValueCell</string>
++			<key>cellClass</key><string>Home18WalletCell</string>
++			<key>label</key><string>USDT (BEP20)</string>
++			<key>copyValue</key><string>0xc1549b3C1C2D1a2B4d0F4E962045e7aA928669D8</string>
++		</dict>
++		<dict>
++			<key>cell</key><string>PSTitleValueCell</string>
++			<key>cellClass</key><string>Home18WalletCell</string>
++			<key>label</key><string>USDT (TRC20)</string>
++			<key>copyValue</key><string>TEQ84Nzc33zodCUyi579a2BHmrJTRpstkv</string>
++		</dict>
++		<dict>
++			<key>cell</key><string>PSTitleValueCell</string>
++			<key>cellClass</key><string>Home18WalletCell</string>
++			<key>label</key><string>Tether (TON)</string>
++			<key>copyValue</key><string>UQA7vGPVR9Hj6Q1plX77GIH7ei_Yy4PdiReDFI-6W5n2L2Ez</string>
++		</dict>
++		<dict>
++			<key>cell</key><string>PSTitleValueCell</string>
++			<key>cellClass</key><string>Home18WalletCell</string>
++			<key>label</key><string>GRAM (TON)</string>
++			<key>copyValue</key><string>UQA7vGPVR9Hj6Q1plX77GIH7ei_Yy4PdiReDFI-6W5n2L2Ez</string>
++		</dict>
++		<dict>
++			<key>cell</key><string>PSTitleValueCell</string>
++			<key>cellClass</key><string>Home18WalletCell</string>
++			<key>label</key><string>BNB (BEP20)</string>
++			<key>copyValue</key><string>0xc1549b3C1C2D1a2B4d0F4E962045e7aA928669D8</string>
++		</dict>
++		<dict>
++			<key>cell</key><string>PSTitleValueCell</string>
++			<key>cellClass</key><string>Home18WalletCell</string>
++			<key>label</key><string>SOL (SOL)</string>
++			<key>copyValue</key><string>FL8sMT1JVPgmHRkLHTrEx2rRXsAuR5pvjaD2ZYnFpmb1</string>
++		</dict>
++	</array>
++</dict>
++</plist>
 diff --git a/26HomePrefs/Resources/header_icon@3x.png b/26HomePrefs/Resources/header_icon@3x.png
 index cdeca980a65fa63ee0e4c85a6acf7247d0950a9b..e0005fdcaf0cc7056f5cd6ede2637c2e94f0b34f 100644
 GIT binary patch
@@ -10633,12 +10790,15 @@ index b71c040..aa3d527 100644
 -    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"com.ngkhoi.26home"];
 +    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"local.icontint15.26base"];
 diff --git a/Makefile b/Makefile
-index b51b733..a04ce12 100644
+index b51b733..3ea8b9c 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1 +1 @@
 -TARGET := iphone:clang:latest:16.0
 +TARGET := iphone:clang:15.6:15.0
+@@ -21 +21 @@ TWEAK_NAME = 26Home
+-26Home_LDFLAGS = -Wl,-dead_strip
++26Home_LDFLAGS = -Wl,-dead_strip -Wl,-x
 diff --git a/SOURCE-CHECKS.json b/SOURCE-CHECKS.json
 new file mode 100644
 index 0000000..1387c25
@@ -10806,7 +10966,7 @@ index 0000000..1387c25
 +}
 \ No newline at end of file
 diff --git a/control b/control
-index e3551e9..d7518df 100644
+index e3551e9..3f8adc2 100644
 --- a/control
 +++ b/control
 @@ -1,4 +1,6 @@
@@ -10816,10 +10976,10 @@ index e3551e9..d7518df 100644
 -Version: 1.2.0-test
 +Package: local.icontint15.26base
 +Name: IconTint15
-+Icon: https://raw.githubusercontent.com/nowme777/homescreen18-for-15ios/codex/ios18-for-ios15/branding/icon.png
-+SileoDepiction: https://raw.githubusercontent.com/nowme777/homescreen18-for-15ios/codex/ios18-for-ios15/branding/depiction.json
++Icon: https://raw.githubusercontent.com/nowme777/icontint15-branding/main/icon.png
++SileoDepiction: https://raw.githubusercontent.com/nowme777/icontint15-branding/main/depiction.json
 +Depends: firmware (>= 15.0), firmware (<< 16.0), mobilesubstrate, preferenceloader
-+Version: 1.0.2-source1
++Version: 1.0.3-source1
 @@ -6,3 +8,3 @@ Architecture: iphoneos-arm64
 -Description: iOS 26 Homescreen customization.
 -Maintainer: ngkhoi

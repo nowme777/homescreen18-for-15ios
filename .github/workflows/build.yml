@@ -15,7 +15,7 @@ jobs:
         run: |
           git clone https://github.com/ngkoi/26Home.git project
           git -C project checkout 3b9378591c1c7d69d79080d130fa0d3dd2b358a1
-          git -C project apply "$GITHUB_WORKSPACE/patches/18style.patch"
+          git -C project apply --unidiff-zero "$GITHUB_WORKSPACE/patches/18style.patch"
       - name: Test the icon tint pixel renderer
         run: |
           clang -std=c11 -Wall -Wextra -Werror -O2 project/tests/test_pixels.c -lm -o pixel-tests
